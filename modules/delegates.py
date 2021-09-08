@@ -1,5 +1,6 @@
-from PySide6.QtWidgets import QStyledItemDelegate, QLineEdit, QComboBox, QCompleter
-from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QStyledItemDelegate, QLineEdit, QComboBox, QCompleter, QStyle, \
+    QStyleOptionButton, QApplication, QItemDelegate
+from PySide6.QtCore import Qt, QEvent, QPoint, QRect
 from datetime import date
 from dateutil.relativedelta import relativedelta
 import re
@@ -129,3 +130,44 @@ class ComboBoxDelegate(QStyledItemDelegate):
 
     def commitData(self, editor):
         super(ComboBoxDelegate, self).commitData(editor)
+
+
+class CheckBoxDelegate(QItemDelegate):
+    """
+    A delegate that places a fully functioning QCheckBox cell of the column to which it's applied.
+    """
+    def __init__(self, parent):
+        QItemDelegate.__init__(self, parent)
+
+    def createEditor(self, parent, option, index):
+        """
+        Important, otherwise an editor is created if the user clicks in this cell.
+        """
+        return None
+
+    def paint(self, painter, option, index):
+        """
+        Paint a checkbox without the label.
+        """
+        self.drawCheck(painter, option, option.rect, Qt.Unchecked if int(index.data()) == 0 else Qt.Checked)
+
+    def editorEvent(self, event, model, option, index):
+        '''
+        Change the data in the model and the state of the checkbox
+        if the user presses the left mousebutton and this cell is editable. Otherwise do nothing.
+        '''
+        if not int(index.flags() & Qt.ItemIsEditable) > 0:
+            return False
+
+        if event.type() == QEvent.MouseButtonRelease and event.button() == Qt.LeftButton:
+            # Change the checkbox-state
+            self.setModelData(None, model, index)
+            return True
+
+        return False
+
+    def setModelData (self, editor, model, index):
+        '''
+        The user wanted to change the old state in the opposite.
+        '''
+        model.setData(index, 1 if int(index.data()) == 0 else 0, Qt.EditRole)

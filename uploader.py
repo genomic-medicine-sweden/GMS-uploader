@@ -3,7 +3,7 @@ from PySide6.QtCore import *
 from PySide6.QtGui import *
 from PySide6.QtWidgets import *
 from modules.pandasmodel import PandasModel
-from modules.delegates import CompleterDelegate, ComboBoxDelegate, DateAutoCorrectDelegate
+from modules.delegates import CompleterDelegate, ComboBoxDelegate, DateAutoCorrectDelegate, CheckBoxDelegate
 from modules.sortfilterproxymodel import MultiSortFilterProxyModel
 import pandas as pd
 from pathlib import Path
@@ -166,6 +166,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.set_instrument_delegate()
         self.set_platform_delegate()
         self.set_library_delegate()
+        self.set_checkbox_delegate()
+
+    def set_checkbox_delegate(self):
+        self.checkbox_delegate = CheckBoxDelegate(None)
+        self.tableView.setItemDelegateForColumn(self.tableView_columns.index('mark'), self.checkbox_delegate)
 
     def set_criterion_delegate(self):
         checked_list = self.checked_to_list(self.criterion_model)
