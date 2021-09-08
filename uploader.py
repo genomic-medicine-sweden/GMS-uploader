@@ -414,6 +414,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         data = []
         for sample in _data:
             row = dict()
+            row['mark'] = 0
             row['internal_lab_id'] = sample
             row['lab_code'] = self.comboBox_lab.currentText()
             for key in _data[sample]:

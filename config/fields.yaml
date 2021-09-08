@@ -1,5 +1,9 @@
 ---
 fields:
+  mark:
+    col_width: 30
+    edit: True
+    hide: False
   internal_lab_id:
     col_width: 90
     edit: False
