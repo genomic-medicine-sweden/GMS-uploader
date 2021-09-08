@@ -1,0 +1,135 @@
+---
+fields:
+  internal_lab_id:
+    col_width: 90
+    edit: False
+    hide: False
+  criterion:
+    col_width: 180
+    edit: True
+    hide: False
+  date:
+    col_width: 80
+    edit: True
+    hide: False
+  GISAID_acc:
+    col_width: 80
+    edit: True
+    hide: False
+  region_code:
+    col_width: 200
+    edit: True
+    hide: False
+  lab_code:
+    col_width: 150
+    edit: True
+    hide: False
+  instrument:
+    pos: 0
+    col_width: 100
+    edit: True
+    hide: False
+  platform:
+    col_width: 100
+    edit: True
+    hide: False
+  library_method:
+    col_width: 100
+    edit: True
+    hide: False
+  lane:
+    col_width: 40
+    edit: False
+    hide: False
+  fastq1:
+    col_width: 50
+    edit: False
+    hide: False
+  fastq2:
+    col_width: 50
+    edit: False
+    hide: False
+
+region_code:
+  'Region Stockholm - 01': '01'
+  'Region Uppsala - 03': '03'
+  'Region Sörmland - 04': '04'
+  'Region Östergötland - 05': '05'
+  'Region Jönköpings län - 06': '06'
+  'Region Kronoberg - 07': '07'
+  'Region Kalmar län - 08': '08'
+  'Region Gotland - 09': '09'
+  'Region Blekinge - 10': '10'
+  'Region Skåne - 12': '12'
+  'Region Halland - 13': '13'
+  'Västra Götalandsregionen - 14': '14'
+  'Region Värmland - 17': '17'
+  'Region Örebro län - 18': '18'
+  'Region Västmanland - 19': '19'
+  'Region Dalarna - 20': '20'
+  'Region Gävleborg - 21': '21'
+  'Region Västernorrland - 22': '22'
+  'Region Jämtland Härjedalen - 23': '23'
+  'Region Västerbotten - 24': '24'
+  'Region Norrbotten - 25': '25'
+
+lab_code:
+  'Växjö - SE110': SE110
+  'Malmö - SE120': SE120
+  'Kalmar - SE240': SE240
+  'Borås - SE320': SE320
+  'Karlstad - SE450': SE450
+  'Halmstad - SE250': SE250
+  'Trollhättan NÄL - SE310': SE310
+  'Sahlgrenska - SE300': SE300
+  'Karlskrona - SE230': SE230
+  'Visby - SE540': SE540
+  'Karolinska - SE100': SE100
+  'Unilabs - SE130': SE130
+  'SYNLAB - SE140': SE140
+  'Unilabs1 - SE330': SE330
+  'Jönköping - SE350': SE350
+  'Linköping - SE400': SE400
+  'Unilabs2 - SE420': SE420
+  'Västerås - SE430': SE430
+  'Örebro - SE440': SE440
+  'Uppsala - SE600': SE600
+  'Gävle - SE610': SE610
+  'Falun - SE620': SE620
+  'Sundsvall - SE700': SE700
+  'Östersund - SE710': SE710
+  'Umeå - SE720': SE720
+  'Sunderby, Luleå - SE730': SE730
+  'National Pandemic Center - SENPC': SENPC
+  'A05diagnostics - SEADG': SEADG
+  'ABC lab - SEABC': SEABC
+  'Dynamic Code - SEDNC': SEDNC
+
+criterion:
+  - 'Allmän övervakning'
+  - 'Allmän övervakning öppenvård'
+  - 'Allmän övervakning slutenvård'
+  - 'Utlandsvistelse'
+  - 'Vaccinationsgenombrott'
+  - 'Reinfektion'
+  - 'Utbrott'
+  - 'Information saknas'
+
+instrument:
+  - 'miseq'
+  - 'nextseq 500'
+  - 'nextseq 550'
+  - 'hiseq 2500'
+  - 'novaseq'
+  - 'ion torrent'
+  - 'minion'
+  - 'prometheon'
+
+platform:
+  - 'illumina'
+  - 'ion torrent'
+  - 'oxford nanopore'
+
+library_method:
+  - 'artic'
+  - 'illumina xxx'

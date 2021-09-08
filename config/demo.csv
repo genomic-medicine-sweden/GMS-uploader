@@ -1,0 +1,3 @@
+internt_labid,urvalskriterium,datum,GISAID_accession,filer,regionkod,labkod,instrument,plattform,biblioteksmetod
+D21-00000,asdfsdf,2021-05-22,EP1234567,D21-00000_sdf_R1_.fastq.gz;D21-00000_sdf_R2_.fastq.gz,"01",SE110,miseq,illumina,asdf
+D21-00001,sdfgdfg,2021-05-22,EP1234568,D21-00001_sdf_R1_.fastq.gz;D21-00001_sdf_R2_.fastq.gz,"01",SE110,miseq,asdf,asdf
