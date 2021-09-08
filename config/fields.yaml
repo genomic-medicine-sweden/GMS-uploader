@@ -4,55 +4,68 @@ fields:
     col_width: 30
     edit: True
     hide: False
+    checkable: True
   internal_lab_id:
     col_width: 90
     edit: False
     hide: False
+    checkable: False
   criterion:
     col_width: 180
     edit: True
     hide: False
+    checkable: False
   date:
     col_width: 80
     edit: True
     hide: False
+    checkable: False
   GISAID_acc:
     col_width: 80
     edit: True
     hide: False
+    checkable: False
   region_code:
     col_width: 200
     edit: True
     hide: False
+    checkable: False
   lab_code:
     col_width: 150
     edit: True
     hide: False
+    checkable: False
   instrument:
     pos: 0
     col_width: 100
     edit: True
     hide: False
+    checkable: False
   platform:
     col_width: 100
     edit: True
     hide: False
+    checkable: False
   library_method:
     col_width: 100
     edit: True
     hide: False
+    checkable: False
   lane:
     col_width: 40
     edit: False
     hide: False
+    checkable: False
   fastq1:
     col_width: 50
     edit: False
     hide: False
+    checkable: False
   fastq2:
     col_width: 50
     edit: False
     hide: False
+    checkable: False
 
 region_code:
   'Region Stockholm - 01': '01'

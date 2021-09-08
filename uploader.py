@@ -10,7 +10,7 @@ from pathlib import Path
 import yaml
 import sys
 import subprocess
-# import qdarkstyle
+from qt_material import apply_stylesheet
 # import os
 
 
@@ -209,12 +209,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def tableView_setup(self):
         self.sort_proxy_model.setSourceModel(self.model)
         self.tableView.setModel(self.sort_proxy_model)
-        self.tableView.setEditTriggers(QAbstractItemView.AnyKeyPressed)
+        self.tableView.setEditTriggers(QAbstractItemView.AllEditTriggers)
         self.tableView.horizontalHeader().setStretchLastSection(True)
         self.tableView.horizontalHeader().setSectionsMovable(True)
         self.tableView.setSortingEnabled(True)
         self.pushButton_resetsort.clicked.connect(self.reset_proxy)
         self.pushButton_filldown.clicked.connect(self.filldown)
+        self.tableView.verticalHeader().hide()
         self.update_model()
 
     def filldown(self):
@@ -457,6 +458,7 @@ def main():
     app = QApplication(sys.argv)
     window = MainWindow()
     window.show()
+    apply_stylesheet(app, theme='dark_teal.xml')
     sys.exit(app.exec())
 
 

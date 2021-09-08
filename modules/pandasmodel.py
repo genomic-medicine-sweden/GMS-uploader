@@ -40,21 +40,27 @@ class PandasModel(QAbstractTableModel):
 
     def setData(self, index, value, role) -> bool:
 
+        print(value)
+
         if not index.isValid():
             return False
-        if role != Qt.EditRole:
-            return False
+        # if role != Qt.EditRole:
+        #     return False
         row = index.row()
+        print("row", row)
         if row < 0 or row >= len(self._data.values):
             return False
         column = index.column()
+        print("column", column)
         if column < 0 or column >= self._data.columns.size:
             return False
-        self._data.values[row][column] = value
 
+        self._data.iat[row, column] = value
 
+        print(self._data.iat[row, column])
 
         self.dataChanged.emit(index, index)
+
         return True
 
     def headerData(self, section, orientation, role):
@@ -73,20 +79,18 @@ class PandasModel(QAbstractTableModel):
         """Reimplemented to set editable and movable status."""
 
         col_name = self._col_names[mi.column()]
-        if self._col_props[col_name]['edit']:
-            flags = (
+
+        flags = (
                 Qt.ItemIsSelectable
                 | Qt.ItemIsEnabled
                 | Qt.ItemIsDropEnabled
-                | Qt.ItemIsEditable
             )
-        else:
-            flags = (
-                    Qt.ItemIsSelectable
-                    | Qt.ItemIsEnabled
-                    | Qt.ItemIsDropEnabled
-                    | ~Qt.ItemIsEditable
-            )
+
+        if self._col_props[col_name]['edit']:
+            flags |= Qt.ItemIsEditable
+
+        if self._col_props[col_name]['checkable']:
+            flags |= Qt.ItemIsUserCheckable
 
         return flags
 
