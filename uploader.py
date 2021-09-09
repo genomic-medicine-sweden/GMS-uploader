@@ -11,12 +11,11 @@ import yaml
 import sys
 import subprocess
 from qt_material import apply_stylesheet
-# import os
 
 
 from ui.mw import Ui_MainWindow
 
-__version__ = '0.0.5'
+__version__ = '0.0.6'
 __title__ = 'uploader'
 
 
