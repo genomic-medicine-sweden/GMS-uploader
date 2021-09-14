@@ -75,14 +75,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def settings_setup(self, config):
         for name in config['settings']['qlineedits']:
             edit = QLineEdit(objectName=name, editingFinished=self.settings_update)
-            edit.setText(self.config['settings']['qlineedits'][name])
+            edit.setText(self.conf['settings']['qlineedits'][name])
             self.formLayout_settings.addRow(QLabel(name), edit)
-            self.current_settings['qlineedits'][name] = self.config['settings']['qlineedits'][name]
+            self.current_settings['qlineedits'][name] = self.conf['settings']['qlineedits'][name]
 
         for name in config['settings']['qcomboboxes']:
             combo = QComboBox(objectName=name)
             combo.currentTextChanged.connect(self.settings_update)
-            combo.addItems(list(config['settings']['qcomboboxes'][name].keys()))
+            combo.addItems(list(self.conf['settings']['qcomboboxes'][name].keys()))
 
             for i, key in enumerate(config['settings']['qcomboboxes'][name]):
                 if config['settings']['qcomboboxes'][name][key]:
@@ -254,23 +254,27 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.settings.setValue('path', txt)
 
     def set_delegates(self):
-        self.set_criterion_delegate()
-        self.set_region_delegate()
-        self.set_date_delegate()
-        self.set_instrument_delegate()
-        self.set_platform_delegate()
-        self.set_library_delegate()
+        # self.set_criterion_delegate()
+        # self.set_region_delegate()
+        # self.set_date_delegate()
+        # self.set_instrument_delegate()
+        # self.set_platform_delegate()
+        # self.set_library_delegate()
         self.set_checkbox_delegate()
 
     def set_checkbox_delegate(self):
-        self.checkbox_delegate_patient = CheckBoxDelegate(None)
-        self.checkbox_delegate_sequence = CheckBoxDelegate(None)
+        checkbox_delegate_patient = CheckBoxDelegate(None)
+        checkbox_delegate_lab = CheckBoxDelegate(None)
+        checkbox_delegate_organism = CheckBoxDelegate(None)
 
-        self.tableView_sample_info.setItemDelegateForColumn(self.tableView_columns.index('Mark'),
-                                                            self.checkbox_delegate_patient)
+        self.tableView_patient.setItemDelegateForColumn(self.tableView_columns.index('Mark'),
+                                                        checkbox_delegate_patient)
 
-        self.tableView_seq_info.setItemDelegateForColumn(self.tableView_columns.index('mark'),
-                                                            self.checkbox_delegate_sequence)
+        self.tableView_lab.setItemDelegateForColumn(self.tableView_columns.index('Mark'),
+                                                    checkbox_delegate_lab)
+
+        self.tableView_organism.setItemDelegateForColumn(self.tableView_columns.index('Mark'),
+                                                         checkbox_delegate_organism)
 
     def set_criterion_delegate(self):
         checked_list = self.checked_to_list(self.criterion_model)
