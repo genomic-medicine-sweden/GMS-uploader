@@ -40,8 +40,6 @@ class PandasModel(QAbstractTableModel):
 
     def setData(self, index, value, role) -> bool:
 
-        print(value)
-
         if not index.isValid():
             return False
         # if role != Qt.EditRole:

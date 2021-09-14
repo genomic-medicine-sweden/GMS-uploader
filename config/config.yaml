@@ -1,0 +1,260 @@
+---
+model_fields:
+  Mark:
+    col_width: 100
+    edit: True
+    view: ['patient', 'organism', 'lab']
+    checkable: True
+  Internal_lab_ID:
+    col_width: 150
+    edit: False
+    view: ['patient', 'organism', 'lab']
+    checkable: False
+  Selection_criterion:
+    col_width: 250
+    edit: True
+    view: ['patient']
+    checkable: False
+  Collection_date:
+    col_width: 100
+    edit: True
+    view: ['patient']
+    checkable: False
+  GISAID_acc:
+    col_width: 100
+    edit: True
+    view: ['patient']
+    checkable: False
+  Patient_age:
+    col_width: 200
+    edit: True
+    view: [ 'patient' ]
+    checkable: False
+  Patient_sex:
+    col_width: 200
+    edit: True
+    view: [ 'patient' ]
+    checkable: False
+  Patient_status:
+    col_width: 200
+    edit: True
+    view: [ 'patient' ]
+    checkable: False
+  Lib_ID:
+    col_width: 150
+    edit: False
+    view: ['lab']
+    checkable: False
+  Region_code:
+    col_width: 200
+    edit: True
+    view: ['patient']
+    checkable: False
+  Lab_code:
+    col_width: 150
+    edit: True
+    view: ['lab']
+    checkable: False
+  Type:
+    col_width: 100
+    edit: True
+    view: [ 'patient' ]
+    checkable: False
+  Host:
+    col_width: 100
+    edit: True
+    view: [ 'organism' ]
+    checkable: False
+  Passage_details_history:
+    col_width: 100
+    edit: True
+    view: [ 'organism' ]
+    checkable: False
+  Instrument:
+    pos: 0
+    col_width: 150
+    edit: True
+    view: ['lab']
+    checkable: False
+  Platform:
+    col_width: 150
+    edit: True
+    view: ['lab']
+    checkable: False
+  Library_method:
+    col_width: 150
+    edit: True
+    view: ['lab']
+    checkable: False
+  Lane:
+    col_width: 80
+    edit: False
+    view: ['lab']
+    checkable: False
+  Fastq1:
+    col_width: 100
+    edit: False
+    view: ['lab']
+    checkable: False
+  Fastq2:
+    col_width: 100
+    edit: False
+    view: ['lab']
+    checkable: False
+  Fast5:
+    col_width: 100
+    edit: False
+    view: [ 'lab' ]
+    checkable: False
+  Seq_path:
+    col_width: 200
+    edit: False
+    view: ['lab']
+    checkable: False
+  Comment:
+    col_width: 200
+    edit: True
+    view: ['patient', 'organism', 'lab']
+    checkable: False
+settings:
+  qlineedits:
+    user: None
+    url: None
+    target_path: None
+    local_path: None
+  qcomboboxes:
+    Lab_code:
+      'Växjö - SE110': False
+      'Malmö - SE120': False
+      'Kalmar - SE240': False
+      'Borås - SE320': False
+      'Karlstad - SE450': False
+      'Halmstad - SE250': False
+      'Trollhättan NÄL - SE310': False
+      'Sahlgrenska - SE300': False
+      'Karlskrona - SE230': False
+      'Visby - SE540': False
+      'Karolinska - SE100': False
+      'Unilabs - SE130': False
+      'SYNLAB - SE140': False
+      'Unilabs1 - SE330': False
+      'Jönköping - SE350': False
+      'Linköping - SE400': False
+      'Unilabs2 - SE420': False
+      'Västerås - SE430': False
+      'Örebro - SE440': False
+      'Uppsala - SE600': False
+      'Gävle - SE610': False
+      'Falun - SE620': False
+      'Sundsvall - SE700': False
+      'Östersund - SE710': False
+      'Umeå - SE720': False
+      'Sunderby, Luleå - SE730': False
+      'National Pandemic Center - SENPC': False
+      'A05diagnostics - SEADG': False
+      'ABC lab - SEABC': False
+      'Dynamic Code - SEDNC': False
+  qlistwidgets:
+    Region_code:
+      'Region Stockholm - 01': False
+      'Region Uppsala - 03': False
+      'Region Sörmland - 04': False
+      'Region Östergötland - 05': False
+      'Region Jönköpings län - 06': False
+      'Region Kronoberg - 07': False
+      'Region Kalmar län - 08': False
+      'Region Gotland - 09': False
+      'Region Blekinge - 10': False
+      'Region Skåne - 12': False
+      'Region Halland - 13': False
+      'Västra Götalandsregionen - 14': False
+      'Region Värmland - 17': False
+      'Region Örebro län - 18': False
+      'Region Västmanland - 19': False
+      'Region Dalarna - 20': False
+      'Region Gävleborg - 21': False
+      'Region Västernorrland - 22': False
+      'Region Jämtland Härjedalen - 23': False
+      'Region Västerbotten - 24': False
+      'Region Norrbotten - 25': False
+    Selection_criterion:
+      'Allmän övervakning': False
+      'Allmän övervakning öppenvård': False
+      'Allmän övervakning slutenvård': False
+      'Utlandsvistelse': False
+      'Vaccinationsgenombrott': False
+      'Reinfektion': False
+      'Utbrott': False
+      'Information saknas': False
+    Patient_status:
+      'Hospitalized': False
+    Instrument:
+      'miseq': False
+      'nextseq 500': False
+      'nextseq 550': False
+      'hiseq 2500': False
+      'novaseq': False
+      'ion torrent': False
+      'minion': False
+      'prometheon': False
+    Platform:
+      'Illumina': False
+      'Ion torrent': False
+      'Oxford Nanopore': False
+    Library_method:
+      'Artic': False
+      'NEB': False
+translations:
+  Region_code:
+    'Region Stockholm - 01': '01'
+    'Region Uppsala - 03': '03'
+    'Region Sörmland - 04': '04'
+    'Region Östergötland - 05': '05'
+    'Region Jönköpings län - 06': '06'
+    'Region Kronoberg - 07': '07'
+    'Region Kalmar län - 08': '08'
+    'Region Gotland - 09': '09'
+    'Region Blekinge - 10': '10'
+    'Region Skåne - 12': '12'
+    'Region Halland - 13': '13'
+    'Västra Götalandsregionen - 14': '14'
+    'Region Värmland - 17': '17'
+    'Region Örebro län - 18': '18'
+    'Region Västmanland - 19': '19'
+    'Region Dalarna - 20': '20'
+    'Region Gävleborg - 21': '21'
+    'Region Västernorrland - 22': '22'
+    'Region Jämtland Härjedalen - 23': '23'
+    'Region Västerbotten - 24': '24'
+    'Region Norrbotten - 25': '25'
+  Lab_code:
+    'Växjö - SE110': SE110
+    'Malmö - SE120': SE120
+    'Kalmar - SE240': SE240
+    'Borås - SE320': SE320
+    'Karlstad - SE450': SE450
+    'Halmstad - SE250': SE250
+    'Trollhättan NÄL - SE310': SE310
+    'Sahlgrenska - SE300': SE300
+    'Karlskrona - SE230': SE230
+    'Visby - SE540': SE540
+    'Karolinska - SE100': SE100
+    'Unilabs - SE130': SE130
+    'SYNLAB - SE140': SE140
+    'Unilabs1 - SE330': SE330
+    'Jönköping - SE350': SE350
+    'Linköping - SE400': SE400
+    'Unilabs2 - SE420': SE420
+    'Västerås - SE430': SE430
+    'Örebro - SE440': SE440
+    'Uppsala - SE600': SE600
+    'Gävle - SE610': SE610
+    'Falun - SE620': SE620
+    'Sundsvall - SE700': SE700
+    'Östersund - SE710': SE710
+    'Umeå - SE720': SE720
+    'Sunderby, Luleå - SE730': SE730
+    'National Pandemic Center - SENPC': SENPC
+    'A05diagnostics - SEADG': SEADG
+    'ABC lab - SEABC': SEABC
+    'Dynamic Code - SEDNC': SEDNC
