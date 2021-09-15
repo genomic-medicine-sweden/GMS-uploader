@@ -1,9 +1,33 @@
 from PySide6.QtWidgets import QStyledItemDelegate, QLineEdit, QComboBox, QCompleter, QStyle, \
     QStyleOptionButton, QApplication, QItemDelegate
 from PySide6.QtCore import Qt, QEvent, QPoint, QRect
+from PySide6.QtGui import QIntValidator
 from datetime import date
 from dateutil.relativedelta import relativedelta
 import re
+
+
+class AgeDelegate(QStyledItemDelegate):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+    def createEditor(self, parent, option, index):
+        editor = QLineEdit(parent)
+        editor.setText(index.data(Qt.EditRole))
+        return editor
+
+    def setEditorData(self, editor, index):
+        super(QStyledItemDelegate, self).setEditorData(editor, index)
+
+    def setModelData(self, editor, model, index):
+        try:
+            value = int(editor.text())
+            if 0 <= value <= 120:
+                model.setData(index, editor.text(), Qt.EditRole)
+            else:
+                model.setData(index, "", Qt.EditRole)
+        except:
+            model.setData(index, "", Qt.EditRole)
 
 
 class DateAutoCorrectDelegate(QStyledItemDelegate):
@@ -13,7 +37,6 @@ class DateAutoCorrectDelegate(QStyledItemDelegate):
         self.curr_month = self.today.month
         self.curr_year = self.today.year
         self.max_delta = relativedelta(years=1, months=0, days=0)
-
 
         # possible date matches
 
