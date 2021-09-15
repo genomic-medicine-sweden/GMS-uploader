@@ -1,19 +1,19 @@
 ---
 model_fields:
   Mark:
-    col_width: 100
+    col_width: 50
     edit: True
     view: ['patient', 'organism', 'lab']
     checkable: True
     delegates: ['checkbox']
   Internal_lab_ID:
-    col_width: 150
+    col_width: 100
     edit: False
     view: ['patient', 'organism', 'lab']
     checkable: False
     delegates: ['None']
   Selection_criterion:
-    col_width: 250
+    col_width: 200
     edit: True
     view: ['patient']
     checkable: False
@@ -31,25 +31,25 @@ model_fields:
     checkable: False
     delegates: ['None']
   Patient_age:
-    col_width: 200
+    col_width: 120
     edit: True
     view: [ 'patient' ]
     checkable: False
     delegates: ['age']
   Patient_sex:
-    col_width: 200
+    col_width: 120
     edit: True
     view: [ 'patient' ]
     checkable: False
     delegates: ['None']
   Patient_status:
-    col_width: 200
+    col_width: 150
     edit: True
     view: [ 'patient' ]
     checkable: False
     delegates: ['None']
   Lib_ID:
-    col_width: 150
+    col_width: 100
     edit: False
     view: ['lab']
     checkable: False
@@ -63,7 +63,7 @@ model_fields:
   Lab_code:
     col_width: 150
     edit: True
-    view: ['lab']
+    view: ['None']
     checkable: False
     delegates: ['None']
   Type:
@@ -77,7 +77,7 @@ model_fields:
     edit: True
     view: [ 'organism' ]
     checkable: False
-    delegates: ['None']
+    delegates: ['combobox']
   Passage_details:
     col_width: 100
     edit: True

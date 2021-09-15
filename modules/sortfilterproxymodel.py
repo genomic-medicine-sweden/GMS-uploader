@@ -53,3 +53,39 @@ class MultiSortFilterProxyModel(QSortFilterProxyModel):
             return any(results)
 
         return all(results)
+
+
+class CheckedFilterProxyModel(QSortFilterProxyModel):
+    def __init__(self, *args, **kwargs):
+        QSortFilterProxyModel.__init__(self, *args, **kwargs)
+        self.filters = {}
+
+    def setFilterByColumn(self, column, filter_int):
+        self.filters[column] = filter_int
+        print(self.filters)
+        self.invalidateFilter()
+
+    def clearFilters(self):
+        self.filters = {}
+        self.invalidateFilter()
+
+    def filterAcceptsRow(self, source_row, source_parent):
+        print("accept")
+        if not self.filters:
+            return True
+
+        results = []
+        for key, filter_value in self.filters.items():
+            data_value = 0
+            index = self.sourceModel().index(source_row, key, source_parent)
+            if index.isValid():
+                item = self.sourceModel().data(index, Qt.DisplayRole)
+                if data_value is None:
+                    data_value = 0
+
+            if filter_value == data_value:
+                results.append(True)
+            else:
+                results.append(False)
+
+        return all(results)

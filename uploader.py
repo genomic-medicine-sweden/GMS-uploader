@@ -7,7 +7,7 @@ from modules.pandasmodel import PandasModel
 from modules.delegates import CompleterDelegate, ComboBoxDelegate, \
     DateAutoCorrectDelegate, CheckBoxDelegate, AgeDelegate
 from modules.dialogs import MsgError, MsgAlert
-from modules.sortfilterproxymodel import MultiSortFilterProxyModel
+from modules.sortfilterproxymodel import MultiSortFilterProxyModel, CheckedFilterProxyModel
 import pandas as pd
 from pathlib import Path
 import yaml
@@ -29,7 +29,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.setWindowTitle("GMS-uploader")
 
         # add icons
-        # self.add_icons()
+        self.add_icons()
 
         default_config_path = Path('config', 'config.yaml')
         with default_config_path.open(encoding='utf8') as fp:
@@ -49,6 +49,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.df = pd.DataFrame(columns=self.tableView_columns)
         self.model = PandasModel(self.df, self.conf['model_fields'])
         self.sort_proxy_model = MultiSortFilterProxyModel()
+        self.checked_filter_proxy_model = CheckedFilterProxyModel()
 
         self.tabWidget_metadata.setTabText(0, "Patient metadata")
         self.tabWidget_metadata.setTabText(1, "Organism metadata")
@@ -67,6 +68,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.tabWidget_metadata.setCurrentIndex(0)
         self.set_hidden_columns()
         self.set_col_widths()
+
+        self.pushButton_filtermarked.setCheckable(True)
 
         self.set_delegates()
 
@@ -115,6 +118,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
                 self.qsettings.setValue(store_key, checked_items)
 
+    def set_metadata_labels(self):
+        self.lineEdit_Submitter.setText(self.qsettings.value("qlineedits/Submitter"))
+        self.lineEdit_User.setText(self.qsettings.value("qlineedits/User"))
+        self.lineEdit_Url.setText(self.qsettings.value("qlineedits/Url"))
+        self.lineEdit_Target_path.setText(self.qsettings.value("qlineedits/Target_path"))
+        self.lineEdit_Lab_code.setText(self.qsettings.value("qcomboboxes/Lab_code"))
+        self.lineEdit_Sequencing_technology.setText(self.qsettings.value("qcomboboxes/Sequencing_technology"))
+
     def settings_setup(self):
         for name in self.conf['settings']['qlineedits']:
             edit = QLineEdit(objectName=name, editingFinished=self.settings_update)
@@ -145,22 +156,23 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 checked_items = []
 
                 store_key = "/".join(['qlistwidgets', name])
-                value_list = self.qsettings.value(store_key)
+                items = self.to_list(self.qsettings.value(store_key))
 
-                if value_list == None:
-                    value_list = []
+                print(store_key, items)
 
                 for key, checked in self.conf['settings']['qlistwidgets'][name].items():
                     item = QListWidgetItem()
                     item.setText(key)
                     item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
-                    if key in value_list:
+                    if key in items:
                         item.setCheckState(Qt.Checked)
                         checked_items.append(key)
                     else:
                         item.setCheckState(Qt.Unchecked)
 
                     listwidget.addItem(item)
+
+            self.set_metadata_labels()
 
     def settings_update(self):
         obj = self.sender()
@@ -188,21 +200,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             print(checked_items)
             self.qsettings.setValue(store_key, checked_items)
 
-    # def config_setup(self, p_config):
-    #     msg = MsgAlert("Personalized config does not exist or is invalid.\nImporting from template")
-    #     msg.exec()
-    #
-    #     from shutil import copyfile
-    #     d_config = Path(os.getcwd(), 'config', 'config.yaml')
-    #
-    #     if not p_config.parent.exists():
-    #         p_config.parent.mkdir(parents=True)
-    #
-    #     copyfile(d_config, p_config)
+        self.set_metadata_labels()
 
     def set_signals(self):
         self.actionpreferences.triggered.connect(lambda: self.stackedWidget.setCurrentIndex(1))
         self.actionmetadata.triggered.connect(lambda: self.stackedWidget.setCurrentIndex(0))
+        self.lineEdit_filter.textChanged.connect(self.free_filter)
+        self.pushButton_filtermarked.pressed.connect(self.checked_filter)
 
     def add_icons(self):
         self.action_open_meta.setIcon(QIcon('fontawsome/file-import-solid-white.svg'))
@@ -247,49 +251,19 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             if 'lab' not in self.conf['model_fields'][name]['view']:
                 self.tableView_lab.setColumnHidden(i, True)
 
-    def set_datatab_values(self):
-        self.update_data_lab()
-        self.update_data_user()
-
-    def filter(self):
+    def free_filter(self):
         text = self.lineEdit_filter.text()
         search = QRegularExpression(text, QRegularExpression.CaseInsensitiveOption)
-        self.sort_proxy_model.setFilterByColumns([0, 1, 2, 3], search)
+        self.sort_proxy_model.setFilterByColumns([1, 2, 3], search)
 
-    def checked_to_list(self, model):
-        checked_list = ['']
-        for r in range(model.rowCount()):
-            item = model.item(r, 0)
-            if item.checkState() == Qt.CheckState.Checked:
-                checked_list.append(item.text())
+    def checked_filter(self):
+        if self.pushButton_filtermarked.isChecked():
+            print("clear checked filter")
+            self.checked_filter_proxy_model.clearFilters()
 
-        return checked_list
-
-    # def update_settings(self, checked_list, field):
-    #     self.settings.setValue(field, checked_list)
-
-    def update_data_lab(self):
-        txt = self.comboBox_lab.currentText()
-        self.settings.setValue('Lab_code', txt)
-
-    def update_data_user(self):
-        txt = self.lineEdit_user.text() or None
-
-        if txt:
-            self.settings.setValue('user', txt)
-
-    def update_user(self):
-        txt = self.lineEdit_user.text() or None
-        if txt:
-            self.settings.setValue('user', txt)
-
-    def update_server(self):
-        txt = self.lineEdit_server.text() or None
-        self.settings.setValue('server', txt)
-
-    def update_path(self):
-        txt = self.lineEdit_path.text() or None
-        self.settings.setValue('path', txt)
+        else:
+            print("set checked filter")
+            self.checked_filter_proxy_model.setFilterByColumn(0, 1)
 
     def set_delegates(self):
         for field in self.conf['model_fields']:
@@ -334,9 +308,19 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.tableView_organism.setItemDelegateForColumn(self.tableView_columns.index(field),
                                                                  self.delegates[view][field])
 
+    def to_list(self, obj):
+        if type(obj) is list:
+            return obj
+        else:
+            return []
+
     def set_combobox_delegate(self, field):
+
         store_key = "/".join(["qlistwidgets", field])
-        items = self.qsettings.value(store_key)
+        items = ['']
+        items.extend(self.to_list(self.qsettings.value(store_key)))
+        print(store_key, field, items)
+
         for view in self.conf['model_fields'][field]['view']:
             self.delegates[view][field] = ComboBoxDelegate(items)
 
@@ -363,43 +347,28 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.tableView_organism.setItemDelegateForColumn(self.tableView_columns.index(field),
                                                                  self.delegates[view][field])
 
-    def set_instrument_delegate(self):
-        checked_list = self.checked_to_list(self.instrument_model)
-        self.instrument_delegate = ComboBoxDelegate(checked_list)
-        self.tableView_sample_info.setItemDelegateForColumn(self.tableView_columns.index('instrument'),
-                                                            self.instrument_delegate)
-        self.update_settings(checked_list, 'instrument')
-
-    def set_platform_delegate(self):
-        checked_list = self.checked_to_list(self.platform_model)
-        self.platform_delegate = ComboBoxDelegate(checked_list)
-        self.tableView_sample_info.setItemDelegateForColumn(self.tableView_columns.index('platform'),
-                                                            self.platform_delegate)
-        self.update_settings(checked_list, 'platform')
-
-    def set_library_delegate(self):
-        checked_list = self.checked_to_list(self.library_method_model)
-        self.library_delegate = ComboBoxDelegate(checked_list)
-        self.tableView_sample_info.setItemDelegateForColumn(self.tableView_columns.index('library_method'),
-                                                            self.library_delegate)
-        self.update_settings(checked_list, 'library_method')
-
     def tableView_setup(self):
+
         self.sort_proxy_model.setSourceModel(self.model)
+        # self.checked_filter_proxy_model.setSourceModel(self.model)
+
         self.tableView_patient.setModel(self.sort_proxy_model)
-        self.tableView_patient.setEditTriggers(QAbstractItemView.AllEditTriggers)
+        self.tableView_patient.setEditTriggers(QAbstractItemView.NoEditTriggers
+                                               | QAbstractItemView.DoubleClicked
+                                               | QAbstractItemView.SelectedClicked
+                                               | QAbstractItemView.EditKeyPressed)
         self.tableView_patient.horizontalHeader().setStretchLastSection(True)
         self.tableView_patient.horizontalHeader().setSectionsMovable(True)
         self.tableView_patient.setSortingEnabled(True)
 
         self.tableView_organism.setModel(self.sort_proxy_model)
-        self.tableView_organism.setEditTriggers(QAbstractItemView.AllEditTriggers)
+        self.tableView_organism.setEditTriggers(QAbstractItemView.DoubleClicked | QAbstractItemView.SelectedClicked | QAbstractItemView.EditKeyPressed)
         self.tableView_organism.horizontalHeader().setStretchLastSection(True)
         self.tableView_organism.horizontalHeader().setSectionsMovable(True)
         self.tableView_organism.setSortingEnabled(True)
 
         self.tableView_lab.setModel(self.sort_proxy_model)
-        self.tableView_lab.setEditTriggers(QAbstractItemView.AllEditTriggers)
+        self.tableView_lab.setEditTriggers(QAbstractItemView.DoubleClicked | QAbstractItemView.SelectedClicked | QAbstractItemView.EditKeyPressed)
         self.tableView_lab.horizontalHeader().setStretchLastSection(True)
         self.tableView_lab.horizontalHeader().setSectionsMovable(True)
         self.tableView_lab.setSortingEnabled(True)
@@ -438,122 +407,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def reset_proxy(self):
         self.sort_proxy_model.sort(-1)
-        self.tableView_sample_info.horizontalHeader().setSortIndicator(-1, Qt.SortOrder.DescendingOrder)
-
-    # populate settings
-
-    def populate_labs(self):
-
-        prev_lab = self.settings.value('Lab_code') or None
-
-        for l in self.conf['Lab_code']:
-            self.comboBox_lab.addItem(l)
-
-        if prev_lab:
-            self.comboBox_lab.setCurrentText(prev_lab)
-
-        self.comboBox_lab.currentIndexChanged.connect(self.update_data_lab)
-
-    def populate_criterion(self):
-        checked_list = self.settings.value('Selection_criterion')
-
-        print(checked_list)
-
-        for c in self.conf['Selection_criterion']:
-            item = QStandardItem(c)
-            item.setCheckable(True)
-            if c in checked_list:
-                item.setCheckState(Qt.Checked)
-            self.criterion_model.appendRow(item)
-
-        self.listView_criterion.setModel(self.criterion_model)
-        self.listView_criterion.clicked.connect(self.set_criterion_delegate)
-
-    def populate_instrument(self):
-        checked_list = self.settings.value('instrument') or []
-        for c in self.conf['instrument']:
-            item = QStandardItem(c)
-            item.setCheckable(True)
-            if c in checked_list:
-                item.setCheckState(Qt.Checked)
-            self.instrument_model.appendRow(item)
-
-        self.listView_instrument.setModel(self.instrument_model)
-        self.listView_instrument.clicked.connect(self.set_instrument_delegate)
-
-    def populate_platform(self):
-        checked_list = self.settings.value('platform') or []
-        for c in self.conf['platform']:
-            item = QStandardItem(c)
-            item.setCheckable(True)
-            if c in checked_list:
-                item.setCheckState(Qt.Checked)
-            self.platform_model.appendRow(item)
-
-        self.listView_platform.setModel(self.platform_model)
-        self.listView_platform.clicked.connect(self.set_platform_delegate)
-
-    def populate_library_method(self):
-        checked_list = self.settings.value('library_method') or []
-        print(checked_list)
-        for c in self.conf['library_method']:
-            item = QStandardItem(c)
-            item.setCheckable(True)
-            if c in checked_list:
-                item.setCheckState(Qt.Checked)
-            self.library_method_model.appendRow(item)
-
-        self.listView_library_method.setModel(self.library_method_model)
-        self.listView_library_method.clicked.connect(self.set_library_delegate)
-
-    def populate_region(self):
-        checked_list = self.settings.value('Region_code') or []
-        print(checked_list)
-        for r in self.conf['Region_code']:
-            item = QStandardItem(r)
-            item.setCheckable(True)
-            if r in checked_list:
-                item.setCheckState(Qt.Checked)
-            self.region_model.appendRow(item)
-
-        self.listView_region.setModel(self.region_model)
-        self.listView_region.clicked.connect(self.set_region_delegate)
-
-    def populate_column(self):
-        for c in self.conf['fields']:
-            item = QStandardItem(c)
-            item.setCheckable(True)
-            item.setFlags(~Qt.ItemIsDropEnabled)
-            self.column_model.appendRow(item)
-
-        self.listView_column.setModel(self.column_model)
-        self.listView_column.setSelectionMode(QAbstractItemView.SingleSelection)
-        self.listView_column.setDragEnabled(True)
-        self.listView_column.viewport().setAcceptDrops(True)
-        self.listView_column.setDragDropMode(QAbstractItemView.InternalMove)
-        self.listView_column.setDropIndicatorShown(True)
-        self.listView_column.setDragDropOverwriteMode(False)
-
-    def populate_user(self):
-        user = self.settings.value('user') or None
-        if user:
-            self.lineEdit_user.setText(user)
-
-        self.lineEdit_user.textEdited.connect(self.update_user)
-
-    def populate_server(self):
-        server = self.settings.value("server") or None
-        if server:
-            self.lineEdit_server.setText(server)
-
-        self.lineEdit_server.textEdited.connect(self.update_server)
-
-    def populate_path(self):
-        path = self.settings.value("path") or None
-        if path:
-            self.lineEdit_path.setText(path)
-
-        self.lineEdit_path.textEdited.connect(self.update_path)
+        self.tableView_patient.horizontalHeader().setSortIndicator(-1, Qt.SortOrder.DescendingOrder)
 
     def dragEnterEvent(self, event):
         if event.mimeData().hasUrls:
@@ -650,18 +504,28 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             msgBox.exec()
 
     def keyPressEvent(self, event):
+        print(event)
         if event.key() == Qt.Key_Delete:
-            indexes = self.tableView_sample_info.selectedIndexes()
-            model = self.tableView_sample_info.model()
-            for i in indexes:
-                if model.flags(i) & Qt.ItemIsEditable:
-                    model.setData(i, "", Qt.EditRole)
+            print("print del event")
+            if self.tableView_patient.isVisible():
+                print("is visible")
+                indexes = self.tableView_patient.selectedIndexes()
+                model = self.tableView_patient.model()
+                for i in indexes:
+                    print(i)
+                    if model.flags(i) & Qt.ItemIsEditable:
+                        print("delete")
+                        model.setData(i, "", Qt.EditRole)
 
         elif event.key() == Qt.Key_Copy:
-            indexes = self.tableView_sample_info.selectedIndexes()
-            model = self.tableView_sample_info.model()
+            indexes = self.tableView_patient.selectedIndexes()
+            model = self.tableView_patient.model()
             for i in indexes:
                 data = model.data(i, Qt.DisplayRole)
+
+        if event.key() == Qt.Key_Return:
+            indexes = self.tableView_patient.selectedIndexes()
+            self.tableView_patient.edit(indexes[0])
 
         else:
             super().keyPressEvent(event)
