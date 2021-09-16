@@ -7,13 +7,13 @@ from modules.pandasmodel import PandasModel
 from modules.delegates import CompleterDelegate, ComboBoxDelegate, \
     DateAutoCorrectDelegate, CheckBoxDelegate, AgeDelegate
 from modules.dialogs import MsgError, MsgAlert
-from modules.sortfilterproxymodel import MultiSortFilterProxyModel, CheckedFilterProxyModel
+from modules.sortfilterproxymodel import MultiSortFilterProxyModel, MarkedFilterProxyModel
 import pandas as pd
 from pathlib import Path
 import yaml
 from ui.mw import Ui_MainWindow
 
-__version__ = '0.0.8'
+__version__ = '0.0.9'
 __title__ = 'uploader'
 
 
@@ -48,12 +48,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.df = pd.DataFrame(columns=self.tableView_columns)
         self.model = PandasModel(self.df, self.conf['model_fields'])
-        self.sort_proxy_model = MultiSortFilterProxyModel()
-        self.checked_filter_proxy_model = CheckedFilterProxyModel()
+        self.multifilter_sort_proxy_model = MultiSortFilterProxyModel()
 
         self.tabWidget_metadata.setTabText(0, "Patient metadata")
         self.tabWidget_metadata.setTabText(1, "Organism metadata")
         self.tabWidget_metadata.setTabText(2, "Lab metadata")
+
+        self.lineEdit_filter.setPlaceholderText("Freetext filter")
 
         # setup settings
 
@@ -68,8 +69,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.tabWidget_metadata.setCurrentIndex(0)
         self.set_hidden_columns()
         self.set_col_widths()
-
-        self.pushButton_filtermarked.setCheckable(True)
 
         self.set_delegates()
 
@@ -205,8 +204,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def set_signals(self):
         self.actionpreferences.triggered.connect(lambda: self.stackedWidget.setCurrentIndex(1))
         self.actionmetadata.triggered.connect(lambda: self.stackedWidget.setCurrentIndex(0))
-        self.lineEdit_filter.textChanged.connect(self.free_filter)
-        self.pushButton_filtermarked.pressed.connect(self.checked_filter)
+        self.lineEdit_filter.textChanged.connect(self.set_free_filter)
+        self.checkBox_filtermarked.clicked.connect(self.set_mark_filter)
 
     def add_icons(self):
         self.action_open_meta.setIcon(QIcon('fontawsome/file-import-solid-white.svg'))
@@ -218,7 +217,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.pushButton_filldown.setIcon(QIcon('fontawsome/arrow-down-solid-white.svg'))
         self.pushButton_drop.setIcon(QIcon('fontawsome/times-solid-white.svg'))
         self.pushButton_clear.setIcon(QIcon('fontawsome/trash-solid-white.svg'))
-        self.pushButton_filtermarked.setIcon(QIcon('fontawsome/filter-solid-white.svg'))
         self.pushButton_resetfilters.setIcon(QIcon('fontawsome/filter-reset-solid-white.svg'))
 
     def drop_rows(self):
@@ -251,19 +249,25 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             if 'lab' not in self.conf['model_fields'][name]['view']:
                 self.tableView_lab.setColumnHidden(i, True)
 
-    def free_filter(self):
+    def set_mark_filter(self):
+        print(self.df)
+        if self.checkBox_filtermarked.isChecked():
+            self.multifilter_sort_proxy_model.setCheckedFilter()
+            print("unchecked")
+        else:
+            self.multifilter_sort_proxy_model.clearCheckedFilter()
+            print("unchecked")
+
+    def set_free_filter(self):
         text = self.lineEdit_filter.text()
         search = QRegularExpression(text, QRegularExpression.CaseInsensitiveOption)
-        self.sort_proxy_model.setFilterByColumns([1, 2, 3], search)
+        self.multifilter_sort_proxy_model.setFilterByColumns([1, 2, 3], search)
 
-    def checked_filter(self):
-        if self.pushButton_filtermarked.isChecked():
-            print("clear checked filter")
-            self.checked_filter_proxy_model.clearFilters()
-
-        else:
-            print("set checked filter")
-            self.checked_filter_proxy_model.setFilterByColumn(0, 1)
+    # def marked_filter(self):
+    #     if self.pushButton_filtermarked.isChecked():
+    #         self.multifilter_sort_proxy_model.setMarkedFilter()
+    #     else:
+    #         self.multifilter_sort_proxy_model.clearMarkedFilter()
 
     def set_delegates(self):
         for field in self.conf['model_fields']:
@@ -349,25 +353,23 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def tableView_setup(self):
 
-        self.sort_proxy_model.setSourceModel(self.model)
-        # self.checked_filter_proxy_model.setSourceModel(self.model)
+        self.multifilter_sort_proxy_model.setSourceModel(self.model)
 
-        self.tableView_patient.setModel(self.sort_proxy_model)
-        self.tableView_patient.setEditTriggers(QAbstractItemView.NoEditTriggers
-                                               | QAbstractItemView.DoubleClicked
+        self.tableView_patient.setModel(self.multifilter_sort_proxy_model)
+        self.tableView_patient.setEditTriggers(QAbstractItemView.DoubleClicked
                                                | QAbstractItemView.SelectedClicked
                                                | QAbstractItemView.EditKeyPressed)
         self.tableView_patient.horizontalHeader().setStretchLastSection(True)
         self.tableView_patient.horizontalHeader().setSectionsMovable(True)
         self.tableView_patient.setSortingEnabled(True)
 
-        self.tableView_organism.setModel(self.sort_proxy_model)
+        self.tableView_organism.setModel(self.multifilter_sort_proxy_model)
         self.tableView_organism.setEditTriggers(QAbstractItemView.DoubleClicked | QAbstractItemView.SelectedClicked | QAbstractItemView.EditKeyPressed)
         self.tableView_organism.horizontalHeader().setStretchLastSection(True)
         self.tableView_organism.horizontalHeader().setSectionsMovable(True)
         self.tableView_organism.setSortingEnabled(True)
 
-        self.tableView_lab.setModel(self.sort_proxy_model)
+        self.tableView_lab.setModel(self.multifilter_sort_proxy_model)
         self.tableView_lab.setEditTriggers(QAbstractItemView.DoubleClicked | QAbstractItemView.SelectedClicked | QAbstractItemView.EditKeyPressed)
         self.tableView_lab.horizontalHeader().setStretchLastSection(True)
         self.tableView_lab.horizontalHeader().setSectionsMovable(True)
@@ -384,29 +386,29 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         select = self.tableView_patient.selectionModel()
         index = select.currentIndex()
 
-        max_rows = self.sort_proxy_model.rowCount()
-        data_orig = self.sort_proxy_model.data(index, Qt.DisplayRole)
+        max_rows = self.multifilter_sort_proxy_model.rowCount()
+        data_orig = self.multifilter_sort_proxy_model.data(index, Qt.DisplayRole)
 
         for r in range(index.row() + 1, max_rows):
-            index_new = self.sort_proxy_model.index(r, index.column())
-            data_new = self.sort_proxy_model.data(index_new, Qt.DisplayRole)
+            index_new = self.multifilter_sort_proxy_model.index(r, index.column())
+            data_new = self.multifilter_sort_proxy_model.data(index_new, Qt.DisplayRole)
             if data_new == '':
-                self.sort_proxy_model.setData(index_new, data_orig, Qt.EditRole)
+                self.multifilter_sort_proxy_model.setData(index_new, data_orig, Qt.EditRole)
             else:
                 break
 
     def update_model(self):
         self.model = PandasModel(self.df, self.conf['model_fields'])
-        self.sort_proxy_model = MultiSortFilterProxyModel()
-        self.sort_proxy_model.setSourceModel(self.model)
-        self.tableView_patient.setModel(self.sort_proxy_model)
-        self.tableView_lab.setModel(self.sort_proxy_model)
-        self.tableView_organism.setModel(self.sort_proxy_model)
+        self.multifilter_sort_proxy_model = MultiSortFilterProxyModel()
+        self.multifilter_sort_proxy_model.setSourceModel(self.model)
+        self.tableView_patient.setModel(self.multifilter_sort_proxy_model)
+        self.tableView_lab.setModel(self.multifilter_sort_proxy_model)
+        self.tableView_organism.setModel(self.multifilter_sort_proxy_model)
 
         self.set_col_widths()
 
     def reset_proxy(self):
-        self.sort_proxy_model.sort(-1)
+        self.multifilter_sort_proxy_model.sort(-1)
         self.tableView_patient.horizontalHeader().setSortIndicator(-1, Qt.SortOrder.DescendingOrder)
 
     def dragEnterEvent(self, event):

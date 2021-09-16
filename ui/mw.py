@@ -141,35 +141,42 @@ class Ui_MainWindow(object):
 
         self.gridLayout = QGridLayout()
         self.gridLayout.setObjectName(u"gridLayout")
+        self.lineEdit_filter = QLineEdit(self.stackedWidgetPage1)
+        self.lineEdit_filter.setObjectName(u"lineEdit_filter")
+
+        self.gridLayout.addWidget(self.lineEdit_filter, 2, 5, 1, 1)
+
         self.pushButton_clear = QPushButton(self.stackedWidgetPage1)
         self.pushButton_clear.setObjectName(u"pushButton_clear")
 
-        self.gridLayout.addWidget(self.pushButton_clear, 2, 8, 1, 1)
+        self.gridLayout.addWidget(self.pushButton_clear, 2, 10, 1, 1)
+
+        self.checkBox_filtermarked = QCheckBox(self.stackedWidgetPage1)
+        self.checkBox_filtermarked.setObjectName(u"checkBox_filtermarked")
+
+        self.gridLayout.addWidget(self.checkBox_filtermarked, 2, 0, 1, 1)
+
+        self.pushButton_filldown = QPushButton(self.stackedWidgetPage1)
+        self.pushButton_filldown.setObjectName(u"pushButton_filldown")
+
+        self.gridLayout.addWidget(self.pushButton_filldown, 2, 7, 1, 1)
 
         self.pushButton_drop = QPushButton(self.stackedWidgetPage1)
         self.pushButton_drop.setObjectName(u"pushButton_drop")
 
-        self.gridLayout.addWidget(self.pushButton_drop, 2, 7, 1, 1)
-
-        self.lineEdit_filter = QLineEdit(self.stackedWidgetPage1)
-        self.lineEdit_filter.setObjectName(u"lineEdit_filter")
-
-        self.gridLayout.addWidget(self.lineEdit_filter, 2, 4, 1, 1)
+        self.gridLayout.addWidget(self.pushButton_drop, 2, 9, 1, 1)
 
         self.pushButton_resetfilters = QPushButton(self.stackedWidgetPage1)
         self.pushButton_resetfilters.setObjectName(u"pushButton_resetfilters")
 
         self.gridLayout.addWidget(self.pushButton_resetfilters, 2, 6, 1, 1)
 
-        self.pushButton_filldown = QPushButton(self.stackedWidgetPage1)
-        self.pushButton_filldown.setObjectName(u"pushButton_filldown")
+        self.line_3 = QFrame(self.stackedWidgetPage1)
+        self.line_3.setObjectName(u"line_3")
+        self.line_3.setFrameShape(QFrame.VLine)
+        self.line_3.setFrameShadow(QFrame.Sunken)
 
-        self.gridLayout.addWidget(self.pushButton_filldown, 2, 0, 1, 1)
-
-        self.pushButton_filtermarked = QPushButton(self.stackedWidgetPage1)
-        self.pushButton_filtermarked.setObjectName(u"pushButton_filtermarked")
-
-        self.gridLayout.addWidget(self.pushButton_filtermarked, 2, 5, 1, 1)
+        self.gridLayout.addWidget(self.line_3, 2, 8, 1, 1)
 
 
         self.verticalLayout_2.addLayout(self.gridLayout)
@@ -287,10 +294,10 @@ class Ui_MainWindow(object):
         self.label_4.setText(QCoreApplication.translate("MainWindow", u"Target_path:", None))
         self.label_6.setText(QCoreApplication.translate("MainWindow", u"Sequencing_technology:", None))
         self.pushButton_clear.setText(QCoreApplication.translate("MainWindow", u"Clear table", None))
-        self.pushButton_drop.setText(QCoreApplication.translate("MainWindow", u"Drop marked rows", None))
+        self.checkBox_filtermarked.setText(QCoreApplication.translate("MainWindow", u"Filter marked", None))
+        self.pushButton_filldown.setText(QCoreApplication.translate("MainWindow", u"Filldown from selected", None))
+        self.pushButton_drop.setText(QCoreApplication.translate("MainWindow", u"Delete marked", None))
         self.pushButton_resetfilters.setText(QCoreApplication.translate("MainWindow", u"Reset filters", None))
-        self.pushButton_filldown.setText(QCoreApplication.translate("MainWindow", u"Filldown active column", None))
-        self.pushButton_filtermarked.setText(QCoreApplication.translate("MainWindow", u"Filter marked rows", None))
         self.tabWidget_metadata.setTabText(self.tabWidget_metadata.indexOf(self.tab_1), QCoreApplication.translate("MainWindow", u"Tab 1", None))
         self.tabWidget_metadata.setTabText(self.tabWidget_metadata.indexOf(self.tab_2), QCoreApplication.translate("MainWindow", u"Tab 2", None))
         self.tabWidget_metadata.setTabText(self.tabWidget_metadata.indexOf(self.tab_3), QCoreApplication.translate("MainWindow", u"Tab 3", None))

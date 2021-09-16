@@ -189,7 +189,7 @@ class CheckBoxDelegate(QItemDelegate):
 
         return False
 
-    def setModelData (self, editor, model, index):
+    def setModelData(self, editor, model, index):
         '''
         The user wanted to change the old state in the opposite.
         '''

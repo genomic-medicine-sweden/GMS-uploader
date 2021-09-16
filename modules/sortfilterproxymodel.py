@@ -1,46 +1,36 @@
 from PySide6.QtCore import Qt, QSortFilterProxyModel
 
 
-class MultiFilterMode:
-    AND = 0
-    OR = 1
-
-
 class MultiSortFilterProxyModel(QSortFilterProxyModel):
     def __init__(self, *args, **kwargs):
         QSortFilterProxyModel.__init__(self, *args, **kwargs)
-        self.filters = {}
-        self.multi_filter_mode = MultiFilterMode.OR
+        self.multifilters = {}
+        self.checkedfilter = False
 
-    def setFilterByColumn(self, column, regex):
-        if isinstance(regex, str):
-            # regex = re.compile(regex)
-            self.filters[column] = regex
-            self.invalidateFilter()
+    def setCheckedFilter(self):
+        self.checkedfilter = True
+        self.invalidateFilter()
+
+    def clearCheckedFilter(self):
+        self.checkedfilter = False
+        self.invalidateFilter()
 
     def setFilterByColumns(self, columns, regex):
         for column in columns:
-            self.filters[column] = regex
+            self.multifilters[column] = regex
             self.invalidateFilter()
 
-    def clearFilter(self, column):
-        del self.filters[column]
-        self.invalidateFilter()
-
     def clearFilters(self):
-        self.filters = {}
+        self.multifilters = {}
         self.invalidateFilter()
 
-    def filterAcceptsRow(self, source_row, source_parent):
-        if not self.filters:
-            return True
-
+    def multifilterrow(self, source_row, source_parent):
         results = []
-        for key, regex in self.filters.items():
+        for key, regex in self.multifilters.items():
             text = ''
             index = self.sourceModel().index(source_row, key, source_parent)
             if index.isValid():
-                text = self.sourceModel().data(index, Qt.DisplayRole)
+                text = str(self.sourceModel().data(index, Qt.DisplayRole))
                 if text is None:
                     text = ''
 
@@ -49,43 +39,60 @@ class MultiSortFilterProxyModel(QSortFilterProxyModel):
             else:
                 results.append(False)
 
-        if self.multi_filter_mode == MultiFilterMode.OR:
-            return any(results)
+        return any(results)
 
-        return all(results)
+    def checkedfilterrow(self, source_row, source_parent):
+        index = self.sourceModel().index(source_row, 0, source_parent)
+        if index.isValid():
+            text = str(self.sourceModel().data(index, Qt.DisplayRole))
+            if text is None:
+                text = "0"
+
+            if text == "1":
+                return True
+
+        return False
+
+    def filterAcceptsRow(self, source_row, source_parent):
+        mres = True
+        if self.multifilters:
+            mres = self.multifilterrow(source_row, source_parent)
+
+        cres = True
+        if self.checkedfilter:
+            cres = self.checkedfilterrow(source_row, source_parent)
+
+        if mres and cres:
+            return True
+        else:
+            return False
 
 
-class CheckedFilterProxyModel(QSortFilterProxyModel):
+class MarkedFilterProxyModel(QSortFilterProxyModel):
     def __init__(self, *args, **kwargs):
         QSortFilterProxyModel.__init__(self, *args, **kwargs)
-        self.filters = {}
+        self.filter = False
 
-    def setFilterByColumn(self, column, filter_int):
-        self.filters[column] = filter_int
-        print(self.filters)
+    def setFilter(self):
+        self.filter = True
         self.invalidateFilter()
 
-    def clearFilters(self):
-        self.filters = {}
+    def clearFilter(self):
+        self.filter = False
         self.invalidateFilter()
 
     def filterAcceptsRow(self, source_row, source_parent):
-        print("accept")
-        if not self.filters:
+        index = self.sourceModel().index(source_row, 0, source_parent)
+        value = self.sourceModel().data(index, Qt.DisplayRole)
+
+        print("filteracceptsrow", value)
+
+        if self.filter and value == 1:
             return True
 
-        results = []
-        for key, filter_value in self.filters.items():
-            data_value = 0
-            index = self.sourceModel().index(source_row, key, source_parent)
-            if index.isValid():
-                item = self.sourceModel().data(index, Qt.DisplayRole)
-                if data_value is None:
-                    data_value = 0
+        elif not self.filter:
+            return True
 
-            if filter_value == data_value:
-                results.append(True)
-            else:
-                results.append(False)
+        return False
 
-        return all(results)
+

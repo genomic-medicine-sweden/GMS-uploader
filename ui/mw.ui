@@ -149,22 +149,36 @@
         </item>
         <item>
          <layout class="QGridLayout" name="gridLayout">
-          <item row="2" column="8">
+          <item row="2" column="5">
+           <widget class="QLineEdit" name="lineEdit_filter"/>
+          </item>
+          <item row="2" column="10">
            <widget class="QPushButton" name="pushButton_clear">
             <property name="text">
              <string>Clear table</string>
             </property>
            </widget>
           </item>
-          <item row="2" column="7">
-           <widget class="QPushButton" name="pushButton_drop">
+          <item row="2" column="0">
+           <widget class="QCheckBox" name="checkBox_filtermarked">
             <property name="text">
-             <string>Drop marked rows</string>
+             <string>Filter marked</string>
             </property>
            </widget>
           </item>
-          <item row="2" column="4">
-           <widget class="QLineEdit" name="lineEdit_filter"/>
+          <item row="2" column="7">
+           <widget class="QPushButton" name="pushButton_filldown">
+            <property name="text">
+             <string>Filldown from selected</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="9">
+           <widget class="QPushButton" name="pushButton_drop">
+            <property name="text">
+             <string>Delete marked</string>
+            </property>
+           </widget>
           </item>
           <item row="2" column="6">
            <widget class="QPushButton" name="pushButton_resetfilters">
@@ -173,17 +187,10 @@
             </property>
            </widget>
           </item>
-          <item row="2" column="0">
-           <widget class="QPushButton" name="pushButton_filldown">
-            <property name="text">
-             <string>Filldown active column</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="5">
-           <widget class="QPushButton" name="pushButton_filtermarked">
-            <property name="text">
-             <string>Filter marked rows</string>
+          <item row="2" column="8">
+           <widget class="Line" name="line_3">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
             </property>
            </widget>
           </item>

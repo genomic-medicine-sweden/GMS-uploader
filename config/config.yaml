@@ -12,6 +12,12 @@ model_fields:
     view: ['patient', 'organism', 'lab']
     checkable: False
     delegates: ['None']
+  Sminet_LID:
+    col_width: 100
+    edit: False
+    view: [ 'lab' ]
+    checkable: False
+    delegates: [ 'None' ]
   Selection_criterion:
     col_width: 200
     edit: True

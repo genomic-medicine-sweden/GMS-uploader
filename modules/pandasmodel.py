@@ -19,7 +19,7 @@ class PandasModel(QAbstractTableModel):
         else:
             return True
 
-    def update_view(self, top_left_index, bottom_right_index):
+    def update_view(self):
 #        self.dataChanged.emit(top_left_index, bottom_right_index)
         self.beginResetModel()
 
@@ -60,6 +60,11 @@ class PandasModel(QAbstractTableModel):
         self.dataChanged.emit(index, index)
 
         return True
+
+    def emit_changed(self):
+        i1 = self.index(0, 0)
+        i2 = self.index(self.rowCount() - 1, 0)
+        self.dataChanged.emit(i1, i2)
 
     def headerData(self, section, orientation, role):
         if orientation == Qt.Horizontal and role == Qt.DisplayRole:
