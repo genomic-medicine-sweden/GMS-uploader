@@ -183,7 +183,7 @@
           <item row="2" column="6">
            <widget class="QPushButton" name="pushButton_resetfilters">
             <property name="text">
-             <string>Reset filters</string>
+             <string>Reset sort/filters</string>
             </property>
            </widget>
           </item>
@@ -254,16 +254,18 @@
     <string>toolBar</string>
    </property>
    <attribute name="toolBarArea">
-    <enum>TopToolBarArea</enum>
+    <enum>LeftToolBarArea</enum>
    </attribute>
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="action_open_meta"/>
-   <addaction name="actionsave_meta"/>
-   <addaction name="separator"/>
    <addaction name="actionmetadata"/>
    <addaction name="actionpreferences"/>
+   <addaction name="separator"/>
+   <addaction name="actionselect_seq_files"/>
+   <addaction name="separator"/>
+   <addaction name="action_open_meta"/>
+   <addaction name="actionsave_meta"/>
    <addaction name="separator"/>
    <addaction name="actionupload"/>
   </widget>
@@ -321,6 +323,14 @@
    </property>
    <property name="toolTip">
     <string>Upload</string>
+   </property>
+  </action>
+  <action name="actionselect_seq_files">
+   <property name="text">
+    <string>select_seq_files</string>
+   </property>
+   <property name="toolTip">
+    <string>select seq files</string>
    </property>
   </action>
  </widget>

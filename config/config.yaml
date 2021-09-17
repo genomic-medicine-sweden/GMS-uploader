@@ -33,7 +33,7 @@ model_fields:
   GISAID_acc:
     col_width: 100
     edit: True
-    view: ['patient']
+    view: ['lab']
     checkable: False
     delegates: ['None']
   Patient_age:
@@ -47,13 +47,13 @@ model_fields:
     edit: True
     view: [ 'patient' ]
     checkable: False
-    delegates: ['None']
+    delegates: ['combobox']
   Patient_status:
     col_width: 150
     edit: True
     view: [ 'patient' ]
     checkable: False
-    delegates: ['None']
+    delegates: ['combobox']
   Lib_ID:
     col_width: 100
     edit: False
@@ -63,7 +63,7 @@ model_fields:
   Region_code:
     col_width: 200
     edit: True
-    view: ['patient']
+    view: ['lab']
     checkable: False
     delegates: ['combobox']
   Lab_code:
@@ -130,6 +130,12 @@ model_fields:
     col_width: 200
     edit: False
     view: ['lab']
+    checkable: False
+    delegates: ['None']
+  PseudoID:
+    col_width: 200
+    edit: False
+    view: ['None']
     checkable: False
     delegates: ['None']
   Comment:

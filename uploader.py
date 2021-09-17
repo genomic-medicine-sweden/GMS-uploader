@@ -6,12 +6,13 @@ from PySide6.QtWidgets import *
 from modules.pandasmodel import PandasModel
 from modules.delegates import CompleterDelegate, ComboBoxDelegate, \
     DateAutoCorrectDelegate, CheckBoxDelegate, AgeDelegate
-from modules.dialogs import MsgError, MsgAlert
+from modules.dialogs import MsgError, MsgAlert, FilesFoldersDialog
 from modules.sortfilterproxymodel import MultiSortFilterProxyModel, MarkedFilterProxyModel
 import pandas as pd
 from pathlib import Path
 import yaml
 from ui.mw import Ui_MainWindow
+import qdarktheme
 
 __version__ = '0.0.9'
 __title__ = 'uploader'
@@ -25,11 +26,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.qsettings = QSettings("Genomic Medicine Sweden", "GMS-uploader")
 
-        self.setWindowIcon(QIcon('icons/arrow-up.png'))
-        self.setWindowTitle("GMS-uploader")
+        self.setWindowIcon(QIcon('icons/GMS-logo.png'))
+        self.setWindowTitle("GMS-uploader " + __version__)
+        self.files_folders = FilesFoldersDialog()
 
         # add icons
-        self.add_icons()
+        self.set_icons()
 
         default_config_path = Path('config', 'config.yaml')
         with default_config_path.open(encoding='utf8') as fp:
@@ -206,32 +208,28 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.actionmetadata.triggered.connect(lambda: self.stackedWidget.setCurrentIndex(0))
         self.lineEdit_filter.textChanged.connect(self.set_free_filter)
         self.checkBox_filtermarked.clicked.connect(self.set_mark_filter)
+        self.pushButton_drop.clicked.connect(self.drop_rows)
+        self.pushButton_clear.clicked.connect(self.clear_table)
+        self.actionselect_seq_files.triggered.connect(self.get_files_folders)
 
-    def add_icons(self):
-        self.action_open_meta.setIcon(QIcon('fontawsome/file-import-solid-white.svg'))
-        self.actionsave_meta.setIcon(QIcon('fontawsome/save-solid-white.svg'))
-        self.actionmetadata.setIcon(QIcon('fontawsome/table-solid-white.svg'))
-        self.actionpreferences.setIcon(QIcon('fontawsome/cogs-solid-white.svg'))
-        self.actionupload.setIcon(QIcon('fontawsome/upload-solid-white.svg'))
+    def get_files_folders(self):
+        self.files_folders.exec()
 
-        self.pushButton_filldown.setIcon(QIcon('fontawsome/arrow-down-solid-white.svg'))
-        self.pushButton_drop.setIcon(QIcon('fontawsome/times-solid-white.svg'))
-        self.pushButton_clear.setIcon(QIcon('fontawsome/trash-solid-white.svg'))
-        self.pushButton_resetfilters.setIcon(QIcon('fontawsome/filter-reset-solid-white.svg'))
+    def set_icons(self):
+        self.action_open_meta.setIcon(QIcon('fontawsome/file-import-solid.svg'))
+        self.actionsave_meta.setIcon(QIcon('fontawsome/save-solid.svg'))
+        self.actionmetadata.setIcon(QIcon('fontawsome/table-solid.svg'))
+        self.actionpreferences.setIcon(QIcon('fontawsome/cogs-solid.svg'))
+        self.actionupload.setIcon(QIcon('fontawsome/upload-solid.svg'))
+        self.actionselect_seq_files.setIcon(QIcon('fontawsome/dna-solid.svg'))
+
+        self.pushButton_filldown.setIcon(QIcon('fontawsome/arrow-down-solid.svg'))
+        self.pushButton_drop.setIcon(QIcon('fontawsome/times-solid.svg'))
+        self.pushButton_clear.setIcon(QIcon('fontawsome/trash-solid.svg'))
+        self.pushButton_resetfilters.setIcon(QIcon('fontawsome/filter-reset-solid.svg'))
 
     def drop_rows(self):
-        proxy_model = self.tableView_patient.model()
-        selection = self.tableView_patient.selectionModel()
-        view_rows = selection.selectedRows()
-        df_rows = []
-        for i in view_rows:
-            si = proxy_model.mapToSource(i)
-            print(si.row())
-            df_rows.append(si.row())
-
-        sorted_df_rows = sorted(df_rows, reverse=True)
-        self.df = self.df.drop(sorted_df_rows)
-        self.df = self.df.reset_index(drop=True)
+        self.model.dropMarkedRows()
         self.update_model()
 
     def set_col_widths(self):
@@ -262,12 +260,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         text = self.lineEdit_filter.text()
         search = QRegularExpression(text, QRegularExpression.CaseInsensitiveOption)
         self.multifilter_sort_proxy_model.setFilterByColumns([1, 2, 3], search)
-
-    # def marked_filter(self):
-    #     if self.pushButton_filtermarked.isChecked():
-    #         self.multifilter_sort_proxy_model.setMarkedFilter()
-    #     else:
-    #         self.multifilter_sort_proxy_model.clearMarkedFilter()
 
     def set_delegates(self):
         for field in self.conf['model_fields']:
@@ -397,6 +389,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             else:
                 break
 
+    def clear_table(self):
+        self.df = pd.DataFrame(columns=self.tableView_columns)
+        self.update_model()
+
     def update_model(self):
         self.model = PandasModel(self.df, self.conf['model_fields'])
         self.multifilter_sort_proxy_model = MultiSortFilterProxyModel()
@@ -410,6 +406,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def reset_proxy(self):
         self.multifilter_sort_proxy_model.sort(-1)
         self.tableView_patient.horizontalHeader().setSortIndicator(-1, Qt.SortOrder.DescendingOrder)
+        self.lineEdit_filter.setText('')
+        self.checkBox_filtermarked.setChecked(False)
+        self.set_mark_filter()
 
     def dragEnterEvent(self, event):
         if event.mimeData().hasUrls:
@@ -536,6 +535,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 def main():
     app = QApplication(sys.argv)
     window = MainWindow()
+    app.setStyleSheet(qdarktheme.load_stylesheet("light"))
     window.show()
     sys.exit(app.exec())
 

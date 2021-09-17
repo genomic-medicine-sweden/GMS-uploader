@@ -97,3 +97,19 @@ class PandasModel(QAbstractTableModel):
 
         return flags
 
+    def removeRow(self, row, parent=QtCore.QModelIndex()):
+        print("removing")
+        labels = list(self._data.index.values)
+        self._data.drop(labels[row], inplace=True)
+        print(self._data)
+
+    def dropMarkedRows(self):
+        indexes = []
+        for row in range(self.rowCount()):
+            index = self.index(row, 0)
+            if self.data(index, role=Qt.DisplayRole) == "1":
+                indexes.append(index)
+
+        for index in reversed(sorted(indexes)):
+            print("index:", index)
+            self.removeRow(index.row())

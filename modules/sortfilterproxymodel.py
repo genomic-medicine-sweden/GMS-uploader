@@ -67,6 +67,16 @@ class MultiSortFilterProxyModel(QSortFilterProxyModel):
         else:
             return False
 
+    def dropMarkedRows(self):
+        indexes = []
+        for row in range(self.rowCount()):
+            index = self.index(row, 0)
+            if self.data(index, role=Qt.DisplayRole) == "1":
+                indexes.append(index)
+
+        for index in reversed(sorted(indexes)):
+            print(index)
+            self.removeRow(index.row())
 
 class MarkedFilterProxyModel(QSortFilterProxyModel):
     def __init__(self, *args, **kwargs):
