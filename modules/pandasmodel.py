@@ -45,17 +45,13 @@ class PandasModel(QAbstractTableModel):
         # if role != Qt.EditRole:
         #     return False
         row = index.row()
-        print("row", row)
         if row < 0 or row >= len(self._data.values):
             return False
         column = index.column()
-        print("column", column)
         if column < 0 or column >= self._data.columns.size:
             return False
 
         self._data.iat[row, column] = value
-
-        print(self._data.iat[row, column])
 
         self.dataChanged.emit(index, index)
 
@@ -98,10 +94,8 @@ class PandasModel(QAbstractTableModel):
         return flags
 
     def removeRow(self, row, parent=QtCore.QModelIndex()):
-        print("removing")
         labels = list(self._data.index.values)
         self._data.drop(labels[row], inplace=True)
-        print(self._data)
 
     def dropMarkedRows(self):
         indexes = []
@@ -111,5 +105,4 @@ class PandasModel(QAbstractTableModel):
                 indexes.append(index)
 
         for index in reversed(sorted(indexes)):
-            print("index:", index)
             self.removeRow(index.row())

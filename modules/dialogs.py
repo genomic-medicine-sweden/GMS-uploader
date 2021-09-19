@@ -21,16 +21,6 @@ class MsgAlert(QMessageBox):
         self.setWindowTitle("Error")
         self.setWindowIcon(QIcon('icons/arrow-up.png'))
 
-
-class FilesFoldersDialog(QFileDialog):
-    def __init__(self):
-        super().__init__()
-        self.setOption(self.DontUseNativeDialog, True)
-        self.setFileMode(self.ExistingFiles)
-
-    def accept(self):
-        super(FilesFoldersDialog, self).accept()
-
     #     btns = self.findChildren(QPushButton)
     #     self.openBtn = [x for x in btns if 'open' in str(x.text()).lower()][0]
     #     self.openBtn.clicked.disconnect()

@@ -75,8 +75,8 @@ class MultiSortFilterProxyModel(QSortFilterProxyModel):
                 indexes.append(index)
 
         for index in reversed(sorted(indexes)):
-            print(index)
             self.removeRow(index.row())
+
 
 class MarkedFilterProxyModel(QSortFilterProxyModel):
     def __init__(self, *args, **kwargs):
@@ -94,8 +94,6 @@ class MarkedFilterProxyModel(QSortFilterProxyModel):
     def filterAcceptsRow(self, source_row, source_parent):
         index = self.sourceModel().index(source_row, 0, source_parent)
         value = self.sourceModel().data(index, Qt.DisplayRole)
-
-        print("filteracceptsrow", value)
 
         if self.filter and value == 1:
             return True

@@ -1,7 +1,7 @@
 ---
 model_fields:
   Mark:
-    col_width: 50
+    col_width: 80
     edit: True
     view: ['patient', 'organism', 'lab']
     checkable: True
@@ -12,12 +12,6 @@ model_fields:
     view: ['patient', 'organism', 'lab']
     checkable: False
     delegates: ['None']
-  Sminet_LID:
-    col_width: 100
-    edit: False
-    view: [ 'lab' ]
-    checkable: False
-    delegates: [ 'None' ]
   Selection_criterion:
     col_width: 200
     edit: True
@@ -30,12 +24,6 @@ model_fields:
     view: ['patient']
     checkable: False
     delegates: ['date']
-  GISAID_acc:
-    col_width: 100
-    edit: True
-    view: ['lab']
-    checkable: False
-    delegates: ['None']
   Patient_age:
     col_width: 120
     edit: True
@@ -54,9 +42,27 @@ model_fields:
     view: [ 'patient' ]
     checkable: False
     delegates: ['combobox']
-  Lib_ID:
+  Type:
     col_width: 100
+    edit: True
+    view: [ 'patient' ]
+    checkable: False
+    delegates: ['combobox']
+  Sminet_LID:
+    col_width: 100
+    edit: True
+    view: [ 'lab' ]
+    checkable: False
+    delegates: [ 'None' ]
+  Pseudo_ID:
+    col_width: 200
     edit: False
+    view: ['None']
+    checkable: False
+    delegates: ['None']
+  GISAID_acc:
+    col_width: 100
+    edit: True
     view: ['lab']
     checkable: False
     delegates: ['None']
@@ -72,18 +78,12 @@ model_fields:
     view: ['None']
     checkable: False
     delegates: ['None']
-  Type:
-    col_width: 100
-    edit: True
-    view: [ 'patient' ]
-    checkable: False
-    delegates: ['combobox']
   Host:
     col_width: 100
     edit: True
-    view: [ 'organism' ]
+    view: ['None']
     checkable: False
-    delegates: ['combobox']
+    delegates: ['None']
   Passage_details:
     col_width: 100
     edit: True
@@ -93,7 +93,7 @@ model_fields:
   Sequencing_technology:
     col_width: 150
     edit: True
-    view: ['lab']
+    view: ['None']
     checkable: False
     delegates: ['None']
   Library_method:
@@ -132,12 +132,6 @@ model_fields:
     view: ['lab']
     checkable: False
     delegates: ['None']
-  PseudoID:
-    col_width: 200
-    edit: False
-    view: ['None']
-    checkable: False
-    delegates: ['None']
   Comment:
     col_width: 200
     edit: True
@@ -145,6 +139,8 @@ model_fields:
     checkable: False
     delegates: ['None']
 settings:
+  qlineedits_buttons:
+    Pseudo_ID_filepath: None
   qlineedits:
     Submitter: None
     User: None
@@ -193,6 +189,10 @@ settings:
       'Ion Torrent': False
     Host:
       'Human': True
+      'Environment': True
+    Library_method:
+      'Artic': True
+      'NEB': False
   qlistwidgets:
     Region_code:
       'Region Stockholm - 01': True
@@ -217,27 +217,24 @@ settings:
       'Region Västerbotten - 24': False
       'Region Norrbotten - 25': False
     Selection_criterion:
-      'Allmän övervakning': False
-      'Allmän övervakning öppenvård': False
-      'Allmän övervakning slutenvård': False
-      'Utlandsvistelse': False
-      'Vaccinationsgenombrott': False
-      'Reinfektion': False
-      'Utbrott': False
-      'Information saknas': False
-    Library_method:
-      'Artic': False
-      'NEB': False
+      'Allmän övervakning': True
+      'Allmän övervakning öppenvård': True
+      'Allmän övervakning slutenvård': True
+      'Utlandsvistelse': True
+      'Vaccinationsgenombrott': True
+      'Reinfektion': True
+      'Utbrott': True
+      'Information saknas': True
+    Patient_sex:
+      'Male': True
+      'Female': True
+      'Unknown': True
     Passage_details_history:
       'Original': True
       'Vero': False
     Type:
       'Betacoronavirus': True
       'Unknown': False
-    Sex:
-      'Male': True
-      'Female': True
-      'Unknown': True
     Patient_status:
       'Hospitalized': True
       'Released': True
@@ -298,3 +295,14 @@ translations:
     'A05diagnostics - SEADG': SEADG
     'ABC lab - SEABC': SEABC
     'Dynamic Code - SEDNC': SEDNC
+seqfiles:
+  fastq_gz:
+    ext: '*.fastq.gz'
+    fields:
+      Fastq1: '*_R1_*'
+      Fastq2: '*_R2_*'
+  fast5:
+    ext: '*.fast5'
+    fields:
+      Fast5: '*.fast5'
+

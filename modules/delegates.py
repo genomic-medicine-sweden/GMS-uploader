@@ -86,9 +86,6 @@ class DateAutoCorrectDelegate(QStyledItemDelegate):
             m = self.curr_month
 
         if y and m and d:
-            print(y)
-            print(m)
-            print(d)
             date_obj = self.date_validate(y, m, d)
             if date_obj:
                 model.setData(index, date_obj.strftime("%Y-%m-%d"), Qt.EditRole)
@@ -134,11 +131,9 @@ class ComboBoxDelegate(QStyledItemDelegate):
     def __init__(self, items, parent=None):
         super(ComboBoxDelegate, self).__init__(parent)
         self.items = items
-        print(self.items)
 
     def createEditor(self, parent, option, index):
         editor = QComboBox(parent)
-        # editor.currentIndexChanged.connect(self.commit_editor)
         editor.addItems(self.items)
         return editor
 

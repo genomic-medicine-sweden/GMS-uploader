@@ -6,7 +6,7 @@ from PySide6.QtWidgets import *
 from modules.pandasmodel import PandasModel
 from modules.delegates import CompleterDelegate, ComboBoxDelegate, \
     DateAutoCorrectDelegate, CheckBoxDelegate, AgeDelegate
-from modules.dialogs import MsgError, MsgAlert, FilesFoldersDialog
+from modules.dialogs import MsgError, MsgAlert
 from modules.sortfilterproxymodel import MultiSortFilterProxyModel, MarkedFilterProxyModel
 import pandas as pd
 from pathlib import Path
@@ -28,7 +28,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.setWindowIcon(QIcon('icons/GMS-logo.png'))
         self.setWindowTitle("GMS-uploader " + __version__)
-        self.files_folders = FilesFoldersDialog()
 
         # add icons
         self.set_icons()
@@ -74,8 +73,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.set_delegates()
 
-        # # self.set_datatab_values()
-
     def validate_settings(self):
         all_keys = self.qsettings.allKeys()
 
@@ -83,11 +80,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             wtype, field = key.split('/')
 
             if wtype not in self.conf['settings']:
-                print(wtype, "wtype not in settings")
                 return False
             if field not in self.conf['settings'][wtype]:
-                print(self.conf['settings'][wtype])
-                print(field, "field not in settings")
                 return False
 
         for wtype in self.conf['settings']:
@@ -126,8 +120,43 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.lineEdit_Target_path.setText(self.qsettings.value("qlineedits/Target_path"))
         self.lineEdit_Lab_code.setText(self.qsettings.value("qcomboboxes/Lab_code"))
         self.lineEdit_Sequencing_technology.setText(self.qsettings.value("qcomboboxes/Sequencing_technology"))
+        self.lineEdit_host.setText(self.qsettings.value("qcomboboxes/Host"))
+
+    def set_pseudo_id_path(self):
+        obj = self.sender()
+        button_name = obj.objectName()
+        name = button_name.strip("button")
+
+        dialog = QFileDialog()
+
+        default_fn = "gms-uploader_1_pseudoids.txt"
+
+        pseudo_id_fp, filter = dialog.getSaveFileName(self,
+                                                      'Set an awesome filepath to store pseudo IDs',
+                                                      default_fn,
+                                                      "Pseudo ID store files (*_pseudoids.txt)",
+                                                      options=QFileDialog.DontUseNativeDialog)
+        print(pseudo_id_fp)
+        edit = self.stackedWidgetPage2.findChild(QLineEdit, name, Qt.FindChildrenRecursively)
+        edit.setText(pseudo_id_fp)
 
     def settings_setup(self):
+        for name in self.conf['settings']['qlineedits_buttons']:
+            button_name = name + "button"
+            button = QPushButton("...", objectName=button_name, clicked=self.set_pseudo_id_path)
+            edit = QLineEdit(objectName=name, editingFinished=self.settings_update)
+
+
+            hbox = QHBoxLayout()
+            hbox.addWidget(edit)
+            hbox.addWidget(button)
+
+            self.formLayout_settings.addRow(QLabel(name), hbox)
+
+            store_key = "/".join(['qlineedits', name])
+            value = self.qsettings.value(store_key)
+            edit.setText(value)
+
         for name in self.conf['settings']['qlineedits']:
             edit = QLineEdit(objectName=name, editingFinished=self.settings_update)
             store_key = "/".join(['qlineedits', name])
@@ -141,7 +170,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
             store_key = "/".join(['qcomboboxes', name])
             value = self.qsettings.value(store_key)
-            print(store_key, value)
             combo.setCurrentText(value)
             self.formLayout_settings.addRow(QLabel(name), combo)
             combo.currentTextChanged.connect(self.settings_update)
@@ -158,8 +186,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
                 store_key = "/".join(['qlistwidgets', name])
                 items = self.to_list(self.qsettings.value(store_key))
-
-                print(store_key, items)
 
                 for key, checked in self.conf['settings']['qlistwidgets'][name].items():
                     item = QListWidgetItem()
@@ -186,7 +212,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         elif isinstance(obj, QComboBox):
             store_key = "/".join(['qcomboboxes', name])
             value = obj.currentText()
-            print(store_key, value)
             self.qsettings.setValue(store_key, value)
 
         elif isinstance(obj, QListWidget):
@@ -198,7 +223,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 if obj.item(x).checkState() == Qt.Checked:
                     checked_items.append(key)
 
-            print(checked_items)
             self.qsettings.setValue(store_key, checked_items)
 
         self.set_metadata_labels()
@@ -213,7 +237,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.actionselect_seq_files.triggered.connect(self.get_files_folders)
 
     def get_files_folders(self):
-        self.files_folders.exec()
+        dialog = QFileDialog()
+        files, _ = dialog.getOpenFileNames(self,
+                                        "Select sequence data files",
+                                        "",
+                                        "Sequence files (*.fast5 *.fastq.gz *.fastq *.fq.gz *.fq")
+
+        self.parse_files(files)
 
     def set_icons(self):
         self.action_open_meta.setIcon(QIcon('fontawsome/file-import-solid.svg'))
@@ -248,13 +278,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.tableView_lab.setColumnHidden(i, True)
 
     def set_mark_filter(self):
-        print(self.df)
         if self.checkBox_filtermarked.isChecked():
             self.multifilter_sort_proxy_model.setCheckedFilter()
-            print("unchecked")
+
         else:
             self.multifilter_sort_proxy_model.clearCheckedFilter()
-            print("unchecked")
 
     def set_free_filter(self):
         text = self.lineEdit_filter.text()
@@ -275,47 +303,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             elif 'age' in self.conf['model_fields'][field]['delegates']:
                 self.set_age_delegate(field)
 
-    def set_age_delegate(self, field):
-        for view in self.conf['model_fields'][field]['view']:
-            self.delegates[view][field] = AgeDelegate()
-
-            if view == 'patient':
-                self.tableView_patient.setItemDelegateForColumn(self.tableView_columns.index(field),
-                                                                self.delegates[view][field])
-            elif view == 'lab':
-                self.tableView_lab.setItemDelegateForColumn(self.tableView_columns.index(field),
-                                                            self.delegates[view][field])
-            elif view == 'organism':
-                self.tableView_organism.setItemDelegateForColumn(self.tableView_columns.index(field),
-                                                                 self.delegates[view][field])
-
-    def set_checkbox_delegate(self, field):
-        for view in self.conf['model_fields'][field]['view']:
-            print(field, view)
-            self.delegates[view][field] = CheckBoxDelegate(None)
-
-            if view == 'patient':
-                self.tableView_patient.setItemDelegateForColumn(self.tableView_columns.index(field),
-                                                                self.delegates[view][field])
-            elif view == 'lab':
-                self.tableView_lab.setItemDelegateForColumn(self.tableView_columns.index(field),
-                                                            self.delegates[view][field])
-            elif view == 'organism':
-                self.tableView_organism.setItemDelegateForColumn(self.tableView_columns.index(field),
-                                                                 self.delegates[view][field])
-
-    def to_list(self, obj):
-        if type(obj) is list:
-            return obj
-        else:
-            return []
-
     def set_combobox_delegate(self, field):
 
         store_key = "/".join(["qlistwidgets", field])
         items = ['']
         items.extend(self.to_list(self.qsettings.value(store_key)))
-        print(store_key, field, items)
 
         for view in self.conf['model_fields'][field]['view']:
             self.delegates[view][field] = ComboBoxDelegate(items)
@@ -342,6 +334,40 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             elif view == 'organism':
                 self.tableView_organism.setItemDelegateForColumn(self.tableView_columns.index(field),
                                                                  self.delegates[view][field])
+
+    def set_age_delegate(self, field):
+        for view in self.conf['model_fields'][field]['view']:
+            self.delegates[view][field] = AgeDelegate()
+
+            if view == 'patient':
+                self.tableView_patient.setItemDelegateForColumn(self.tableView_columns.index(field),
+                                                                self.delegates[view][field])
+            elif view == 'lab':
+                self.tableView_lab.setItemDelegateForColumn(self.tableView_columns.index(field),
+                                                            self.delegates[view][field])
+            elif view == 'organism':
+                self.tableView_organism.setItemDelegateForColumn(self.tableView_columns.index(field),
+                                                                 self.delegates[view][field])
+
+    def set_checkbox_delegate(self, field):
+        for view in self.conf['model_fields'][field]['view']:
+            self.delegates[view][field] = CheckBoxDelegate(None)
+
+            if view == 'patient':
+                self.tableView_patient.setItemDelegateForColumn(self.tableView_columns.index(field),
+                                                                self.delegates[view][field])
+            elif view == 'lab':
+                self.tableView_lab.setItemDelegateForColumn(self.tableView_columns.index(field),
+                                                            self.delegates[view][field])
+            elif view == 'organism':
+                self.tableView_organism.setItemDelegateForColumn(self.tableView_columns.index(field),
+                                                                 self.delegates[view][field])
+
+    def to_list(self, obj):
+        if type(obj) is list:
+            return obj
+        else:
+            return []
 
     def tableView_setup(self):
 
@@ -375,19 +401,22 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.update_model()
 
     def filldown(self):
-        select = self.tableView_patient.selectionModel()
-        index = select.currentIndex()
+        visible_tableview = self.get_visible_tableview()
+        print(visible_tableview)
+        if visible_tableview:
+            select = visible_tableview.selectionModel()
+            index = select.currentIndex()
 
-        max_rows = self.multifilter_sort_proxy_model.rowCount()
-        data_orig = self.multifilter_sort_proxy_model.data(index, Qt.DisplayRole)
+            max_rows = self.multifilter_sort_proxy_model.rowCount()
+            data_orig = self.multifilter_sort_proxy_model.data(index, Qt.DisplayRole)
 
-        for r in range(index.row() + 1, max_rows):
-            index_new = self.multifilter_sort_proxy_model.index(r, index.column())
-            data_new = self.multifilter_sort_proxy_model.data(index_new, Qt.DisplayRole)
-            if data_new == '':
-                self.multifilter_sort_proxy_model.setData(index_new, data_orig, Qt.EditRole)
-            else:
-                break
+            for r in range(index.row() + 1, max_rows):
+                index_new = self.multifilter_sort_proxy_model.index(r, index.column())
+                data_new = self.multifilter_sort_proxy_model.data(index_new, Qt.DisplayRole)
+                if data_new == '':
+                    self.multifilter_sort_proxy_model.setData(index_new, data_orig, Qt.EditRole)
+                else:
+                    break
 
     def clear_table(self):
         self.df = pd.DataFrame(columns=self.tableView_columns)
@@ -449,35 +478,51 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         for file in files:
             f = Path(file)
             if f.is_dir():
-                for path in Path(f).rglob('*.fastq.gz'):
-                    parsed_files.append(path)
-            elif f.match('*.fastq.gz'):
-                parsed_files.append(f)
+                for type in self.conf['seqfiles']:
+                    ext = self.conf['seqfiles'][type]['ext']
+                    for fp in f.rglob(ext):
+                        parsed_files.append(fp)
+
+            else:
+                for type in self.conf['seqfiles']:
+                    ext = self.conf['seqfiles'][type]['ext']
+                    if f.match(ext):
+                        parsed_files.append(f)
+
 
         _data = {}
         for file in parsed_files:
-            f = file.stem.split('.')[0]
-            sample = f.split('_')[0]
-            lane = f.split('_')[-1]
+            seqpath = file.parent
+            filename = file.name
+            filename_obj = Path(filename)
+
+            sample = filename.split('_')[0]
 
             if not sample in _data:
                 _data[sample] = {}
+                _data[sample]['Seq_path'] = seqpath
 
-            _data[sample]['Lane'] = lane
-            if '_R1_' in f:
-                _data[sample]['Fastq1'] = file
-            elif '_R2_' in f:
-                _data[sample]['Fastq2'] = file
+            if filename_obj.match(self.conf['seqfiles']['fastq_gz']['ext']):
+                f = file.stem.split('.')[0]
+                lane = f.split('_')[-1]
+
+                _data[sample]['Lane'] = lane
+
+                for field, pat in self.conf['seqfiles']['fastq_gz']['fields'].items():
+                    print(pat, field)
+                    if filename_obj.match(pat):
+                        _data[sample][field] = filename
+
+            elif filename_obj.match(self.conf['seqfiles']['fast5']['ext']):
+                for field, pat in self.conf['seqfiles']['fast5']['fields'].items():
+                    if filename_obj.match(pat):
+                        _data[sample][field] = filename
 
         data = []
-        current_lab_list = [k for k, v in self.conf['settings']['qcomboboxes']['Lab_code'].items() if v]
-        print(current_lab_list)
-
         for sample in _data:
             row = dict()
             row['Mark'] = 0
             row['Internal_lab_ID'] = sample
-            row['Lab_code'] = current_lab_list[0]
             for key in _data[sample]:
                 row[key] = _data[sample][key]
 
@@ -489,8 +534,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         df3 = df1.append(df2)
 
         duplicates = df3['Internal_lab_ID'].duplicated().any()
-
-        print(duplicates)
 
     def add_data(self, data):
         new_df = pd.DataFrame(data)
@@ -504,30 +547,35 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             msgBox.setText("Duplicate SampleIDs present in imported data.")
             msgBox.exec()
 
+    def get_visible_tableview(self):
+        for tbv in [self.tableView_patient, self.tableView_lab, self.tableView_organism]:
+            if tbv.isVisible():
+                return tbv
+
     def keyPressEvent(self, event):
-        print(event)
         if event.key() == Qt.Key_Delete:
-            print("print del event")
-            if self.tableView_patient.isVisible():
-                print("is visible")
-                indexes = self.tableView_patient.selectedIndexes()
-                model = self.tableView_patient.model()
+            visible_tableview = self.get_visible_tableview()
+            if visible_tableview:
+                indexes = visible_tableview.selectedIndexes()
+                model = visible_tableview.model()
                 for i in indexes:
-                    print(i)
                     if model.flags(i) & Qt.ItemIsEditable:
-                        print("delete")
                         model.setData(i, "", Qt.EditRole)
 
         elif event.key() == Qt.Key_Copy:
-            indexes = self.tableView_patient.selectedIndexes()
-            model = self.tableView_patient.model()
-            for i in indexes:
-                data = model.data(i, Qt.DisplayRole)
+            visible_tableview = self.get_visible_tableview()
+            if visible_tableview:
+                indexes = visible_tableview.selectedIndexes()
+                model = visible_tableview.model()
+                for i in indexes:
+                    data = model.data(i, Qt.DisplayRole)
 
         if event.key() == Qt.Key_Return:
-            indexes = self.tableView_patient.selectedIndexes()
-            self.tableView_patient.edit(indexes[0])
-
+            visible_tableview = self.get_visible_tableview()
+            print(visible_tableview)
+            if visible_tableview:
+                indexes = visible_tableview.selectedIndexes()
+                visible_tableview.edit(indexes[0])
         else:
             super().keyPressEvent(event)
 

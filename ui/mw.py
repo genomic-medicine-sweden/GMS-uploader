@@ -55,21 +55,16 @@ class Ui_MainWindow(object):
 
         self.formLayout_3.setWidget(0, QFormLayout.LabelRole, self.label_2)
 
-        self.label_3 = QLabel(self.stackedWidgetPage1)
-        self.label_3.setObjectName(u"label_3")
-
-        self.formLayout_3.setWidget(1, QFormLayout.LabelRole, self.label_3)
-
-        self.label_5 = QLabel(self.stackedWidgetPage1)
-        self.label_5.setObjectName(u"label_5")
-
-        self.formLayout_3.setWidget(2, QFormLayout.LabelRole, self.label_5)
-
         self.lineEdit_Submitter = QLineEdit(self.stackedWidgetPage1)
         self.lineEdit_Submitter.setObjectName(u"lineEdit_Submitter")
         self.lineEdit_Submitter.setReadOnly(True)
 
         self.formLayout_3.setWidget(0, QFormLayout.FieldRole, self.lineEdit_Submitter)
+
+        self.label_3 = QLabel(self.stackedWidgetPage1)
+        self.label_3.setObjectName(u"label_3")
+
+        self.formLayout_3.setWidget(1, QFormLayout.LabelRole, self.label_3)
 
         self.lineEdit_Url = QLineEdit(self.stackedWidgetPage1)
         self.lineEdit_Url.setObjectName(u"lineEdit_Url")
@@ -77,11 +72,38 @@ class Ui_MainWindow(object):
 
         self.formLayout_3.setWidget(1, QFormLayout.FieldRole, self.lineEdit_Url)
 
+        self.label_5 = QLabel(self.stackedWidgetPage1)
+        self.label_5.setObjectName(u"label_5")
+
+        self.formLayout_3.setWidget(2, QFormLayout.LabelRole, self.label_5)
+
         self.lineEdit_Lab_code = QLineEdit(self.stackedWidgetPage1)
         self.lineEdit_Lab_code.setObjectName(u"lineEdit_Lab_code")
         self.lineEdit_Lab_code.setReadOnly(True)
 
         self.formLayout_3.setWidget(2, QFormLayout.FieldRole, self.lineEdit_Lab_code)
+
+        self.label_7 = QLabel(self.stackedWidgetPage1)
+        self.label_7.setObjectName(u"label_7")
+
+        self.formLayout_3.setWidget(3, QFormLayout.LabelRole, self.label_7)
+
+        self.lineEdit_host = QLineEdit(self.stackedWidgetPage1)
+        self.lineEdit_host.setObjectName(u"lineEdit_host")
+        self.lineEdit_host.setReadOnly(True)
+
+        self.formLayout_3.setWidget(3, QFormLayout.FieldRole, self.lineEdit_host)
+
+        self.label_8 = QLabel(self.stackedWidgetPage1)
+        self.label_8.setObjectName(u"label_8")
+
+        self.formLayout_3.setWidget(4, QFormLayout.LabelRole, self.label_8)
+
+        self.lineEdit_pseudo_id = QLineEdit(self.stackedWidgetPage1)
+        self.lineEdit_pseudo_id.setObjectName(u"lineEdit_pseudo_id")
+        self.lineEdit_pseudo_id.setReadOnly(True)
+
+        self.formLayout_3.setWidget(4, QFormLayout.FieldRole, self.lineEdit_pseudo_id)
 
 
         self.horizontalLayout.addLayout(self.formLayout_3)
@@ -127,6 +149,16 @@ class Ui_MainWindow(object):
         self.lineEdit_Sequencing_technology.setReadOnly(True)
 
         self.formLayout_2.setWidget(2, QFormLayout.FieldRole, self.lineEdit_Sequencing_technology)
+
+        self.label_9 = QLabel(self.stackedWidgetPage1)
+        self.label_9.setObjectName(u"label_9")
+
+        self.formLayout_2.setWidget(3, QFormLayout.LabelRole, self.label_9)
+
+        self.lineEdit_lib_method = QLineEdit(self.stackedWidgetPage1)
+        self.lineEdit_lib_method.setObjectName(u"lineEdit_lib_method")
+
+        self.formLayout_2.setWidget(3, QFormLayout.FieldRole, self.lineEdit_lib_method)
 
 
         self.horizontalLayout.addLayout(self.formLayout_2)
@@ -298,9 +330,12 @@ class Ui_MainWindow(object):
         self.label_2.setText(QCoreApplication.translate("MainWindow", u"Submitter:", None))
         self.label_3.setText(QCoreApplication.translate("MainWindow", u"Url:", None))
         self.label_5.setText(QCoreApplication.translate("MainWindow", u"Lab_code:", None))
+        self.label_7.setText(QCoreApplication.translate("MainWindow", u"Host:", None))
+        self.label_8.setText(QCoreApplication.translate("MainWindow", u"Pseudo_ID:", None))
         self.label.setText(QCoreApplication.translate("MainWindow", u"User:", None))
         self.label_4.setText(QCoreApplication.translate("MainWindow", u"Target_path:", None))
-        self.label_6.setText(QCoreApplication.translate("MainWindow", u"Sequencing_technology:", None))
+        self.label_6.setText(QCoreApplication.translate("MainWindow", u"Technology:", None))
+        self.label_9.setText(QCoreApplication.translate("MainWindow", u"Library_method:", None))
         self.pushButton_clear.setText(QCoreApplication.translate("MainWindow", u"Clear table", None))
         self.checkBox_filtermarked.setText(QCoreApplication.translate("MainWindow", u"Filter marked", None))
         self.pushButton_filldown.setText(QCoreApplication.translate("MainWindow", u"Filldown from selected", None))
