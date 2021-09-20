@@ -342,7 +342,7 @@ class Ui_MainWindow(object):
 #endif // QT_CONFIG(tooltip)
         self.label_2.setText(QCoreApplication.translate("MainWindow", u"Submitter:", None))
         self.label_3.setText(QCoreApplication.translate("MainWindow", u"Endpoint:", None))
-        self.label_5.setText(QCoreApplication.translate("MainWindow", u"Lab_code:", None))
+        self.label_5.setText(QCoreApplication.translate("MainWindow", u"Lab:", None))
         self.label_7.setText(QCoreApplication.translate("MainWindow", u"Host:", None))
         self.label_8.setText(QCoreApplication.translate("MainWindow", u"Pseudo_ID:", None))
         self.label.setText(QCoreApplication.translate("MainWindow", u"AWS_key_ID:", None))

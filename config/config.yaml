@@ -90,14 +90,21 @@ model_fields:
     edit: True
     view: ['None']
     checkable: False
-    delegates: ['combobox']
-  Lab_code:
+    delegates: ['None']
+  Lab:
     to_meta: True
     col_width: 150
     edit: True
     view: ['None']
     checkable: False
     delegates: ['None']
+  Lab_code:
+    to_meta: True
+    col_width: 150
+    edit: True
+    view: [ 'None' ]
+    checkable: False
+    delegates: [ 'None' ]
   Host:
     to_meta: True
     col_width: 100
