@@ -138,11 +138,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         default_fn = "gms-uploader_1_pseudoids.txt"
 
-        pseudo_id_fp, filter = dialog.getSaveFileName(self,
-                                                      'Set an awesome filepath to store pseudo IDs',
-                                                      default_fn,
-                                                      "Pseudo ID store files (*_pseudoids.txt)",
-                                                      options=QFileDialog.DontUseNativeDialog)
+        pseudo_id_fp, _ = dialog.getSaveFileName(self,
+                                                 'Set an awesome filepath to store pseudo IDs',
+                                                 default_fn,
+                                                 "Pseudo ID store files (*_pseudoids.txt)",
+                                                 options=QFileDialog.DontUseNativeDialog |
+                                                         QFileDialog.DontConfirmOverwrite)
         print(pseudo_id_fp)
         edit = self.stackedWidgetPage2.findChild(QLineEdit, name, Qt.FindChildrenRecursively)
         edit.setText(pseudo_id_fp)
@@ -158,9 +159,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         default_fn = str(Path.home())
 
         dirpath = dialog.getExistingDirectory(self,
-                                                   'Select an awesome root data path',
-                                                   default_fn,
-                                                   options=QFileDialog.ShowDirsOnly | QFileDialog.DontUseNativeDialog)
+                                              'Select an awesome root data path',
+                                              default_fn,
+                                              options=QFileDialog.ShowDirsOnly | QFileDialog.DontUseNativeDialog)
 
         edit = self.stackedWidgetPage2.findChild(QLineEdit, name, Qt.FindChildrenRecursively)
         edit.setText(dirpath)
