@@ -14,7 +14,7 @@ import yaml
 from ui.mw import Ui_MainWindow
 import qdarktheme
 
-__version__ = '0.0.9'
+__version__ = '0.1.0'
 __title__ = 'uploader'
 
 
@@ -93,6 +93,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         return True
 
     def settings_init(self):
+        self.qsettings.clear()
+
+        for name in self.conf['settings']['qlineedits_buttons']:
+            store_key = "/".join(['qlineedits_buttons', name])
+            self.qsettings.setValue(store_key, self.conf['settings']['qlineedits_buttons'][name])
+
         for name in self.conf['settings']['qlineedits']:
             store_key = "/".join(['qlineedits', name])
             self.qsettings.setValue(store_key, self.conf['settings']['qlineedits'][name])
@@ -103,24 +109,25 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 if self.conf['settings']['qcomboboxes'][name][key]:
                     self.qsettings.setValue(store_key, key)
 
-        if len(self.conf['settings']['qlistwidgets']) > 0:
-            for name in self.conf['settings']['qlistwidgets']:
-                store_key = "/".join(['qlistwidgets', name])
-                checked_items = []
-                for key, checked in self.conf['settings']['qlistwidgets'][name].items():
-                    if checked:
-                        checked_items.append(key)
+        for name in self.conf['settings']['qlistwidgets']:
+            store_key = "/".join(['qlistwidgets', name])
+            checked_items = []
+            for key, checked in self.conf['settings']['qlistwidgets'][name].items():
+                if checked:
+                    checked_items.append(key)
 
-                self.qsettings.setValue(store_key, checked_items)
+            self.qsettings.setValue(store_key, checked_items)
 
-    def set_metadata_labels(self):
+    def set_static_lineedits(self):
         self.lineEdit_Submitter.setText(self.qsettings.value("qlineedits/Submitter"))
-        self.lineEdit_User.setText(self.qsettings.value("qlineedits/User"))
-        self.lineEdit_Url.setText(self.qsettings.value("qlineedits/Url"))
-        self.lineEdit_Target_path.setText(self.qsettings.value("qlineedits/Target_path"))
+        self.lineEdit_key_id.setText(self.qsettings.value("qlineedits/AWS_key_id"))
+        self.lineEdit_endpoint.setText(self.qsettings.value("qlineedits/Endpoint"))
+        self.lineEdit_secret_key.setText(self.qsettings.value("qlineedits/AWS_secret_key"))
         self.lineEdit_Lab_code.setText(self.qsettings.value("qcomboboxes/Lab_code"))
         self.lineEdit_Sequencing_technology.setText(self.qsettings.value("qcomboboxes/Sequencing_technology"))
         self.lineEdit_host.setText(self.qsettings.value("qcomboboxes/Host"))
+        self.lineEdit_lib_method.setText(self.qsettings.value("qcomboboxes/Library_method"))
+        self.lineEdit_bucket.setText(self.qsettings.value("qcomboboxes/HCP_buckets"))
 
     def set_pseudo_id_path(self):
         obj = self.sender()
@@ -174,32 +181,31 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.formLayout_settings.addRow(QLabel(name), combo)
             combo.currentTextChanged.connect(self.settings_update)
 
-        if len(self.conf['settings']['qlistwidgets']) > 0:
-            tabwidget_settings = QTabWidget(objectName='tabwidget_settings')
-            self.verticalLayout_settings.addWidget(tabwidget_settings)
+        tabwidget_settings = QTabWidget(objectName='tabwidget_settings')
+        self.verticalLayout_settings.addWidget(tabwidget_settings)
 
-            for name in self.conf['settings']['qlistwidgets']:
-                listwidget = QListWidget(objectName=name)
-                listwidget.itemChanged.connect(self.settings_update)
-                tabwidget_settings.addTab(listwidget, name)
-                checked_items = []
+        for name in self.conf['settings']['qlistwidgets']:
+            listwidget = QListWidget(objectName=name)
+            listwidget.itemChanged.connect(self.settings_update)
+            tabwidget_settings.addTab(listwidget, name)
+            checked_items = []
 
-                store_key = "/".join(['qlistwidgets', name])
-                items = self.to_list(self.qsettings.value(store_key))
+            store_key = "/".join(['qlistwidgets', name])
+            items = self.to_list(self.qsettings.value(store_key))
 
-                for key, checked in self.conf['settings']['qlistwidgets'][name].items():
-                    item = QListWidgetItem()
-                    item.setText(key)
-                    item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
-                    if key in items:
-                        item.setCheckState(Qt.Checked)
-                        checked_items.append(key)
-                    else:
-                        item.setCheckState(Qt.Unchecked)
+            for key, checked in self.conf['settings']['qlistwidgets'][name].items():
+                item = QListWidgetItem()
+                item.setText(key)
+                item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
+                if key in items:
+                    item.setCheckState(Qt.Checked)
+                    checked_items.append(key)
+                else:
+                    item.setCheckState(Qt.Unchecked)
 
-                    listwidget.addItem(item)
+                listwidget.addItem(item)
 
-            self.set_metadata_labels()
+            self.set_static_lineedits()
 
     def settings_update(self):
         obj = self.sender()
@@ -225,16 +231,18 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
             self.qsettings.setValue(store_key, checked_items)
 
-        self.set_metadata_labels()
+        self.set_static_lineedits()
 
     def set_signals(self):
         self.actionpreferences.triggered.connect(lambda: self.stackedWidget.setCurrentIndex(1))
         self.actionmetadata.triggered.connect(lambda: self.stackedWidget.setCurrentIndex(0))
         self.lineEdit_filter.textChanged.connect(self.set_free_filter)
-        self.checkBox_filtermarked.clicked.connect(self.set_mark_filter)
+        self.pushButton_filtermarked.setCheckable(True)
+        self.pushButton_filtermarked.clicked.connect(self.set_mark_filter)
         self.pushButton_drop.clicked.connect(self.drop_rows)
         self.pushButton_clear.clicked.connect(self.clear_table)
         self.actionselect_seq_files.triggered.connect(self.get_files_folders)
+        self.actionupload.triggered.connect(self.upload)
 
     def get_files_folders(self):
         dialog = QFileDialog()
@@ -246,6 +254,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.parse_files(files)
 
     def set_icons(self):
+
         self.action_open_meta.setIcon(QIcon('fontawsome/file-import-solid.svg'))
         self.actionsave_meta.setIcon(QIcon('fontawsome/save-solid.svg'))
         self.actionmetadata.setIcon(QIcon('fontawsome/table-solid.svg'))
@@ -254,9 +263,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.actionselect_seq_files.setIcon(QIcon('fontawsome/dna-solid.svg'))
 
         self.pushButton_filldown.setIcon(QIcon('fontawsome/arrow-down-solid.svg'))
+        self.pushButton_filldown.setIconSize(QSize(18, 18))
         self.pushButton_drop.setIcon(QIcon('fontawsome/times-solid.svg'))
+        self.pushButton_drop.setIconSize(QSize(18, 18))
         self.pushButton_clear.setIcon(QIcon('fontawsome/trash-solid.svg'))
+        self.pushButton_clear.setIconSize(QSize(14, 14))
         self.pushButton_resetfilters.setIcon(QIcon('fontawsome/filter-reset-solid.svg'))
+        self.pushButton_resetfilters.setIconSize(QSize(14, 14))
+        self.pushButton_filtermarked.setIcon(QIcon('fontawsome/filter-solid.svg'))
+        self.pushButton_filtermarked.setIconSize(QSize(14, 14))
 
     def drop_rows(self):
         self.model.dropMarkedRows()
@@ -278,7 +293,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.tableView_lab.setColumnHidden(i, True)
 
     def set_mark_filter(self):
-        if self.checkBox_filtermarked.isChecked():
+        print("set filter")
+        print(self.pushButton_filtermarked.isChecked())
+        if self.pushButton_filtermarked.isChecked():
             self.multifilter_sort_proxy_model.setCheckedFilter()
 
         else:
@@ -436,7 +453,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.multifilter_sort_proxy_model.sort(-1)
         self.tableView_patient.horizontalHeader().setSortIndicator(-1, Qt.SortOrder.DescendingOrder)
         self.lineEdit_filter.setText('')
-        self.checkBox_filtermarked.setChecked(False)
+        self.pushButton_filtermarked.setChecked(False)
         self.set_mark_filter()
 
     def dragEnterEvent(self, event):
@@ -578,6 +595,27 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 visible_tableview.edit(indexes[0])
         else:
             super().keyPressEvent(event)
+
+    def upload(self):
+        meta_fields = [field for field in self.conf['model_fields'] if self.conf['model_fields'][field]['to_meta']]
+        df_submit = self.df[meta_fields]
+
+        seqfiles = {}
+        for index, row in self.df.iterrows():
+            _tmp = []
+
+            if row['Fastq1']:
+                _tmp.append(Path(row['Seq_path'], row['Fastq1']))
+            if row['Fastq2']:
+                _tmp.append(Path(row['Seq_path'], row['Fastq2']))
+            if row['Fast5']:
+                _tmp.append(Path(row['Seq_path'], row['Fast5']))
+
+            seqfiles[row['Internal_lab_ID']] = _tmp
+
+        print(df_submit)
+        for idx in seqfiles:
+            print(seqfiles[idx])
 
 
 def main():

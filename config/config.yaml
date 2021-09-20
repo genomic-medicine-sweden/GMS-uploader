@@ -1,138 +1,161 @@
 ---
 model_fields:
   Mark:
+    to_meta: False
     col_width: 80
     edit: True
     view: ['patient', 'organism', 'lab']
     checkable: True
     delegates: ['checkbox']
   Internal_lab_ID:
+    to_meta: True
     col_width: 100
     edit: False
     view: ['patient', 'organism', 'lab']
     checkable: False
     delegates: ['None']
   Selection_criterion:
+    to_meta: True
     col_width: 200
     edit: True
     view: ['patient']
     checkable: False
     delegates: ['combobox']
   Collection_date:
+    to_meta: True
     col_width: 100
     edit: True
     view: ['patient']
     checkable: False
     delegates: ['date']
   Patient_age:
+    to_meta: True
     col_width: 120
     edit: True
     view: [ 'patient' ]
     checkable: False
     delegates: ['age']
   Patient_sex:
+    to_meta: True
     col_width: 120
     edit: True
     view: [ 'patient' ]
     checkable: False
     delegates: ['combobox']
   Patient_status:
+    to_meta: True
     col_width: 150
     edit: True
     view: [ 'patient' ]
     checkable: False
     delegates: ['combobox']
   Type:
+    to_meta: True
     col_width: 100
     edit: True
     view: [ 'patient' ]
     checkable: False
     delegates: ['combobox']
   Sminet_LID:
+    to_meta: True
     col_width: 100
     edit: True
     view: [ 'lab' ]
     checkable: False
     delegates: [ 'None' ]
   Pseudo_ID:
+    to_meta: True
     col_width: 200
     edit: False
     view: ['None']
     checkable: False
     delegates: ['None']
   GISAID_acc:
+    to_meta: True
     col_width: 100
     edit: True
     view: ['lab']
     checkable: False
     delegates: ['None']
   Region_code:
+    to_meta: True
     col_width: 200
     edit: True
     view: ['lab']
     checkable: False
     delegates: ['combobox']
   Lab_code:
+    to_meta: True
     col_width: 150
     edit: True
     view: ['None']
     checkable: False
     delegates: ['None']
   Host:
+    to_meta: True
     col_width: 100
     edit: True
     view: ['None']
     checkable: False
     delegates: ['None']
   Passage_details:
+    to_meta: True
     col_width: 100
     edit: True
     view: [ 'organism' ]
     checkable: False
     delegates: ['None']
   Sequencing_technology:
+    to_meta: True
     col_width: 150
     edit: True
     view: ['None']
     checkable: False
     delegates: ['None']
   Library_method:
+    to_meta: True
     col_width: 150
     edit: True
-    view: ['lab']
+    view: ['None']
     checkable: False
     delegates: ['None']
   Lane:
+    to_meta: True
     col_width: 80
     edit: False
     view: ['lab']
     checkable: False
     delegates: ['None']
   Fastq1:
+    to_meta: False
     col_width: 100
     edit: False
     view: ['lab']
     checkable: False
     delegates: ['None']
   Fastq2:
+    to_meta: False
     col_width: 100
     edit: False
     view: ['lab']
     checkable: False
     delegates: ['None']
   Fast5:
+    to_meta: False
     col_width: 100
     edit: False
     view: [ 'lab' ]
     checkable: False
     delegates: ['None']
   Seq_path:
+    to_meta: False
     col_width: 200
     edit: False
     view: ['lab']
     checkable: False
     delegates: ['None']
   Comment:
+    to_meta: True
     col_width: 200
     edit: True
     view: ['patient', 'organism', 'lab']
@@ -142,13 +165,21 @@ settings:
   qlineedits_buttons:
     Pseudo_ID_filepath: None
   qlineedits:
+    AWS_key_id: None
+    AWS_secret_key: None
+    Endpoint: None
     Submitter: None
-    User: None
-    Token: None
-    Url: None
     Target_path: None
     Local_path: None
   qcomboboxes:
+    HCP_buckets:
+      'goteborg': True
+      'linkoping': False
+      'umea': False
+      'uppsala': False
+      'orebro': False
+      'stockholm': False
+      'lund': False
     Lab_code:
       'Växjö - SE110': True
       'Malmö - SE120': False
