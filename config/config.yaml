@@ -77,11 +77,18 @@ model_fields:
     view: ['lab']
     checkable: False
     delegates: ['None']
-  Region_code:
+  Region:
     to_meta: True
     col_width: 200
     edit: True
     view: ['lab']
+    checkable: False
+    delegates: ['combobox']
+  Region_code:
+    to_meta: True
+    col_width: 200
+    edit: True
+    view: ['None']
     checkable: False
     delegates: ['combobox']
   Lab_code:
@@ -180,7 +187,7 @@ settings:
       'orebro': False
       'stockholm': False
       'lund': False
-    Lab_code:
+    Lab:
       'Växjö - SE110': True
       'Malmö - SE120': False
       'Kalmar - SE240': False
@@ -225,7 +232,7 @@ settings:
       'Artic': True
       'NEB': False
   qlistwidgets:
-    Region_code:
+    Region:
       'Region Stockholm - 01': True
       'Region Uppsala - 03': False
       'Region Sörmland - 04': False
@@ -278,59 +285,110 @@ echomode_password:
     AWS_secret_key: True
 
 translations:
-  Region_code:
-    'Region Stockholm - 01': '01'
-    'Region Uppsala - 03': '03'
-    'Region Sörmland - 04': '04'
-    'Region Östergötland - 05': '05'
-    'Region Jönköpings län - 06': '06'
-    'Region Kronoberg - 07': '07'
-    'Region Kalmar län - 08': '08'
-    'Region Gotland - 09': '09'
-    'Region Blekinge - 10': '10'
-    'Region Skåne - 12': '12'
-    'Region Halland - 13': '13'
-    'Västra Götalandsregionen - 14': '14'
-    'Region Värmland - 17': '17'
-    'Region Örebro län - 18': '18'
-    'Region Västmanland - 19': '19'
-    'Region Dalarna - 20': '20'
-    'Region Gävleborg - 21': '21'
-    'Region Västernorrland - 22': '22'
-    'Region Jämtland Härjedalen - 23': '23'
-    'Region Västerbotten - 24': '24'
-    'Region Norrbotten - 25': '25'
-  Lab_code:
-    'Växjö - SE110': SE110
-    'Malmö - SE120': SE120
-    'Kalmar - SE240': SE240
-    'Borås - SE320': SE320
-    'Karlstad - SE450': SE450
-    'Halmstad - SE250': SE250
-    'Trollhättan NÄL - SE310': SE310
-    'Sahlgrenska - SE300': SE300
-    'Karlskrona - SE230': SE230
-    'Visby - SE540': SE540
-    'Karolinska - SE100': SE100
-    'Unilabs - SE130': SE130
-    'SYNLAB - SE140': SE140
-    'Unilabs1 - SE330': SE330
-    'Jönköping - SE350': SE350
-    'Linköping - SE400': SE400
-    'Unilabs2 - SE420': SE420
-    'Västerås - SE430': SE430
-    'Örebro - SE440': SE440
-    'Uppsala - SE600': SE600
-    'Gävle - SE610': SE610
-    'Falun - SE620': SE620
-    'Sundsvall - SE700': SE700
-    'Östersund - SE710': SE710
-    'Umeå - SE720': SE720
-    'Sunderby, Luleå - SE730': SE730
-    'National Pandemic Center - SENPC': SENPC
-    'A05diagnostics - SEADG': SEADG
-    'ABC lab - SEABC': SEABC
-    'Dynamic Code - SEDNC': SEDNC
+  Region:
+    'Region Stockholm - 01':
+      Region_code: '01'
+    'Region Uppsala - 03':
+      Region_code: '03'
+    'Region Sörmland - 04':
+      Region_code: '04'
+    'Region Östergötland - 05':
+      Region_code: '05'
+    'Region Jönköpings län - 06':
+      Region_code: '06'
+    'Region Kronoberg - 07':
+      Region_code: '07'
+    'Region Kalmar län - 08':
+      Region_code: '08'
+    'Region Gotland - 09':
+      Region_code: '09'
+    'Region Blekinge - 10':
+      Region_code: '10'
+    'Region Skåne - 12':
+      Region_code: '12'
+    'Region Halland - 13':
+      Region_code: '13'
+    'Västra Götalandsregionen - 14':
+      Region_code: '14'
+    'Region Värmland - 17':
+      Region_code: '17'
+    'Region Örebro län - 18':
+      Region_code: '18'
+    'Region Västmanland - 19':
+      Region_code: '19'
+    'Region Dalarna - 20':
+      Region_code: '20'
+    'Region Gävleborg - 21':
+      Region_code: '21'
+    'Region Västernorrland - 22':
+      Region_code: '22'
+    'Region Jämtland Härjedalen - 23':
+      Region_code: '23'
+    'Region Västerbotten - 24':
+      Region_code: '24'
+    'Region Norrbotten - 25':
+      Region_code: '25'
+  Lab:
+    'Växjö - SE110':
+      Lab_code: 'SE110'
+    'Malmö - SE120':
+      Lab_code: 'SE120'
+    'Kalmar - SE240':
+      Lab_code: 'SE240'
+    'Borås - SE320':
+      Lab_code: 'SE320'
+    'Karlstad - SE450':
+      Lab_code: 'SE450'
+    'Halmstad - SE250':
+      Lab_code: 'SE250'
+    'Trollhättan NÄL - SE310':
+      Lab_code: 'SE310'
+    'Sahlgrenska - SE300':
+      Lab_code: 'SE300'
+    'Karlskrona - SE230':
+      Lab_code: 'SE230'
+    'Visby - SE540':
+      Lab_code: 'SE540'
+    'Karolinska - SE100':
+      Lab_code: 'SE100'
+    'Unilabs - SE130':
+      Lab_code: 'SE130'
+    'SYNLAB - SE140':
+      Lab_code: 'SE140'
+    'Unilabs1 - SE330':
+      Lab_code: 'SE330'
+    'Jönköping - SE350':
+      Lab_code: 'SE350'
+    'Linköping - SE400':
+      Lab_code: 'SE400'
+    'Unilabs2 - SE420':
+      Lab_code: 'SE420'
+    'Västerås - SE430':
+      Lab_code: 'SE430'
+    'Örebro - SE440':
+      Lab_code: 'SE440'
+    'Uppsala - SE600':
+      Lab_code: 'SE600'
+    'Gävle - SE610':
+      Lab_code: 'SE610'
+    'Falun - SE620':
+      Lab_code: 'SE620'
+    'Sundsvall - SE700':
+      Lab_code: 'SE700'
+    'Östersund - SE710':
+      Lab_code: 'SE710'
+    'Umeå - SE720':
+      Lab_code: 'SE720'
+    'Sunderby, Luleå - SE730':
+      Lab_code: 'SE730'
+    'National Pandemic Center - SENPC':
+      Lab_code: 'SENPC'
+    'A05diagnostics - SEADG':
+      Lab_code: 'SEADG'
+    'ABC lab - SEABC':
+      Lab_code: 'SEABC'
+    'Dynamic Code - SEDNC':
+      Lab_code: 'SEDNC'
 seqfiles:
   fastq_gz:
     ext: '*.fastq.gz'
