@@ -77,11 +77,11 @@ class Ui_MainWindow(object):
 
         self.formLayout_3.setWidget(2, QFormLayout.LabelRole, self.label_5)
 
-        self.lineEdit_Lab_code = QLineEdit(self.stackedWidgetPage1)
-        self.lineEdit_Lab_code.setObjectName(u"lineEdit_Lab_code")
-        self.lineEdit_Lab_code.setReadOnly(True)
+        self.lineEdit_Lab = QLineEdit(self.stackedWidgetPage1)
+        self.lineEdit_Lab.setObjectName(u"lineEdit_Lab")
+        self.lineEdit_Lab.setReadOnly(True)
 
-        self.formLayout_3.setWidget(2, QFormLayout.FieldRole, self.lineEdit_Lab_code)
+        self.formLayout_3.setWidget(2, QFormLayout.FieldRole, self.lineEdit_Lab)
 
         self.label_7 = QLabel(self.stackedWidgetPage1)
         self.label_7.setObjectName(u"label_7")

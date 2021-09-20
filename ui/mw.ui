@@ -77,7 +77,7 @@
              </widget>
             </item>
             <item row="2" column="1">
-             <widget class="QLineEdit" name="lineEdit_Lab_code">
+             <widget class="QLineEdit" name="lineEdit_Lab">
               <property name="readOnly">
                <bool>true</bool>
               </property>
