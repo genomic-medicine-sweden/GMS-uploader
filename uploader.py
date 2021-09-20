@@ -123,7 +123,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.lineEdit_key_id.setText(self.qsettings.value("qlineedits/AWS_key_id"))
         self.lineEdit_endpoint.setText(self.qsettings.value("qlineedits/Endpoint"))
         self.lineEdit_secret_key.setText(self.qsettings.value("qlineedits/AWS_secret_key"))
-        self.lineEdit_Lab_code.setText(self.qsettings.value("qcomboboxes/Lab_code"))
+        self.lineEdit_Lab.setText(self.qsettings.value("qcomboboxes/Lab"))
         self.lineEdit_Sequencing_technology.setText(self.qsettings.value("qcomboboxes/Sequencing_technology"))
         self.lineEdit_host.setText(self.qsettings.value("qcomboboxes/Host"))
         self.lineEdit_lib_method.setText(self.qsettings.value("qcomboboxes/Library_method"))
@@ -146,11 +146,34 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         print(pseudo_id_fp)
         edit = self.stackedWidgetPage2.findChild(QLineEdit, name, Qt.FindChildrenRecursively)
         edit.setText(pseudo_id_fp)
+        Path(pseudo_id_fp).touch(exist_ok=True)
+
+    def set_data_root_path(self):
+        obj = self.sender()
+        button_name = obj.objectName()
+        name = button_name.strip("button")
+
+        dialog = QFileDialog()
+
+        default_fn = str(Path.home())
+
+        dirpath = dialog.getExistingDirectory(self,
+                                                   'Select an awesome root data path',
+                                                   default_fn,
+                                                   options=QFileDialog.ShowDirsOnly | QFileDialog.DontUseNativeDialog)
+
+        edit = self.stackedWidgetPage2.findChild(QLineEdit, name, Qt.FindChildrenRecursively)
+        edit.setText(dirpath)
 
     def settings_setup(self):
         for name in self.conf['settings']['qlineedits_buttons']:
+            if name == "Pseudo_ID_filepath":
+                func = self.set_pseudo_id_path
+            elif name == "Data_root_path":
+                func = self.set_data_root_path
+
             button_name = name + "button"
-            button = QPushButton("...", objectName=button_name, clicked=self.set_pseudo_id_path)
+            button = QPushButton("...", objectName=button_name, clicked=func)
             edit = QLineEdit(objectName=name, editingFinished=self.settings_update)
 
             hbox = QHBoxLayout()

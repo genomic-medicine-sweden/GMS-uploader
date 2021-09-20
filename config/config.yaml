@@ -178,13 +178,12 @@ model_fields:
 settings:
   qlineedits_buttons:
     Pseudo_ID_filepath: None
+    Data_root_path: None
   qlineedits:
+    Submitter: None
     AWS_key_id: None
     AWS_secret_key: None
-    Endpoint: None
-    Submitter: None
-    Target_path: None
-    Local_path: None
+    Endpoint: vgtn0008.hcp1.vgregion.se
   qcomboboxes:
     HCP_buckets:
       'goteborg': True
