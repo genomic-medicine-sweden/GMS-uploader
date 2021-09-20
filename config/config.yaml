@@ -272,6 +272,11 @@ settings:
       'Live': True
       'Deceased': True
       'Unknown': True
+
+echomode_password:
+  qlineedits:
+    AWS_secret_key: True
+
 translations:
   Region_code:
     'Region Stockholm - 01': '01'

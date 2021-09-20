@@ -153,7 +153,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             button = QPushButton("...", objectName=button_name, clicked=self.set_pseudo_id_path)
             edit = QLineEdit(objectName=name, editingFinished=self.settings_update)
 
-
             hbox = QHBoxLayout()
             hbox.addWidget(edit)
             hbox.addWidget(button)
@@ -166,6 +165,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         for name in self.conf['settings']['qlineedits']:
             edit = QLineEdit(objectName=name, editingFinished=self.settings_update)
+            if 'qlineedits' in self.conf['echomode_password']:
+                if name in self.conf['echomode_password']['qlineedits']:
+                    edit.setEchoMode(QLineEdit.Password)
             store_key = "/".join(['qlineedits', name])
             value = self.qsettings.value(store_key)
             edit.setText(value)
