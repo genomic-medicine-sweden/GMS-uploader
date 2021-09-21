@@ -7,6 +7,7 @@ model_fields:
     view: ['patient', 'organism', 'lab']
     checkable: True
     delegates: ['checkbox']
+    validators: False
   Internal_lab_ID:
     to_meta: True
     col_width: 100
@@ -14,6 +15,7 @@ model_fields:
     view: ['patient', 'organism', 'lab']
     checkable: False
     delegates: ['None']
+    validators: ['distinct']
   Selection_criterion:
     to_meta: True
     col_width: 200
@@ -21,6 +23,7 @@ model_fields:
     view: ['patient']
     checkable: False
     delegates: ['combobox']
+    validators: ['len5']
   Collection_date:
     to_meta: True
     col_width: 100
@@ -28,6 +31,7 @@ model_fields:
     view: ['patient']
     checkable: False
     delegates: ['date']
+    validators: ['date_format']
   Patient_age:
     to_meta: True
     col_width: 120
@@ -35,6 +39,7 @@ model_fields:
     view: [ 'patient' ]
     checkable: False
     delegates: ['age']
+    validators: ['age_range']
   Patient_sex:
     to_meta: True
     col_width: 120
@@ -42,6 +47,7 @@ model_fields:
     view: [ 'patient' ]
     checkable: False
     delegates: ['combobox']
+    validators: ['inlist']
   Patient_status:
     to_meta: True
     col_width: 150
@@ -49,6 +55,7 @@ model_fields:
     view: [ 'patient' ]
     checkable: False
     delegates: ['combobox']
+    validators: ['inlist']
   Type:
     to_meta: True
     col_width: 100
@@ -56,6 +63,7 @@ model_fields:
     view: [ 'patient' ]
     checkable: False
     delegates: ['combobox']
+    validators: ['inlist']
   Sminet_LID:
     to_meta: True
     col_width: 100
@@ -63,6 +71,7 @@ model_fields:
     view: [ 'lab' ]
     checkable: False
     delegates: [ 'None' ]
+    validators: False
   Pseudo_ID:
     to_meta: True
     col_width: 200
@@ -70,13 +79,7 @@ model_fields:
     view: ['None']
     checkable: False
     delegates: ['None']
-  GISAID_acc:
-    to_meta: True
-    col_width: 100
-    edit: True
-    view: ['lab']
-    checkable: False
-    delegates: ['None']
+    validators: ['distinct']
   Region:
     to_meta: True
     col_width: 200
@@ -84,6 +87,7 @@ model_fields:
     view: ['lab']
     checkable: False
     delegates: ['combobox']
+    validators: ['inlist']
   Region_code:
     to_meta: True
     col_width: 200
@@ -91,6 +95,7 @@ model_fields:
     view: ['None']
     checkable: False
     delegates: ['None']
+    validators: ['inlist']
   Lab:
     to_meta: True
     col_width: 150
@@ -98,6 +103,7 @@ model_fields:
     view: ['None']
     checkable: False
     delegates: ['None']
+    validators: ['inlist']
   Lab_code:
     to_meta: True
     col_width: 150
@@ -105,6 +111,7 @@ model_fields:
     view: [ 'None' ]
     checkable: False
     delegates: [ 'None' ]
+    validators: ['inlist']
   Host:
     to_meta: True
     col_width: 100
@@ -112,6 +119,7 @@ model_fields:
     view: ['None']
     checkable: False
     delegates: ['None']
+    validators: ['len5']
   Passage_details:
     to_meta: True
     col_width: 100
@@ -119,6 +127,7 @@ model_fields:
     view: [ 'organism' ]
     checkable: False
     delegates: ['None']
+    validators: False
   Sequencing_technology:
     to_meta: True
     col_width: 150
@@ -126,6 +135,7 @@ model_fields:
     view: ['None']
     checkable: False
     delegates: ['None']
+    validators: ['inlist']
   Library_method:
     to_meta: True
     col_width: 150
@@ -133,6 +143,7 @@ model_fields:
     view: ['None']
     checkable: False
     delegates: ['None']
+    validators: ['inlist']
   Lane:
     to_meta: True
     col_width: 80
@@ -140,6 +151,7 @@ model_fields:
     view: ['lab']
     checkable: False
     delegates: ['None']
+    validators: False
   Fastq1:
     to_meta: False
     col_width: 100
@@ -147,6 +159,7 @@ model_fields:
     view: ['lab']
     checkable: False
     delegates: ['None']
+    validators: False
   Fastq2:
     to_meta: False
     col_width: 100
@@ -154,6 +167,7 @@ model_fields:
     view: ['lab']
     checkable: False
     delegates: ['None']
+    validators: False
   Fast5:
     to_meta: False
     col_width: 100
@@ -161,6 +175,7 @@ model_fields:
     view: [ 'lab' ]
     checkable: False
     delegates: ['None']
+    validators: False
   Seq_path:
     to_meta: False
     col_width: 200
@@ -168,6 +183,7 @@ model_fields:
     view: ['lab']
     checkable: False
     delegates: ['None']
+    validators: False
   Comment:
     to_meta: True
     col_width: 200
@@ -175,9 +191,11 @@ model_fields:
     view: ['patient', 'organism', 'lab']
     checkable: False
     delegates: ['None']
+    validators: False
 settings:
   qlineedits:
     Data_root_path: None
+    Metadata_save_path: None
     Pseudo_ID_filepath: None
     Submitter: None
     AWS_key_id: None
@@ -232,7 +250,7 @@ settings:
       'Ion Torrent': False
     Host:
       'Human': True
-      'Environment': True
+      'Environment': False
     Library_method:
       'Artic': True
       'NEB': False
@@ -286,16 +304,19 @@ settings:
       'Unknown': True
   no_widget:
     Pseudo_ID_start: None
+    Pseudo_ID_start_int: None
+    Pseudo_ID_start_prefix: None
 
 add_buttons:
   Pseudo_ID_filepath: True
   Data_root_path: True
+  Metadata_save_path: True
 
 echomode_password:
   qlineedits:
     AWS_secret_key: True
 
-translations:
+tr:
   Region_to_code:
     'Region Stockholm - 01': '01'
     'Region Uppsala - 03': '03'

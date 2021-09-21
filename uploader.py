@@ -8,6 +8,7 @@ from modules.delegates import CompleterDelegate, ComboBoxDelegate, \
     DateAutoCorrectDelegate, CheckBoxDelegate, AgeDelegate
 from modules.dialogs import MsgError, MsgAlert
 from modules.sortfilterproxymodel import MultiSortFilterProxyModel, MarkedFilterProxyModel
+from modules.auxiliary_functions import get_pseudo_id_code_number, zfill_int, to_list
 import pandas as pd
 from pathlib import Path
 import yaml
@@ -170,6 +171,23 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         edit = self.stackedWidgetPage2.findChild(QLineEdit, name, Qt.FindChildrenRecursively)
         edit.setText(dirpath)
 
+    def set_metadata_save_path(self):
+        obj = self.sender()
+        button_name = obj.objectName()
+        name = button_name.strip("button")
+
+        dialog = QFileDialog()
+
+        default_fn = str(Path.home())
+
+        dirpath = dialog.getExistingDirectory(self,
+                                              'Select an awesome root data path',
+                                              default_fn,
+                                              options=QFileDialog.ShowDirsOnly | QFileDialog.DontUseNativeDialog)
+
+        edit = self.stackedWidgetPage2.findChild(QLineEdit, name, Qt.FindChildrenRecursively)
+        edit.setText(dirpath)
+
     def settings_setup(self):
         for name in self.conf['settings']['qlineedits']:
             if name in self.conf['add_buttons']:
@@ -177,10 +195,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     func = self.set_pseudo_id_path
                 elif name == "Data_root_path":
                     func = self.set_data_root_path
+                elif name == "Metadata_save_path":
+                    func = self.set_metadata_save_path
 
                 button_name = name + "button"
-                button = QPushButton("...", objectName=button_name, clicked=func)
-                edit = QLineEdit(objectName=name, editingFinished=self.settings_update)
+                button = QPushButton("...", objectName=button_name)
+                button.clicked.connect(func)
+                edit = QLineEdit(objectName=name)
+                edit.textChanged.connect(self.settings_update)
+                edit.setReadOnly(True)
 
                 hbox = QHBoxLayout()
                 hbox.addWidget(edit)
@@ -223,7 +246,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             checked_items = []
 
             store_key = "/".join(['qlistwidgets', name])
-            items = self.to_list(self.qsettings.value(store_key))
+            items = to_list(self.qsettings.value(store_key))
 
             for key, checked in self.conf['settings']['qlistwidgets'][name].items():
                 item = QListWidgetItem()
@@ -249,6 +272,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         if isinstance(obj, QLineEdit):
             store_key = "/".join(['qlineedits', name])
+            print(store_key, obj.text())
             self.qsettings.setValue(store_key, obj.text())
 
         elif isinstance(obj, QComboBox):
@@ -282,10 +306,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.actionupload.triggered.connect(self.upload)
 
     def get_files_folders(self):
+        datadir = self.qsettings.value('qlineedits/Data_root_path')
+        print(datadir)
         dialog = QFileDialog()
         files, _ = dialog.getOpenFileNames(self,
                                         "Select sequence data files",
-                                        "",
+                                        datadir,
                                         "Sequence files (*.fast5 *.fastq.gz *.fastq *.fq.gz *.fq")
 
         self.parse_files(files)
@@ -361,7 +387,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         store_key = "/".join(["qlistwidgets", field])
         items = ['']
-        items.extend(self.to_list(self.qsettings.value(store_key)))
+        items.extend(to_list(self.qsettings.value(store_key)))
 
         for view in self.conf['model_fields'][field]['view']:
             self.delegates[view][field] = ComboBoxDelegate(items)
@@ -416,12 +442,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             elif view == 'organism':
                 self.tableView_organism.setItemDelegateForColumn(self.tableView_columns.index(field),
                                                                  self.delegates[view][field])
-
-    def to_list(self, obj):
-        if type(obj) is list:
-            return obj
-        else:
-            return []
 
     def tableView_setup(self):
 
@@ -640,27 +660,43 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.qsettings.setValue('no_widget/Pseudo_ID_start', "None")
 
         if file_obj.exists():
-            last_line = file_obj.read_text().splitlines()[-1]
-            if last_line and '_' in last_line:
-                prefix, last_znumber_str = last_line.split('-')
-                number_str = str(int(last_znumber_str) + 1)
-                znumber_str = number_str.zfill(8)
+            pseudo_ids = file_obj.read_text().splitlines()
+            print(len(pseudo_ids))
+            prev_prefix, prev_number = get_pseudo_id_code_number(pseudo_ids)
+            print(prev_prefix, prev_number)
+            if prev_number < 0:
+                msg = MsgError("Something is wrong with the set pseudo_id file.")
+                msg.exec()
             else:
-                number_str = str(int(1))
-                znumber_str = number_str.zfill(8)
+                lab = self.qsettings.value('qcomboboxes/Lab')
+                print(lab)
+                if lab:
+                    curr_prefix = self.conf['tr']['Lab_to_code'][lab]
 
-            print(znumber_str)
-            lab = self.qsettings.value("qcomboboxes/Lab")
+                    if prev_prefix is not None:
+                        if curr_prefix != prev_prefix:
+                            msg = MsgError("Current and previous Pseudo_ID do not match.")
+                            msg.exec()
 
-            if lab:
-                prefix = self.conf['translations']['Lab_to_code'][lab]
-                pseudo_id_start = prefix + "-" + znumber_str
+                    elif curr_prefix == prev_prefix or prev_prefix is None:
+                        curr_znumber_str = zfill_int(prev_number + 1)
+                        pseudo_id_start = curr_prefix + "-" + curr_znumber_str
+                        self.qsettings.setValue('no_widget/Pseudo_ID_start', pseudo_id_start)
+                        self.qsettings.setValue('no_widget/Pseudo_ID_start_int', prev_number + 1)
+                        self.qsettings.setValue('no_widget/Pseudo_ID_start_prefix', curr_prefix)
 
-                self.qsettings.setValue('no_widget/Pseudo_ID_start', pseudo_id_start)
+    def create_pseudo_ids(self):
+        pseudo_ids = []
+        prefix = self.qsettings.value('no_widget/Pseudo_ID_start_prefix')
+        start = self.qsettings.value('no_widget/Pseudo_ID_start_int')
+        end = start + len(self.df)
+
+        for number in range(start, end):
+            pseudo_ids.append(prefix + "-" + zfill_int(number))
+
+        return pseudo_ids
 
     def upload(self):
-        meta_fields = [field for field in self.conf['model_fields'] if self.conf['model_fields'][field]['to_meta']]
-        df_submit = self.df[meta_fields]
 
         seqfiles = {}
         for index, row in self.df.iterrows():
@@ -675,12 +711,28 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
             seqfiles[row['Internal_lab_ID']] = _tmp
 
-        df_submit['Region_code'] = df_submit['Region'].apply(lambda x: self.conf['translations']['Region_to_code'][x])
-        df_submit['Lab_code'] = df_submit['Lab'].apply(lambda x: self.conf['translations']['Lab_to_code'][x])
+        self.df['Lab'] = self.qsettings.value('qcomboboxes/Lab')
+        self.df['Host'] = self.qsettings.value('qcomboboxes/Host')
+        self.df['Sequencing_technology'] = self.qsettings.value('qcomboboxes/Sequencing_technology')
+        self.df['Lab_code'] = self.df['Lab'].apply(lambda x: self.conf['tr']['Lab_to_code'][x])
+        self.df['Region_code'] = self.df['Region'].apply(lambda x: self.conf['tr']['Region_to_code'][x])
+        self.df['Pseudo_ID'] = self.create_pseudo_ids()
 
-        print(df_submit)
-        # for idx in seqfiles:
-        #     print(seqfiles[idx])
+        meta_fields = [field for field in self.conf['model_fields'] if self.conf['model_fields'][field]['to_meta']]
+        df_submit = self.df[meta_fields]
+
+        result = df_submit.to_json(orient="records")
+
+        print(result)
+
+        #
+        #
+        # with open('meta.json', 'w', encoding='utf-8') as file:
+        #     df.to_json(file, force_ascii=False)
+        #
+        # print(df_submit[['Region', 'Region_code']])
+        # # for idx in seqfiles:
+        # #     print(seqfiles[idx])
 
 
 def main():
