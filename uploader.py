@@ -651,9 +651,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
             print(znumber_str)
             lab = self.qsettings.value("qcomboboxes/Lab")
-            print(lab)
+
             if lab:
-                prefix = self.conf['translations']['Lab'][lab]['Lab_code']
+                prefix = self.conf['translations']['Lab_to_code'][lab]
                 pseudo_id_start = prefix + "-" + znumber_str
 
                 self.qsettings.setValue('no_widget/Pseudo_ID_start', pseudo_id_start)
@@ -675,9 +675,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
             seqfiles[row['Internal_lab_ID']] = _tmp
 
+        df_submit['Region_code'] = df_submit['Region'].apply(lambda x: self.conf['translations']['Region_to_code'][x])
+        df_submit['Lab_code'] = df_submit['Lab'].apply(lambda x: self.conf['translations']['Lab_to_code'][x])
+
         print(df_submit)
-        for idx in seqfiles:
-            print(seqfiles[idx])
+        # for idx in seqfiles:
+        #     print(seqfiles[idx])
 
 
 def main():
