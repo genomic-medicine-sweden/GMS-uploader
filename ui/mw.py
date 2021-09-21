@@ -344,7 +344,7 @@ class Ui_MainWindow(object):
         self.label_3.setText(QCoreApplication.translate("MainWindow", u"Endpoint:", None))
         self.label_5.setText(QCoreApplication.translate("MainWindow", u"Lab:", None))
         self.label_7.setText(QCoreApplication.translate("MainWindow", u"Host:", None))
-        self.label_8.setText(QCoreApplication.translate("MainWindow", u"Pseudo_ID:", None))
+        self.label_8.setText(QCoreApplication.translate("MainWindow", u"Pseudo_ID_start:", None))
         self.label.setText(QCoreApplication.translate("MainWindow", u"AWS_key_ID:", None))
         self.label_4.setText(QCoreApplication.translate("MainWindow", u"AWS_secret_key:", None))
         self.label_10.setText(QCoreApplication.translate("MainWindow", u"Bucket", None))

@@ -176,10 +176,9 @@ model_fields:
     checkable: False
     delegates: ['None']
 settings:
-  qlineedits_buttons:
-    Pseudo_ID_filepath: None
-    Data_root_path: None
   qlineedits:
+    Data_root_path: None
+    Pseudo_ID_filepath: None
     Submitter: None
     AWS_key_id: None
     AWS_secret_key: None
@@ -285,6 +284,12 @@ settings:
       'Live': True
       'Deceased': True
       'Unknown': True
+  no_widget:
+    Pseudo_ID_start: None
+
+add_buttons:
+  Pseudo_ID_filepath: True
+  Data_root_path: True
 
 echomode_password:
   qlineedits:

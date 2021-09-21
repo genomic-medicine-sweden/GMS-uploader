@@ -75,29 +75,29 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def validate_settings(self):
         all_keys = self.qsettings.allKeys()
+        print(all_keys)
 
         for key in all_keys:
             wtype, field = key.split('/')
 
             if wtype not in self.conf['settings']:
+                print("wtype not in conf settings", wtype)
                 return False
             if field not in self.conf['settings'][wtype]:
+                print("field not in conf settings", field)
                 return False
 
         for wtype in self.conf['settings']:
             for field in self.conf['settings'][wtype]:
                 store_key = "/".join([wtype, field])
                 if store_key not in all_keys:
+                    print("store_key not in all_keys", store_key)
                     return False
 
         return True
 
     def settings_init(self):
         self.qsettings.clear()
-
-        for name in self.conf['settings']['qlineedits_buttons']:
-            store_key = "/".join(['qlineedits_buttons', name])
-            self.qsettings.setValue(store_key, self.conf['settings']['qlineedits_buttons'][name])
 
         for name in self.conf['settings']['qlineedits']:
             store_key = "/".join(['qlineedits', name])
@@ -118,6 +118,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
             self.qsettings.setValue(store_key, checked_items)
 
+        self.set_pseudo_id_start()
+
     def set_static_lineedits(self):
         self.lineEdit_Submitter.setText(self.qsettings.value("qlineedits/Submitter"))
         self.lineEdit_key_id.setText(self.qsettings.value("qlineedits/AWS_key_id"))
@@ -128,6 +130,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.lineEdit_host.setText(self.qsettings.value("qcomboboxes/Host"))
         self.lineEdit_lib_method.setText(self.qsettings.value("qcomboboxes/Library_method"))
         self.lineEdit_bucket.setText(self.qsettings.value("qcomboboxes/HCP_buckets"))
+        self.lineEdit_pseudo_id.setText(self.qsettings.value("no_widget/Pseudo_ID_start"))
 
     def set_pseudo_id_path(self):
         obj = self.sender()
@@ -144,10 +147,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                                                  "Pseudo ID store files (*_pseudoids.txt)",
                                                  options=QFileDialog.DontUseNativeDialog |
                                                          QFileDialog.DontConfirmOverwrite)
-        print(pseudo_id_fp)
-        edit = self.stackedWidgetPage2.findChild(QLineEdit, name, Qt.FindChildrenRecursively)
-        edit.setText(pseudo_id_fp)
-        Path(pseudo_id_fp).touch(exist_ok=True)
+        pif_obj = Path(pseudo_id_fp)
+        if pif_obj.parent.exists():
+            edit = self.stackedWidgetPage2.findChild(QLineEdit, name, Qt.FindChildrenRecursively)
+            edit.setText(pseudo_id_fp)
+            pif_obj.touch(exist_ok=True)
 
     def set_data_root_path(self):
         obj = self.sender()
@@ -167,35 +171,36 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         edit.setText(dirpath)
 
     def settings_setup(self):
-        for name in self.conf['settings']['qlineedits_buttons']:
-            if name == "Pseudo_ID_filepath":
-                func = self.set_pseudo_id_path
-            elif name == "Data_root_path":
-                func = self.set_data_root_path
-
-            button_name = name + "button"
-            button = QPushButton("...", objectName=button_name, clicked=func)
-            edit = QLineEdit(objectName=name, editingFinished=self.settings_update)
-
-            hbox = QHBoxLayout()
-            hbox.addWidget(edit)
-            hbox.addWidget(button)
-
-            self.formLayout_settings.addRow(QLabel(name), hbox)
-
-            store_key = "/".join(['qlineedits', name])
-            value = self.qsettings.value(store_key)
-            edit.setText(value)
-
         for name in self.conf['settings']['qlineedits']:
-            edit = QLineEdit(objectName=name, editingFinished=self.settings_update)
-            if 'qlineedits' in self.conf['echomode_password']:
-                if name in self.conf['echomode_password']['qlineedits']:
-                    edit.setEchoMode(QLineEdit.Password)
-            store_key = "/".join(['qlineedits', name])
-            value = self.qsettings.value(store_key)
-            edit.setText(value)
-            self.formLayout_settings.addRow(QLabel(name), edit)
+            if name in self.conf['add_buttons']:
+                if name == "Pseudo_ID_filepath":
+                    func = self.set_pseudo_id_path
+                elif name == "Data_root_path":
+                    func = self.set_data_root_path
+
+                button_name = name + "button"
+                button = QPushButton("...", objectName=button_name, clicked=func)
+                edit = QLineEdit(objectName=name, editingFinished=self.settings_update)
+
+                hbox = QHBoxLayout()
+                hbox.addWidget(edit)
+                hbox.addWidget(button)
+
+                self.formLayout_settings.addRow(QLabel(name), hbox)
+
+                store_key = "/".join(['qlineedits', name])
+                value = self.qsettings.value(store_key)
+                edit.setText(value)
+
+            else:
+                edit = QLineEdit(objectName=name, editingFinished=self.settings_update)
+                if 'qlineedits' in self.conf['echomode_password']:
+                    if name in self.conf['echomode_password']['qlineedits']:
+                        edit.setEchoMode(QLineEdit.Password)
+                store_key = "/".join(['qlineedits', name])
+                value = self.qsettings.value(store_key)
+                edit.setText(value)
+                self.formLayout_settings.addRow(QLabel(name), edit)
 
         for name in self.conf['settings']['qcomboboxes']:
             combo = QComboBox(objectName=name)
@@ -203,6 +208,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
             store_key = "/".join(['qcomboboxes', name])
             value = self.qsettings.value(store_key)
+            print(value)
             combo.setCurrentText(value)
             self.formLayout_settings.addRow(QLabel(name), combo)
             combo.currentTextChanged.connect(self.settings_update)
@@ -231,7 +237,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
                 listwidget.addItem(item)
 
-            self.set_static_lineedits()
+        store_key = "/".join(['qcomboboxes', 'Lab'])
+        print("setup", self.qsettings.value(store_key))
+
+        self.set_pseudo_id_start()
+        self.set_static_lineedits()
 
     def settings_update(self):
         obj = self.sender()
@@ -257,6 +267,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
             self.qsettings.setValue(store_key, checked_items)
 
+        self.set_pseudo_id_start()
         self.set_static_lineedits()
 
     def set_signals(self):
@@ -621,6 +632,31 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 visible_tableview.edit(indexes[0])
         else:
             super().keyPressEvent(event)
+
+    def set_pseudo_id_start(self):
+        file = self.qsettings.value("qlineedits/Pseudo_ID_filepath")
+        file_obj = Path(file)
+
+        self.qsettings.setValue('no_widget/Pseudo_ID_start', "None")
+
+        if file_obj.exists():
+            last_line = file_obj.read_text().splitlines()[-1]
+            if last_line and '_' in last_line:
+                prefix, last_znumber_str = last_line.split('-')
+                number_str = str(int(last_znumber_str) + 1)
+                znumber_str = number_str.zfill(8)
+            else:
+                number_str = str(int(1))
+                znumber_str = number_str.zfill(8)
+
+            print(znumber_str)
+            lab = self.qsettings.value("qcomboboxes/Lab")
+            print(lab)
+            if lab:
+                prefix = self.conf['translations']['Lab'][lab]['Lab_code']
+                pseudo_id_start = prefix + "-" + znumber_str
+
+                self.qsettings.setValue('no_widget/Pseudo_ID_start', pseudo_id_start)
 
     def upload(self):
         meta_fields = [field for field in self.conf['model_fields'] if self.conf['model_fields'][field]['to_meta']]
