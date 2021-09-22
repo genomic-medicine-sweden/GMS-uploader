@@ -18,8 +18,8 @@ import yaml
 from ui.mw import Ui_MainWindow
 import qdarktheme
 
-__version__ = '0.1.0'
-__title__ = 'uploader'
+__version__ = '0.1.1'
+__title__ = 'GMS-uploader'
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
@@ -32,7 +32,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.qsettings = QSettings("Genomic Medicine Sweden", "GMS-uploader")
 
         self.setWindowIcon(QIcon('icons/GMS-logo.png'))
-        self.setWindowTitle("GMS-uploader " + __version__)
+        self.setWindowTitle(__title__ + " " + __version__)
 
         self.actionsave_meta.setDisabled(True)
         self.action_open_meta.setDisabled(True)
