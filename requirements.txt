@@ -1,0 +1,8 @@
+PySide6~=6.1.3
+pyqtdarktheme~=0.1.4
+HCPInterface~=2.2.0
+pandas~=1.3.2
+pandas-schema~=0.3.5
+python-dateutil~=2.8.2
+setuptools~=57.0.0
+PyYAML~=5.4.1
