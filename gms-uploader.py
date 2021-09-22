@@ -6,10 +6,13 @@ from PySide6.QtWidgets import *
 from modules.pandasmodel import PandasModel
 from modules.delegates import CompleterDelegate, ComboBoxDelegate, \
     DateAutoCorrectDelegate, CheckBoxDelegate, AgeDelegate
-from modules.dialogs import MsgError, MsgAlert
+from modules.dialogs import MsgError, MsgAlert, ValidationDialog
 from modules.sortfilterproxymodel import MultiSortFilterProxyModel, MarkedFilterProxyModel
 from modules.auxiliary_functions import get_pseudo_id_code_number, zfill_int, to_list
+from modules.validate import validate
+from modules.upload import hcp_upload
 import pandas as pd
+from datetime import datetime
 from pathlib import Path
 import yaml
 from ui.mw import Ui_MainWindow
@@ -24,11 +27,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         super(MainWindow, self).__init__()
         self.setupUi(self)
         self.setAcceptDrops(True)
+        self.clipboard = QGuiApplication.clipboard()
 
         self.qsettings = QSettings("Genomic Medicine Sweden", "GMS-uploader")
 
         self.setWindowIcon(QIcon('icons/GMS-logo.png'))
         self.setWindowTitle("GMS-uploader " + __version__)
+
+        self.actionsave_meta.setDisabled(True)
+        self.action_open_meta.setDisabled(True)
 
         # add icons
         self.set_icons()
@@ -76,23 +83,23 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def validate_settings(self):
         all_keys = self.qsettings.allKeys()
-        print(all_keys)
+        # print(all_keys)
 
         for key in all_keys:
             wtype, field = key.split('/')
 
             if wtype not in self.conf['settings']:
-                print("wtype not in conf settings", wtype)
+                # print("wtype not in conf settings", wtype)
                 return False
             if field not in self.conf['settings'][wtype]:
-                print("field not in conf settings", field)
+                # print("field not in conf settings", field)
                 return False
 
         for wtype in self.conf['settings']:
             for field in self.conf['settings'][wtype]:
                 store_key = "/".join([wtype, field])
                 if store_key not in all_keys:
-                    print("store_key not in all_keys", store_key)
+                    # print("store_key not in all_keys", store_key)
                     return False
 
         return True
@@ -231,7 +238,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
             store_key = "/".join(['qcomboboxes', name])
             value = self.qsettings.value(store_key)
-            print(value)
             combo.setCurrentText(value)
             self.formLayout_settings.addRow(QLabel(name), combo)
             combo.currentTextChanged.connect(self.settings_update)
@@ -261,7 +267,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 listwidget.addItem(item)
 
         store_key = "/".join(['qcomboboxes', 'Lab'])
-        print("setup", self.qsettings.value(store_key))
 
         self.set_pseudo_id_start()
         self.set_static_lineedits()
@@ -272,7 +277,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         if isinstance(obj, QLineEdit):
             store_key = "/".join(['qlineedits', name])
-            print(store_key, obj.text())
             self.qsettings.setValue(store_key, obj.text())
 
         elif isinstance(obj, QComboBox):
@@ -307,7 +311,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def get_files_folders(self):
         datadir = self.qsettings.value('qlineedits/Data_root_path')
-        print(datadir)
         dialog = QFileDialog()
         files, _ = dialog.getOpenFileNames(self,
                                         "Select sequence data files",
@@ -356,8 +359,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.tableView_lab.setColumnHidden(i, True)
 
     def set_mark_filter(self):
-        print("set filter")
-        print(self.pushButton_filtermarked.isChecked())
         if self.pushButton_filtermarked.isChecked():
             self.multifilter_sort_proxy_model.setCheckedFilter()
 
@@ -476,7 +477,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def filldown(self):
         visible_tableview = self.get_visible_tableview()
-        print(visible_tableview)
         if visible_tableview:
             select = visible_tableview.selectionModel()
             index = select.currentIndex()
@@ -574,7 +574,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
             if not sample in _data:
                 _data[sample] = {}
-                _data[sample]['Seq_path'] = seqpath
+                _data[sample]['Seq_path'] = str(seqpath)
 
             if filename_obj.match(self.conf['seqfiles']['fastq_gz']['ext']):
                 f = file.stem.split('.')[0]
@@ -583,14 +583,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 _data[sample]['Lane'] = lane
 
                 for field, pat in self.conf['seqfiles']['fastq_gz']['fields'].items():
-                    print(pat, field)
                     if filename_obj.match(pat):
-                        _data[sample][field] = filename
+                        _data[sample][field] = str(filename)
 
             elif filename_obj.match(self.conf['seqfiles']['fast5']['ext']):
                 for field, pat in self.conf['seqfiles']['fast5']['fields'].items():
                     if filename_obj.match(pat):
-                        _data[sample][field] = filename
+                        _data[sample][field] = str(filename)
 
         data = []
         for sample in _data:
@@ -627,7 +626,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 return tbv
 
     def keyPressEvent(self, event):
-        if event.key() == Qt.Key_Delete:
+        if event.key() == Qt.Key_Return:
+            visible_tableview = self.get_visible_tableview()
+            if visible_tableview:
+                indexes = visible_tableview.selectedIndexes()
+                visible_tableview.edit(indexes[0])
+
+        elif event.key() == Qt.Key_Delete:
             visible_tableview = self.get_visible_tableview()
             if visible_tableview:
                 indexes = visible_tableview.selectedIndexes()
@@ -636,20 +641,49 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     if model.flags(i) & Qt.ItemIsEditable:
                         model.setData(i, "", Qt.EditRole)
 
-        elif event.key() == Qt.Key_Copy:
+        elif event.matches(QKeySequence.Copy):
             visible_tableview = self.get_visible_tableview()
             if visible_tableview:
                 indexes = visible_tableview.selectedIndexes()
                 model = visible_tableview.model()
-                for i in indexes:
-                    data = model.data(i, Qt.DisplayRole)
 
-        if event.key() == Qt.Key_Return:
-            visible_tableview = self.get_visible_tableview()
-            print(visible_tableview)
-            if visible_tableview:
-                indexes = visible_tableview.selectedIndexes()
-                visible_tableview.edit(indexes[0])
+                c = []
+                r = []
+                old_row = None
+
+                for i in indexes:
+                    if i.row() == old_row or old_row is None:
+                        c.append(model.data(i, Qt.DisplayRole))
+                        old_row = i.row()
+                    else:
+                        r.append("\t".join(c))
+                        c = []
+                        c.append(model.data(i, Qt.DisplayRole))
+                        old_row = i.row()
+
+                r.append("\t".join(c))
+
+                copy_data = "\n".join(r)
+                self.clipboard.setText(copy_data)
+
+        elif event.matches(QKeySequence.Paste):
+
+            clipboard = QGuiApplication.clipboard()
+            mimeData = clipboard.mimeData()
+
+            curr_view = self.get_visible_tableview()
+
+            model = curr_view.model()
+            index = curr_view.selectionModel().currentIndex()
+            i_row = index.row()
+            i_col = index.column()
+
+            rows = mimeData.text().split("\n")
+            for i, r in enumerate(rows):
+                columns = r.split("\t")
+                for j, value in enumerate(columns):
+                    model.setData(model.index(i_row + i, i_col + j), value)
+
         else:
             super().keyPressEvent(event)
 
@@ -661,15 +695,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         if file_obj.exists():
             pseudo_ids = file_obj.read_text().splitlines()
-            print(len(pseudo_ids))
+
             prev_prefix, prev_number = get_pseudo_id_code_number(pseudo_ids)
-            print(prev_prefix, prev_number)
+
             if prev_number < 0:
                 msg = MsgError("Something is wrong with the set pseudo_id file.")
                 msg.exec()
             else:
                 lab = self.qsettings.value('qcomboboxes/Lab')
-                print(lab)
+
                 if lab:
                     curr_prefix = self.conf['tr']['Lab_to_code'][lab]
 
@@ -697,23 +731,31 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         return pseudo_ids
 
     def upload(self):
-
-        seqfiles = {}
-        for index, row in self.df.iterrows():
-            _tmp = []
-
-            if row['Fastq1']:
-                _tmp.append(Path(row['Seq_path'], row['Fastq1']))
-            if row['Fastq2']:
-                _tmp.append(Path(row['Seq_path'], row['Fastq2']))
-            if row['Fast5']:
-                _tmp.append(Path(row['Seq_path'], row['Fast5']))
-
-            seqfiles[row['Internal_lab_ID']] = _tmp
-
         self.df['Lab'] = self.qsettings.value('qcomboboxes/Lab')
         self.df['Host'] = self.qsettings.value('qcomboboxes/Host')
         self.df['Sequencing_technology'] = self.qsettings.value('qcomboboxes/Sequencing_technology')
+
+        df2 = self.df.fillna('')
+        errors = validate(df2)
+
+        if errors:
+            vdialog = ValidationDialog(errors)
+            vdialog.exec()
+            return False
+
+        sample_seqs = {}
+        for _, row in self.df.iterrows():
+            _seqs = []
+            if row['Fastq1']:
+                _seqs.append(Path(row["Seq_path"], row["Fastq1"]))
+            if row['Fastq2']:
+                _seqs.append(Path(row["Seq_path"], row["Fastq2"]))
+            if row['Fast5']:
+                _seqs.append(Path(row["Seq_path"], row["Fast5"]))
+
+            sample_seqs[row['Internal_lab_ID']] = _seqs
+
+
         self.df['Lab_code'] = self.df['Lab'].apply(lambda x: self.conf['tr']['Lab_to_code'][x])
         self.df['Region_code'] = self.df['Region'].apply(lambda x: self.conf['tr']['Region_to_code'][x])
         self.df['Pseudo_ID'] = self.create_pseudo_ids()
@@ -721,18 +763,37 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         meta_fields = [field for field in self.conf['model_fields'] if self.conf['model_fields'][field]['to_meta']]
         df_submit = self.df[meta_fields]
 
-        result = df_submit.to_json(orient="records")
+        now = datetime.now()
+        dt_str = now.strftime("%Y-%m-%dT%H.%M.%S")
+        json_file = Path(self.qsettings['qlineedits/Metadata_save_path'], dt_str + "_meta.json")
 
-        print(result)
+        with open(json_file, 'w', encoding='utf-8') as file:
+            df_submit.to_json(file, orient="records", force_ascii=False)
 
-        #
-        #
-        # with open('meta.json', 'w', encoding='utf-8') as file:
-        #     df.to_json(file, force_ascii=False)
-        #
-        # print(df_submit[['Region', 'Region_code']])
-        # # for idx in seqfiles:
-        # #     print(seqfiles[idx])
+        if json_file \
+            and sample_seqs \
+            and dt_str \
+            and self.qsettings['qlineedits/Endpoint'] \
+            and self.qsettings['qlineedits/AWS_key_id'] \
+            and self.qsettings['qlineedits/AWS_secret_key'] \
+            and self.qsettings['qcomboboxes/HCP_buckets'] \
+            and self.qsettings['qlineedits/Pseudo_ID_filepath']:
+
+            ret_ok = hcp_upload(json_file,
+                            sample_seqs,
+                            dt_str,
+                            self.qsettings['qlineedits/Endpoint'],
+                            self.qsettings['qlineedits/AWS_key_id'],
+                            self.qsettings['qlineedits/AWS_secret_key'],
+                            self.qsettings['qcomboboxes/HCP_buckets']
+                            )
+
+            if ret_ok:
+                pseudo_id_file = Path(self.qsettings['qlineedits/Pseudo_ID_filepath'])
+
+                with pseudo_id_file.open("a") as f:
+                    for i, row in df_submit.iterrows():
+                        f.write(row['Pseudo_ID'] + "\t" + dt_str)
 
 
 def main():

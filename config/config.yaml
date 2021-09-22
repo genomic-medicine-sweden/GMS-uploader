@@ -153,7 +153,7 @@ model_fields:
     delegates: ['None']
     validators: False
   Fastq1:
-    to_meta: False
+    to_meta: True
     col_width: 100
     edit: False
     view: ['lab']
@@ -161,7 +161,7 @@ model_fields:
     delegates: ['None']
     validators: False
   Fastq2:
-    to_meta: False
+    to_meta: True
     col_width: 100
     edit: False
     view: ['lab']
@@ -169,7 +169,7 @@ model_fields:
     delegates: ['None']
     validators: False
   Fast5:
-    to_meta: False
+    to_meta: True
     col_width: 100
     edit: False
     view: [ 'lab' ]
