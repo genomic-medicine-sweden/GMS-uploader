@@ -1,5 +1,4 @@
 import sys
-import os
 from PySide6.QtCore import *
 from PySide6.QtGui import *
 from PySide6.QtWidgets import *
@@ -321,22 +320,22 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def set_icons(self):
 
-        self.action_open_meta.setIcon(QIcon('fontawsome/file-import-solid.svg'))
-        self.actionsave_meta.setIcon(QIcon('fontawsome/save-solid.svg'))
-        self.actionmetadata.setIcon(QIcon('fontawsome/table-solid.svg'))
-        self.actionpreferences.setIcon(QIcon('fontawsome/cogs-solid.svg'))
-        self.actionupload.setIcon(QIcon('fontawsome/upload-solid.svg'))
-        self.actionselect_seq_files.setIcon(QIcon('fontawsome/dna-solid.svg'))
+        self.action_open_meta.setIcon(QIcon('fontawesome/file-import-solid.svg'))
+        self.actionsave_meta.setIcon(QIcon('fontawesome/save-solid.svg'))
+        self.actionmetadata.setIcon(QIcon('fontawesome/table-solid.svg'))
+        self.actionpreferences.setIcon(QIcon('fontawesome/cogs-solid.svg'))
+        self.actionupload.setIcon(QIcon('fontawesome/upload-solid.svg'))
+        self.actionselect_seq_files.setIcon(QIcon('fontawesome/dna-solid.svg'))
 
-        self.pushButton_filldown.setIcon(QIcon('fontawsome/arrow-down-solid.svg'))
+        self.pushButton_filldown.setIcon(QIcon('fontawesome/arrow-down-solid.svg'))
         self.pushButton_filldown.setIconSize(QSize(18, 18))
-        self.pushButton_drop.setIcon(QIcon('fontawsome/times-solid.svg'))
+        self.pushButton_drop.setIcon(QIcon('fontawesome/times-solid.svg'))
         self.pushButton_drop.setIconSize(QSize(18, 18))
-        self.pushButton_clear.setIcon(QIcon('fontawsome/trash-solid.svg'))
+        self.pushButton_clear.setIcon(QIcon('fontawesome/trash-solid.svg'))
         self.pushButton_clear.setIconSize(QSize(14, 14))
-        self.pushButton_resetfilters.setIcon(QIcon('fontawsome/filter-reset-solid.svg'))
+        self.pushButton_resetfilters.setIcon(QIcon('fontawesome/filter-reset-solid.svg'))
         self.pushButton_resetfilters.setIconSize(QSize(14, 14))
-        self.pushButton_filtermarked.setIcon(QIcon('fontawsome/filter-solid.svg'))
+        self.pushButton_filtermarked.setIcon(QIcon('fontawesome/filter-solid.svg'))
         self.pushButton_filtermarked.setIconSize(QSize(14, 14))
 
     def drop_rows(self):
@@ -797,10 +796,21 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
 
 def main():
+    try:
+        import pyi_splash
+    except:
+        pass
+
     app = QApplication(sys.argv)
     window = MainWindow()
     app.setStyleSheet(qdarktheme.load_stylesheet("light"))
     window.show()
+
+    try:
+        pyi_splash.close()
+    except:
+        pass
+
     sys.exit(app.exec())
 
 
