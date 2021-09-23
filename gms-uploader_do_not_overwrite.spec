@@ -46,7 +46,7 @@ exe = EXE(pyz,
           target_arch=None,
           codesign_identity=None,
           entitlements_file=None,
-          icon='icons\\gms_logo.ico'
+          icon='icons\\GMS-logo.ico'
           )
 coll = COLLECT(exe,
                splash.binaries,
