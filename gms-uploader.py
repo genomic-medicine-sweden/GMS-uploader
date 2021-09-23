@@ -33,9 +33,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.setWindowIcon(QIcon('icons/GMS-logo.png'))
         self.setWindowTitle(__title__ + " " + __version__)
 
-        self.actionsave_meta.setDisabled(True)
-        self.action_open_meta.setDisabled(True)
-
         # add icons
         self.set_icons()
 
@@ -56,13 +53,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.df = pd.DataFrame(columns=self.tableView_columns)
         self.model = PandasModel(self.df, self.conf['model_fields'])
-        self.multifilter_sort_proxy_model = MultiSortFilterProxyModel()
+        self.mfilter_sort_proxy_model = MultiSortFilterProxyModel()
 
-        self.tabWidget_metadata.setTabText(0, "Patient metadata")
-        self.tabWidget_metadata.setTabText(1, "Organism metadata")
-        self.tabWidget_metadata.setTabText(2, "Lab metadata")
+        self.tabWidget_metadata.setTabText(0, "patient metadata")
+        self.tabWidget_metadata.setTabText(1, "organism metadata")
+        self.tabWidget_metadata.setTabText(2, "lab metadata")
 
-        self.lineEdit_filter.setPlaceholderText("Freetext filter")
+        self.lineEdit_filter.setPlaceholderText("freetext filter")
 
         # setup settings
 
@@ -72,7 +69,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.delegates['organism'] = {}
 
         self.set_signals()
-        self.tableView_setup()
+        self.tableview_setup()
         self.stackedWidget.setCurrentIndex(0)
         self.tabWidget_metadata.setCurrentIndex(0)
         self.set_hidden_columns()
@@ -82,7 +79,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def validate_settings(self):
         all_keys = self.qsettings.allKeys()
-        # print(all_keys)
 
         for key in all_keys:
             wtype, field = key.split('/')
@@ -132,16 +128,35 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.set_pseudo_id_start()
 
     def set_static_lineedits(self):
-        self.lineEdit_Submitter.setText(self.qsettings.value("qlineedits/Submitter"))
-        self.lineEdit_key_id.setText(self.qsettings.value("qlineedits/AWS_key_id"))
-        self.lineEdit_endpoint.setText(self.qsettings.value("qlineedits/Endpoint"))
-        self.lineEdit_secret_key.setText(self.qsettings.value("qlineedits/AWS_secret_key"))
-        self.lineEdit_Lab.setText(self.qsettings.value("qcomboboxes/Lab"))
-        self.lineEdit_Sequencing_technology.setText(self.qsettings.value("qcomboboxes/Sequencing_technology"))
-        self.lineEdit_host.setText(self.qsettings.value("qcomboboxes/Host"))
-        self.lineEdit_lib_method.setText(self.qsettings.value("qcomboboxes/Library_method"))
-        self.lineEdit_bucket.setText(self.qsettings.value("qcomboboxes/HCP_buckets"))
-        self.lineEdit_pseudo_id.setText(self.qsettings.value("no_widget/Pseudo_ID_start"))
+        self.lineEdit_submitter.setText(self.qsettings.value("qlineedits/submitter"))
+        self.lineEdit_credentials_path.setText(self.qsettings.value("qlineedits/credentials_path"))
+        self.lineEdit_lab.setText(self.qsettings.value("qcomboboxes/lab"))
+        self.lineEdit_seq_technology.setText(self.qsettings.value("qcomboboxes/seq_technology"))
+        self.lineEdit_host.setText(self.qsettings.value("qcomboboxes/host"))
+        self.lineEdit_lib_method.setText(self.qsettings.value("qcomboboxes/library_method"))
+        self.lineEdit_bucket.setText(self.qsettings.value("qcomboboxes/hcp_bucket"))
+        self.lineEdit_pseudo_id.setText(self.qsettings.value("no_widget/pseudo_id_start"))
+
+    def set_credentials_path(self):
+        obj = self.sender()
+        button_name = obj.objectName()
+        name = button_name.strip("button")
+
+        print("set credentials")
+
+        dialog = QFileDialog()
+
+        credentials_path, _ = dialog.getSaveFileName(self,
+                                                     'Select an awesome credentials json file',
+                                                     "",
+                                                     "json files (*.json)",
+                                                     options=QFileDialog.DontUseNativeDialog |
+                                                             QFileDialog.DontConfirmOverwrite)
+
+        f_obj = Path(credentials_path)
+        if f_obj.parent.exists():
+            edit = self.stackedWidgetPage2.findChild(QLineEdit, name, Qt.FindChildrenRecursively)
+            edit.setText(credentials_path)
 
     def set_pseudo_id_path(self):
         obj = self.sender()
@@ -153,9 +168,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         default_fn = "gms-uploader_1_pseudoids.txt"
 
         pseudo_id_fp, _ = dialog.getSaveFileName(self,
-                                                 'Set an awesome filepath to store pseudo IDs',
+                                                 'Set an awesome pseudo_id filepath',
                                                  default_fn,
-                                                 "Pseudo ID store files (*_pseudoids.txt)",
+                                                 "pseudo_ID files (*_pseudoids.txt)",
                                                  options=QFileDialog.DontUseNativeDialog |
                                                          QFileDialog.DontConfirmOverwrite)
         pif_obj = Path(pseudo_id_fp)
@@ -181,7 +196,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         edit = self.stackedWidgetPage2.findChild(QLineEdit, name, Qt.FindChildrenRecursively)
         edit.setText(dirpath)
 
-    def set_metadata_save_path(self):
+    def set_metadata_path(self):
         obj = self.sender()
         button_name = obj.objectName()
         name = button_name.strip("button")
@@ -201,12 +216,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def settings_setup(self):
         for name in self.conf['settings']['qlineedits']:
             if name in self.conf['add_buttons']:
-                if name == "Pseudo_ID_filepath":
+                if name == "pseudo_id_filepath":
                     func = self.set_pseudo_id_path
-                elif name == "Data_root_path":
+                elif name == "data_root_path":
                     func = self.set_data_root_path
-                elif name == "Metadata_save_path":
-                    func = self.set_metadata_save_path
+                elif name == "metadata_path":
+                    func = self.set_metadata_path
+                elif name == "credentials_path":
+                    func = self.set_credentials_path
 
                 button_name = name + "button"
                 button = QPushButton("...", objectName=button_name)
@@ -269,8 +286,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
                 listwidget.addItem(item)
 
-        store_key = "/".join(['qcomboboxes', 'Lab'])
-
         self.set_pseudo_id_start()
         self.set_static_lineedits()
 
@@ -302,45 +317,51 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.set_static_lineedits()
 
     def set_signals(self):
-        self.actionpreferences.triggered.connect(lambda: self.stackedWidget.setCurrentIndex(1))
-        self.actionmetadata.triggered.connect(lambda: self.stackedWidget.setCurrentIndex(0))
+        self.action_show_prefs.triggered.connect(lambda: self.stackedWidget.setCurrentIndex(1))
+        self.action_show_meta.triggered.connect(lambda: self.stackedWidget.setCurrentIndex(0))
         self.lineEdit_filter.textChanged.connect(self.set_free_filter)
         self.pushButton_filtermarked.setCheckable(True)
         self.pushButton_filtermarked.clicked.connect(self.set_mark_filter)
         self.pushButton_drop.clicked.connect(self.drop_rows)
         self.pushButton_clear.clicked.connect(self.clear_table)
-        self.actionselect_seq_files.triggered.connect(self.get_files_folders)
-        self.actionupload.triggered.connect(self.upload)
+        self.action_select_seq_files.triggered.connect(self.get_files_folders)
+        self.action_upload_meta_seqs.triggered.connect(self.upload)
+        self.action_save_meta.triggered.connect(self.pickle_df)
+        self.action_open_meta.triggered.connect(self.unpickle_df)
+        self.pushButton_invert.clicked.connect(self.invert_marks)
 
     def get_files_folders(self):
-        datadir = self.qsettings.value('qlineedits/Data_root_path')
+        datadir = self.qsettings.value('qlineedits/data_root_path')
         dialog = QFileDialog()
         files, _ = dialog.getOpenFileNames(self,
-                                        "Select sequence data files",
-                                        datadir,
-                                        "Sequence files (*.fast5 *.fastq.gz *.fastq *.fq.gz *.fq")
+                                           "Select sequence data files",
+                                           datadir,
+                                           "Sequence files (*.fast5 *.fastq.gz *.fastq *.fq.gz *.fq",
+                                           options=QFileDialog.DontUseNativeDialog)
 
         self.parse_files(files)
 
     def set_icons(self):
 
-        self.action_open_meta.setIcon(QIcon('fontawesome/file-import-solid.svg'))
-        self.actionsave_meta.setIcon(QIcon('fontawesome/save-solid.svg'))
-        self.actionmetadata.setIcon(QIcon('fontawesome/table-solid.svg'))
-        self.actionpreferences.setIcon(QIcon('fontawesome/cogs-solid.svg'))
-        self.actionupload.setIcon(QIcon('fontawesome/upload-solid.svg'))
-        self.actionselect_seq_files.setIcon(QIcon('fontawesome/dna-solid.svg'))
+        self.action_open_meta.setIcon(QIcon('fontawesome/folder-open-outline_mdi.svg'))
+        self.action_save_meta.setIcon(QIcon('fontawesome/content-save-outline_mdi.svg'))
+        self.action_show_meta.setIcon(QIcon('fontawesome/table_mdi.svg'))
+        self.action_show_prefs.setIcon(QIcon('fontawesome/cog-outline_mdi.svg'))
+        self.action_upload_meta_seqs.setIcon(QIcon('fontawesome/tray-arrow-up_mdi.svg'))
+        self.action_select_seq_files.setIcon(QIcon('fontawesome/dna_mdi.svg'))
+        self.action_import_csv.setIcon(QIcon('fontawesome/import-csv_own.svg'))
 
-        self.pushButton_filldown.setIcon(QIcon('fontawesome/arrow-down-solid.svg'))
-        self.pushButton_filldown.setIconSize(QSize(18, 18))
-        self.pushButton_drop.setIcon(QIcon('fontawesome/times-solid.svg'))
-        self.pushButton_drop.setIconSize(QSize(18, 18))
-        self.pushButton_clear.setIcon(QIcon('fontawesome/trash-solid.svg'))
-        self.pushButton_clear.setIconSize(QSize(14, 14))
-        self.pushButton_resetfilters.setIcon(QIcon('fontawesome/filter-reset-solid.svg'))
-        self.pushButton_resetfilters.setIconSize(QSize(14, 14))
-        self.pushButton_filtermarked.setIcon(QIcon('fontawesome/filter-solid.svg'))
-        self.pushButton_filtermarked.setIconSize(QSize(14, 14))
+        self.pushButton_filldown.setIcon(QIcon('fontawesome/arrow-down_mdi.svg'))
+        # self.pushButton_filldown.setIconSize(QSize(18, 18))
+        self.pushButton_drop.setIcon(QIcon('fontawesome/close_mdi.svg'))
+        # self.pushButton_drop.setIconSize(QSize(18, 18))
+        self.pushButton_clear.setIcon(QIcon('fontawesome/trash-can-outline_mdi.svg'))
+        # self.pushButton_clear.setIconSize(QSize(14, 14))
+        self.pushButton_resetfilters.setIcon(QIcon('fontawesome/filter-remove-outline_mdi.svg'))
+        # self.pushButton_resetfilters.setIconSize(QSize(14, 14))
+        self.pushButton_filtermarked.setIcon(QIcon('fontawesome/filter-outline_mdi.svg'))
+        # self.pushButton_filtermarked.setIconSize(QSize(14, 14))
+        self.pushButton_invert.setIcon(QIcon('fontawesome/invert_own.svg'))
 
     def drop_rows(self):
         self.model.dropMarkedRows()
@@ -363,15 +384,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def set_mark_filter(self):
         if self.pushButton_filtermarked.isChecked():
-            self.multifilter_sort_proxy_model.setCheckedFilter()
+            self.mfilter_sort_proxy_model.setCheckedFilter()
 
         else:
-            self.multifilter_sort_proxy_model.clearCheckedFilter()
+            self.mfilter_sort_proxy_model.clearCheckedFilter()
 
     def set_free_filter(self):
         text = self.lineEdit_filter.text()
         search = QRegularExpression(text, QRegularExpression.CaseInsensitiveOption)
-        self.multifilter_sort_proxy_model.setFilterByColumns([1, 2, 3], search)
+        self.mfilter_sort_proxy_model.setFilterByColumns([1, 2, 3], search)
 
     def set_delegates(self):
         for field in self.conf['model_fields']:
@@ -447,11 +468,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.tableView_organism.setItemDelegateForColumn(self.tableView_columns.index(field),
                                                                  self.delegates[view][field])
 
-    def tableView_setup(self):
+    def tableview_setup(self):
 
-        self.multifilter_sort_proxy_model.setSourceModel(self.model)
+        self.mfilter_sort_proxy_model.setSourceModel(self.model)
 
-        self.tableView_patient.setModel(self.multifilter_sort_proxy_model)
+        self.tableView_patient.setModel(self.mfilter_sort_proxy_model)
         self.tableView_patient.setEditTriggers(QAbstractItemView.DoubleClicked
                                                | QAbstractItemView.SelectedClicked
                                                | QAbstractItemView.EditKeyPressed)
@@ -459,14 +480,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.tableView_patient.horizontalHeader().setSectionsMovable(True)
         self.tableView_patient.setSortingEnabled(True)
 
-        self.tableView_organism.setModel(self.multifilter_sort_proxy_model)
-        self.tableView_organism.setEditTriggers(QAbstractItemView.DoubleClicked | QAbstractItemView.SelectedClicked | QAbstractItemView.EditKeyPressed)
+        self.tableView_organism.setModel(self.mfilter_sort_proxy_model)
+        self.tableView_organism.setEditTriggers(
+            QAbstractItemView.DoubleClicked | QAbstractItemView.SelectedClicked | QAbstractItemView.EditKeyPressed)
         self.tableView_organism.horizontalHeader().setStretchLastSection(True)
         self.tableView_organism.horizontalHeader().setSectionsMovable(True)
         self.tableView_organism.setSortingEnabled(True)
 
-        self.tableView_lab.setModel(self.multifilter_sort_proxy_model)
-        self.tableView_lab.setEditTriggers(QAbstractItemView.DoubleClicked | QAbstractItemView.SelectedClicked | QAbstractItemView.EditKeyPressed)
+        self.tableView_lab.setModel(self.mfilter_sort_proxy_model)
+        self.tableView_lab.setEditTriggers(
+            QAbstractItemView.DoubleClicked | QAbstractItemView.SelectedClicked | QAbstractItemView.EditKeyPressed)
         self.tableView_lab.horizontalHeader().setStretchLastSection(True)
         self.tableView_lab.horizontalHeader().setSectionsMovable(True)
         self.tableView_lab.setSortingEnabled(True)
@@ -479,19 +502,19 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.update_model()
 
     def filldown(self):
-        visible_tableview = self.get_visible_tableview()
+        visible_tableview = self.get_current_tableview()
         if visible_tableview:
             select = visible_tableview.selectionModel()
             index = select.currentIndex()
 
-            max_rows = self.multifilter_sort_proxy_model.rowCount()
-            data_orig = self.multifilter_sort_proxy_model.data(index, Qt.DisplayRole)
+            max_rows = self.mfilter_sort_proxy_model.rowCount()
+            data_orig = self.mfilter_sort_proxy_model.data(index, Qt.DisplayRole)
 
             for r in range(index.row() + 1, max_rows):
-                index_new = self.multifilter_sort_proxy_model.index(r, index.column())
-                data_new = self.multifilter_sort_proxy_model.data(index_new, Qt.DisplayRole)
+                index_new = self.mfilter_sort_proxy_model.index(r, index.column())
+                data_new = self.mfilter_sort_proxy_model.data(index_new, Qt.DisplayRole)
                 if data_new == '':
-                    self.multifilter_sort_proxy_model.setData(index_new, data_orig, Qt.EditRole)
+                    self.mfilter_sort_proxy_model.setData(index_new, data_orig, Qt.EditRole)
                 else:
                     break
 
@@ -501,16 +524,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def update_model(self):
         self.model = PandasModel(self.df, self.conf['model_fields'])
-        self.multifilter_sort_proxy_model = MultiSortFilterProxyModel()
-        self.multifilter_sort_proxy_model.setSourceModel(self.model)
-        self.tableView_patient.setModel(self.multifilter_sort_proxy_model)
-        self.tableView_lab.setModel(self.multifilter_sort_proxy_model)
-        self.tableView_organism.setModel(self.multifilter_sort_proxy_model)
+        self.mfilter_sort_proxy_model = MultiSortFilterProxyModel()
+        self.mfilter_sort_proxy_model.setSourceModel(self.model)
+        self.tableView_patient.setModel(self.mfilter_sort_proxy_model)
+        self.tableView_lab.setModel(self.mfilter_sort_proxy_model)
+        self.tableView_organism.setModel(self.mfilter_sort_proxy_model)
 
         self.set_col_widths()
 
     def reset_proxy(self):
-        self.multifilter_sort_proxy_model.sort(-1)
+        self.mfilter_sort_proxy_model.sort(-1)
         self.tableView_patient.horizontalHeader().setSortIndicator(-1, Qt.SortOrder.DescendingOrder)
         self.lineEdit_filter.setText('')
         self.pushButton_filtermarked.setChecked(False)
@@ -555,61 +578,59 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         for file in files:
             f = Path(file)
             if f.is_dir():
-                for type in self.conf['seqfiles']:
-                    ext = self.conf['seqfiles'][type]['ext']
+                for type in self.conf['seq_files']:
+                    ext = self.conf['seq_files'][type]['ext']
                     for fp in f.rglob(ext):
                         parsed_files.append(fp)
 
             else:
-                for type in self.conf['seqfiles']:
-                    ext = self.conf['seqfiles'][type]['ext']
+                for type in self.conf['seq_files']:
+                    ext = self.conf['seq_files'][type]['ext']
                     if f.match(ext):
                         parsed_files.append(f)
 
-
         _data = {}
         for file in parsed_files:
-            seqpath = file.parent
+            seq_path = file.parent
             filename = file.name
             filename_obj = Path(filename)
 
             sample = filename.split('_')[0]
 
-            if not sample in _data:
+            if sample not in _data:
                 _data[sample] = {}
-                _data[sample]['Seq_path'] = str(seqpath)
+                _data[sample]['seq_path'] = str(seq_path)
 
-            if filename_obj.match(self.conf['seqfiles']['fastq_gz']['ext']):
+            if filename_obj.match(self.conf['seq_files']['fastq_gz']['ext']):
                 f = file.stem.split('.')[0]
                 lane = f.split('_')[-1]
 
-                _data[sample]['Lane'] = lane
+                _data[sample]['lane'] = lane
 
-                for field, pat in self.conf['seqfiles']['fastq_gz']['fields'].items():
+                for field, pat in self.conf['seq_files']['fastq_gz']['fields'].items():
                     if filename_obj.match(pat):
                         _data[sample][field] = str(filename)
 
-            elif filename_obj.match(self.conf['seqfiles']['fast5']['ext']):
-                for field, pat in self.conf['seqfiles']['fast5']['fields'].items():
+            elif filename_obj.match(self.conf['seq_files']['fast5']['ext']):
+                for field, pat in self.conf['seq_files']['fast5']['fields'].items():
                     if filename_obj.match(pat):
                         _data[sample][field] = str(filename)
 
-        data = []
+        out_data = []
         for sample in _data:
             row = dict()
-            row['Mark'] = 0
-            row['Internal_lab_ID'] = sample
+            row['mark'] = 0
+            row['internal_lab_id'] = sample
             for key in _data[sample]:
                 row[key] = _data[sample][key]
 
-            data.append(row)
+            out_data.append(row)
 
-        self.add_data(data)
+        self.add_data(out_data)
 
     def find_duplicates(self, df1, df2):
         df3 = df1.append(df2)
-
-        duplicates = df3['Internal_lab_ID'].duplicated().any()
+        return df3['internal_lab_id'].duplicated().any()
 
     def add_data(self, data):
         new_df = pd.DataFrame(data)
@@ -619,24 +640,175 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.df = self.df.fillna('')
             self.update_model()
         else:
-            msgBox = QMessageBox()
-            msgBox.setText("Duplicate SampleIDs present in imported data.")
-            msgBox.exec()
+            msg_box = QMessageBox()
+            msg_box.setText("Duplicate SampleIDs present in imported data.")
+            msg_box.exec()
 
-    def get_visible_tableview(self):
+    def get_current_tableview(self):
         for tbv in [self.tableView_patient, self.tableView_lab, self.tableView_organism]:
             if tbv.isVisible():
                 return tbv
 
+    def set_pseudo_id_start(self):
+        file = self.qsettings.value("qlineedits/pseudo_id_filepath")
+        file_obj = Path(file)
+
+        self.qsettings.setValue('no_widget/pseudo_id_start', "None")
+
+        if file_obj.exists():
+            pseudo_ids = file_obj.read_text().splitlines()
+
+            prev_prefix, prev_number = get_pseudo_id_code_number(pseudo_ids)
+
+            if prev_number < 0:
+                msg = MsgError("Something is wrong with the set pseudo_id file.")
+                msg.exec()
+            else:
+                lab = self.qsettings.value('qcomboboxes/lab')
+
+                if lab:
+                    curr_prefix = self.conf['tr']['lab_to_code'][lab]
+
+                    if prev_prefix is not None:
+                        if curr_prefix != prev_prefix:
+                            msg = MsgError("Current and previous pseudo_id do not match.")
+                            msg.exec()
+
+                    elif curr_prefix == prev_prefix or prev_prefix is None:
+                        curr_znumber_str = zfill_int(prev_number + 1)
+                        pseudo_id_start = curr_prefix + "-" + curr_znumber_str
+                        self.qsettings.setValue('no_widget/pseudo_id_start', pseudo_id_start)
+                        self.qsettings.setValue('no_widget/pseudo_id_start_int', prev_number + 1)
+                        self.qsettings.setValue('no_widget/pseudo_id_start_prefix', curr_prefix)
+
+    def create_pseudo_ids(self):
+        pseudo_ids = []
+        prefix = self.qsettings.value('no_widget/pseudo_id_start_prefix')
+        start = self.qsettings.value('no_widget/pseudo_id_start_int')
+        end = start + len(self.df)
+
+        for number in range(start, end):
+            pseudo_ids.append(prefix + "-" + zfill_int(number))
+
+        return pseudo_ids
+
+    def upload(self):
+        self.df['lab'] = self.qsettings.value('qcomboboxes/lab')
+        self.df['host'] = self.qsettings.value('qcomboboxes/host')
+        self.df['seq_technology'] = self.qsettings.value('qcomboboxes/seq_technology')
+
+        df2 = self.df.fillna('')
+        errors = validate(df2)
+
+        if errors:
+            vdialog = ValidationDialog(errors)
+            vdialog.exec()
+            return False
+
+        sample_seqs = {}
+        for _, row in self.df.iterrows():
+            _seqs = []
+            if row['fastq1']:
+                _seqs.append(Path(row["seq_path"], row["fastq1"]))
+            if row['fastq2']:
+                _seqs.append(Path(row["seq_path"], row["fastq2"]))
+            if row['fast5']:
+                _seqs.append(Path(row["Seq_path"], row["fast5"]))
+
+            sample_seqs[row['internal_lab_id']] = _seqs
+
+        self.df['lab_code'] = self.df['lab'].apply(lambda x: self.conf['tr']['lab_to_code'][x])
+        self.df['region_code'] = self.df['region'].apply(lambda x: self.conf['tr']['region_to_code'][x])
+        self.df['pseudo_id'] = self.create_pseudo_ids()
+
+        meta_fields = [field for field in self.conf['model_fields'] if self.conf['model_fields'][field]['to_meta']]
+        df_submit = self.df[meta_fields]
+
+        now = datetime.now()
+        dt_str = now.strftime("%Y-%m-%dT%H.%M.%S")
+        json_file = Path(self.qsettings['qlineedits/metadata_path'], dt_str + "_meta.json")
+
+        with open(json_file, 'w', encoding='utf-8') as file:
+            df_submit.to_json(file, orient="records", force_ascii=False)
+
+        if json_file \
+                and sample_seqs \
+                and dt_str \
+                and self.qsettings['qlineedits/endpoint'] \
+                and self.qsettings['qlineedits/aws_key_id'] \
+                and self.qsettings['qlineedits/aws_secret_key'] \
+                and self.qsettings['qcomboboxes/hcp_buckets'] \
+                and self.qsettings['qlineedits/pseudo_id_filepath']:
+
+            ret_ok = hcp_upload(json_file,
+                                sample_seqs,
+                                dt_str,
+                                self.qsettings['qlineedits/endpoint'],
+                                self.qsettings['qlineedits/aws_key_id'],
+                                self.qsettings['qlineedits/aws_secret_key'],
+                                self.qsettings['qcomboboxes/hcp_buckets']
+                                )
+
+            if ret_ok:
+                pseudo_id_file = Path(self.qsettings['qlineedits/pseudo_id_filepath'])
+
+                with pseudo_id_file.open("a") as f:
+                    for i, row in df_submit.iterrows():
+                        f.write(row['pseudo_id'] + "\t" + dt_str)
+
+    def pickle_df(self):
+        now = datetime.now()
+        dt_str = now.strftime("%Y-%m-%dT%H.%M.%S")
+        dialog = QFileDialog()
+        default_fn = dt_str + "_metadata.pkl"
+        filepath, _ = dialog.getSaveFileName(self,
+                                             'Save an awesome metadata file',
+                                             default_fn,
+                                             "metadata files (*.pkl)",
+                                             options=QFileDialog.DontUseNativeDialog)
+        if filepath:
+            self.df.to_pickle(filepath)
+
+    def unpickle_df(self):
+        default_path = ""
+        dialog = QFileDialog()
+        filepath, _ = dialog.getSaveFileName(self,
+                                             'Open an awesome metadata file',
+                                              default_path,
+                                              "metadata files (*.pkl)",
+                                              options=QFileDialog.DontUseNativeDialog)
+
+        f_obj = Path(filepath)
+        if f_obj.exists():
+            self.df = pd.read_pickle(filepath)
+            self.update_model()
+
+    def invert_marks(self):
+        for i in range(0, self.model.rowCount()):
+            idx = self.model.index(i, 0)
+            value = self.model.data(idx, Qt.DisplayRole)
+
+            if value == "0":
+                new_value = "1"
+            else:
+                new_value = "0"
+
+            print(value, new_value)
+
+            self.model.setData(idx, new_value, Qt.EditRole)
+
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Return:
-            visible_tableview = self.get_visible_tableview()
+            visible_tableview = self.get_current_tableview()
             if visible_tableview:
                 indexes = visible_tableview.selectedIndexes()
                 visible_tableview.edit(indexes[0])
 
+        elif event.key() == (Qt.Key_Control and Qt.Key_F):
+            self.filldown()
+
         elif event.key() == Qt.Key_Delete:
-            visible_tableview = self.get_visible_tableview()
+            visible_tableview = self.get_current_tableview()
             if visible_tableview:
                 indexes = visible_tableview.selectedIndexes()
                 model = visible_tableview.model()
@@ -645,7 +817,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                         model.setData(i, "", Qt.EditRole)
 
         elif event.matches(QKeySequence.Copy):
-            visible_tableview = self.get_visible_tableview()
+            visible_tableview = self.get_current_tableview()
             if visible_tableview:
                 indexes = visible_tableview.selectedIndexes()
                 model = visible_tableview.model()
@@ -660,28 +832,27 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                         old_row = i.row()
                     else:
                         r.append("\t".join(c))
-                        c = []
-                        c.append(model.data(i, Qt.DisplayRole))
+                        c = [model.data(i, Qt.DisplayRole)]
                         old_row = i.row()
 
                 r.append("\t".join(c))
-
                 copy_data = "\n".join(r)
+
                 self.clipboard.setText(copy_data)
 
         elif event.matches(QKeySequence.Paste):
 
             clipboard = QGuiApplication.clipboard()
-            mimeData = clipboard.mimeData()
+            mime_data = clipboard.mimeData()
 
-            curr_view = self.get_visible_tableview()
+            curr_view = self.get_current_tableview()
 
             model = curr_view.model()
             index = curr_view.selectionModel().currentIndex()
             i_row = index.row()
             i_col = index.column()
 
-            rows = mimeData.text().split("\n")
+            rows = mime_data.text().split("\n")
             for i, r in enumerate(rows):
                 columns = r.split("\t")
                 for j, value in enumerate(columns):
@@ -689,114 +860,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         else:
             super().keyPressEvent(event)
-
-    def set_pseudo_id_start(self):
-        file = self.qsettings.value("qlineedits/Pseudo_ID_filepath")
-        file_obj = Path(file)
-
-        self.qsettings.setValue('no_widget/Pseudo_ID_start', "None")
-
-        if file_obj.exists():
-            pseudo_ids = file_obj.read_text().splitlines()
-
-            prev_prefix, prev_number = get_pseudo_id_code_number(pseudo_ids)
-
-            if prev_number < 0:
-                msg = MsgError("Something is wrong with the set pseudo_id file.")
-                msg.exec()
-            else:
-                lab = self.qsettings.value('qcomboboxes/Lab')
-
-                if lab:
-                    curr_prefix = self.conf['tr']['Lab_to_code'][lab]
-
-                    if prev_prefix is not None:
-                        if curr_prefix != prev_prefix:
-                            msg = MsgError("Current and previous Pseudo_ID do not match.")
-                            msg.exec()
-
-                    elif curr_prefix == prev_prefix or prev_prefix is None:
-                        curr_znumber_str = zfill_int(prev_number + 1)
-                        pseudo_id_start = curr_prefix + "-" + curr_znumber_str
-                        self.qsettings.setValue('no_widget/Pseudo_ID_start', pseudo_id_start)
-                        self.qsettings.setValue('no_widget/Pseudo_ID_start_int', prev_number + 1)
-                        self.qsettings.setValue('no_widget/Pseudo_ID_start_prefix', curr_prefix)
-
-    def create_pseudo_ids(self):
-        pseudo_ids = []
-        prefix = self.qsettings.value('no_widget/Pseudo_ID_start_prefix')
-        start = self.qsettings.value('no_widget/Pseudo_ID_start_int')
-        end = start + len(self.df)
-
-        for number in range(start, end):
-            pseudo_ids.append(prefix + "-" + zfill_int(number))
-
-        return pseudo_ids
-
-    def upload(self):
-        self.df['Lab'] = self.qsettings.value('qcomboboxes/Lab')
-        self.df['Host'] = self.qsettings.value('qcomboboxes/Host')
-        self.df['Sequencing_technology'] = self.qsettings.value('qcomboboxes/Sequencing_technology')
-
-        df2 = self.df.fillna('')
-        errors = validate(df2)
-
-        if errors:
-            vdialog = ValidationDialog(errors)
-            vdialog.exec()
-            return False
-
-        sample_seqs = {}
-        for _, row in self.df.iterrows():
-            _seqs = []
-            if row['Fastq1']:
-                _seqs.append(Path(row["Seq_path"], row["Fastq1"]))
-            if row['Fastq2']:
-                _seqs.append(Path(row["Seq_path"], row["Fastq2"]))
-            if row['Fast5']:
-                _seqs.append(Path(row["Seq_path"], row["Fast5"]))
-
-            sample_seqs[row['Internal_lab_ID']] = _seqs
-
-
-        self.df['Lab_code'] = self.df['Lab'].apply(lambda x: self.conf['tr']['Lab_to_code'][x])
-        self.df['Region_code'] = self.df['Region'].apply(lambda x: self.conf['tr']['Region_to_code'][x])
-        self.df['Pseudo_ID'] = self.create_pseudo_ids()
-
-        meta_fields = [field for field in self.conf['model_fields'] if self.conf['model_fields'][field]['to_meta']]
-        df_submit = self.df[meta_fields]
-
-        now = datetime.now()
-        dt_str = now.strftime("%Y-%m-%dT%H.%M.%S")
-        json_file = Path(self.qsettings['qlineedits/Metadata_save_path'], dt_str + "_meta.json")
-
-        with open(json_file, 'w', encoding='utf-8') as file:
-            df_submit.to_json(file, orient="records", force_ascii=False)
-
-        if json_file \
-            and sample_seqs \
-            and dt_str \
-            and self.qsettings['qlineedits/Endpoint'] \
-            and self.qsettings['qlineedits/AWS_key_id'] \
-            and self.qsettings['qlineedits/AWS_secret_key'] \
-            and self.qsettings['qcomboboxes/HCP_buckets'] \
-            and self.qsettings['qlineedits/Pseudo_ID_filepath']:
-
-            ret_ok = hcp_upload(json_file,
-                            sample_seqs,
-                            dt_str,
-                            self.qsettings['qlineedits/Endpoint'],
-                            self.qsettings['qlineedits/AWS_key_id'],
-                            self.qsettings['qlineedits/AWS_secret_key'],
-                            self.qsettings['qcomboboxes/HCP_buckets']
-                            )
-
-            if ret_ok:
-                pseudo_id_file = Path(self.qsettings['qlineedits/Pseudo_ID_filepath'])
-
-                with pseudo_id_file.open("a") as f:
-                    for i, row in df_submit.iterrows():
-                        f.write(row['Pseudo_ID'] + "\t" + dt_str)
 
 
 def main():

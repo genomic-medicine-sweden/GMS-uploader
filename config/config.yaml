@@ -1,6 +1,6 @@
 ---
 model_fields:
-  Mark:
+  mark:
     to_meta: False
     col_width: 80
     edit: True
@@ -8,7 +8,7 @@ model_fields:
     checkable: True
     delegates: ['checkbox']
     validators: False
-  Internal_lab_ID:
+  internal_lab_id:
     to_meta: True
     col_width: 100
     edit: False
@@ -16,7 +16,7 @@ model_fields:
     checkable: False
     delegates: ['None']
     validators: ['distinct']
-  Selection_criterion:
+  selection_criterion:
     to_meta: True
     col_width: 200
     edit: True
@@ -24,7 +24,7 @@ model_fields:
     checkable: False
     delegates: ['combobox']
     validators: ['len5']
-  Collection_date:
+  collection_date:
     to_meta: True
     col_width: 100
     edit: True
@@ -32,7 +32,7 @@ model_fields:
     checkable: False
     delegates: ['date']
     validators: ['date_format']
-  Patient_age:
+  patient_age:
     to_meta: True
     col_width: 120
     edit: True
@@ -40,7 +40,7 @@ model_fields:
     checkable: False
     delegates: ['age']
     validators: ['age_range']
-  Patient_sex:
+  patient_sex:
     to_meta: True
     col_width: 120
     edit: True
@@ -48,7 +48,7 @@ model_fields:
     checkable: False
     delegates: ['combobox']
     validators: ['inlist']
-  Patient_status:
+  patient_status:
     to_meta: True
     col_width: 150
     edit: True
@@ -56,7 +56,7 @@ model_fields:
     checkable: False
     delegates: ['combobox']
     validators: ['inlist']
-  Type:
+  type:
     to_meta: True
     col_width: 100
     edit: True
@@ -64,7 +64,7 @@ model_fields:
     checkable: False
     delegates: ['combobox']
     validators: ['inlist']
-  Sminet_LID:
+  sminet_lid:
     to_meta: True
     col_width: 100
     edit: True
@@ -72,7 +72,7 @@ model_fields:
     checkable: False
     delegates: [ 'None' ]
     validators: False
-  Pseudo_ID:
+  pseudo_id:
     to_meta: True
     col_width: 200
     edit: False
@@ -80,7 +80,7 @@ model_fields:
     checkable: False
     delegates: ['None']
     validators: ['distinct']
-  Region:
+  region:
     to_meta: True
     col_width: 200
     edit: True
@@ -88,7 +88,7 @@ model_fields:
     checkable: False
     delegates: ['combobox']
     validators: ['inlist']
-  Region_code:
+  region_code:
     to_meta: True
     col_width: 200
     edit: True
@@ -96,7 +96,7 @@ model_fields:
     checkable: False
     delegates: ['None']
     validators: ['inlist']
-  Lab:
+  lab:
     to_meta: True
     col_width: 150
     edit: True
@@ -104,7 +104,7 @@ model_fields:
     checkable: False
     delegates: ['None']
     validators: ['inlist']
-  Lab_code:
+  lab_code:
     to_meta: True
     col_width: 150
     edit: True
@@ -112,7 +112,7 @@ model_fields:
     checkable: False
     delegates: [ 'None' ]
     validators: ['inlist']
-  Host:
+  host:
     to_meta: True
     col_width: 100
     edit: True
@@ -120,7 +120,7 @@ model_fields:
     checkable: False
     delegates: ['None']
     validators: ['len5']
-  Passage_details:
+  passage_details:
     to_meta: True
     col_width: 100
     edit: True
@@ -128,7 +128,7 @@ model_fields:
     checkable: False
     delegates: ['None']
     validators: False
-  Sequencing_technology:
+  seq_technology:
     to_meta: True
     col_width: 150
     edit: True
@@ -136,7 +136,7 @@ model_fields:
     checkable: False
     delegates: ['None']
     validators: ['inlist']
-  Library_method:
+  library_method:
     to_meta: True
     col_width: 150
     edit: True
@@ -144,7 +144,7 @@ model_fields:
     checkable: False
     delegates: ['None']
     validators: ['inlist']
-  Lane:
+  lane:
     to_meta: True
     col_width: 80
     edit: False
@@ -152,7 +152,7 @@ model_fields:
     checkable: False
     delegates: ['None']
     validators: False
-  Fastq1:
+  fastq1:
     to_meta: True
     col_width: 100
     edit: False
@@ -160,7 +160,7 @@ model_fields:
     checkable: False
     delegates: ['None']
     validators: False
-  Fastq2:
+  fastq2:
     to_meta: True
     col_width: 100
     edit: False
@@ -168,7 +168,7 @@ model_fields:
     checkable: False
     delegates: ['None']
     validators: False
-  Fast5:
+  fast5:
     to_meta: True
     col_width: 100
     edit: False
@@ -176,7 +176,7 @@ model_fields:
     checkable: False
     delegates: ['None']
     validators: False
-  Seq_path:
+  seq_path:
     to_meta: False
     col_width: 200
     edit: False
@@ -184,7 +184,7 @@ model_fields:
     checkable: False
     delegates: ['None']
     validators: False
-  Comment:
+  comment:
     to_meta: True
     col_width: 200
     edit: True
@@ -194,15 +194,13 @@ model_fields:
     validators: False
 settings:
   qlineedits:
-    Data_root_path: None
-    Metadata_save_path: None
-    Pseudo_ID_filepath: None
-    Submitter: None
-    AWS_key_id: None
-    AWS_secret_key: None
-    Endpoint: vgtn0008.hcp1.vgregion.se
+    data_root_path: None
+    metadata_path: None
+    pseudo_id_filepath: None
+    credentials_path: None
+    submitter: None
   qcomboboxes:
-    HCP_buckets:
+    hcp_bucket:
       'goteborg': True
       'linkoping': False
       'umea': False
@@ -210,7 +208,7 @@ settings:
       'orebro': False
       'stockholm': False
       'lund': False
-    Lab:
+    lab:
       'Växjö - SE110': True
       'Malmö - SE120': False
       'Kalmar - SE240': False
@@ -241,21 +239,21 @@ settings:
       'A05diagnostics - SEADG': False
       'ABC lab - SEABC': False
       'Dynamic Code - SEDNC': False
-    Sequencing_technology:
+    seq_technology:
       'Illumina': True
       'Miseq': False
       'Sanger': False
       'Nanopore': False
       'MinION': False
       'Ion Torrent': False
-    Host:
+    host:
       'Human': True
       'Environment': False
-    Library_method:
+    library_method:
       'Artic': True
       'NEB': False
   qlistwidgets:
-    Region:
+    region:
       'Region Stockholm - 01': True
       'Region Uppsala - 03': False
       'Region Sörmland - 04': False
@@ -277,7 +275,7 @@ settings:
       'Region Jämtland Härjedalen - 23': False
       'Region Västerbotten - 24': False
       'Region Norrbotten - 25': False
-    Selection_criterion:
+    selection_criterion:
       'Allmän övervakning': True
       'Allmän övervakning öppenvård': True
       'Allmän övervakning slutenvård': True
@@ -286,38 +284,39 @@ settings:
       'Reinfektion': True
       'Utbrott': True
       'Information saknas': True
-    Patient_sex:
+    patient_sex:
       'Male': True
       'Female': True
       'Unknown': True
-    Passage_details_history:
+    passage_details_history:
       'Original': True
       'Vero': False
-    Type:
+    type:
       'Betacoronavirus': True
       'Unknown': False
-    Patient_status:
+    patient_status:
       'Hospitalized': True
       'Released': True
       'Live': True
       'Deceased': True
       'Unknown': True
   no_widget:
-    Pseudo_ID_start: None
-    Pseudo_ID_start_int: None
-    Pseudo_ID_start_prefix: None
+    pseudo_id_start: None
+    pseudo_id_start_int: None
+    pseudo_id_start_prefix: None
 
 add_buttons:
-  Pseudo_ID_filepath: True
-  Data_root_path: True
-  Metadata_save_path: True
+  pseudo_id_filepath: True
+  data_root_path: True
+  metadata_path: True
+  credentials_path: True
 
 echomode_password:
   qlineedits:
-    AWS_secret_key: True
+   aws_secret_key: True
 
 tr:
-  Region_to_code:
+  region_to_code:
     'Region Stockholm - 01': '01'
     'Region Uppsala - 03': '03'
     'Region Sörmland - 04': '04'
@@ -339,7 +338,7 @@ tr:
     'Region Jämtland Härjedalen - 23': '23'
     'Region Västerbotten - 24': '24'
     'Region Norrbotten - 25': '25'
-  Lab_to_code:
+  lab_to_code:
     'Växjö - SE110': 'SE110'
     'Malmö - SE120': 'SE120'
     'Kalmar - SE240': 'SE240'
@@ -370,12 +369,13 @@ tr:
     'A05diagnostics - SEADG': 'SEADG'
     'ABC lab - SEABC': 'SEABC'
     'Dynamic Code - SEDNC': 'SEDNC'
-seqfiles:
+
+seq_files:
   fastq_gz:
     ext: '*.fastq.gz'
     fields:
-      Fastq1: '*_R1_*'
-      Fastq2: '*_R2_*'
+      fastq1: '*_R1_*'
+      fastq2: '*_R2_*'
   fast5:
     ext: '*.fast5'
     fields:
