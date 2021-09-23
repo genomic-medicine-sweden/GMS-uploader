@@ -88,23 +88,27 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             wtype, field = key.split('/')
 
             if wtype not in self.conf['settings']:
-                # print("wtype not in conf settings", wtype)
+                print("wtype not in conf settings", wtype)
                 return False
             if field not in self.conf['settings'][wtype]:
-                # print("field not in conf settings", field)
+                print("field not in conf settings", field)
                 return False
 
         for wtype in self.conf['settings']:
             for field in self.conf['settings'][wtype]:
                 store_key = "/".join([wtype, field])
                 if store_key not in all_keys:
-                    # print("store_key not in all_keys", store_key)
+                    print("store_key not in all_keys", store_key)
                     return False
 
         return True
 
     def settings_init(self):
         self.qsettings.clear()
+
+        for name in self.conf['settings']['no_widget']:
+            store_key = "/".join(['no_widget', name])
+            self.qsettings.setValue(store_key, self.conf['settings']['no_widget'][name])
 
         for name in self.conf['settings']['qlineedits']:
             store_key = "/".join(['qlineedits', name])
