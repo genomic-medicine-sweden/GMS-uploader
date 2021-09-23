@@ -17,7 +17,7 @@ import yaml
 from ui.mw import Ui_MainWindow
 import qdarktheme
 
-__version__ = '0.1.1'
+__version__ = '0.1.1-beta.2'
 __title__ = 'GMS-uploader'
 
 
