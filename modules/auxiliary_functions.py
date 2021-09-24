@@ -16,6 +16,16 @@ def get_pseudo_id_code_number(pseudo_ids):
         return None, -1
 
 
+def get_pd_row_index(df, value, column_name):
+    index = df.index
+    idx_matches = index[df[column_name] == value].tolist()
+    if len(idx_matches) == 1:
+        return idx_matches[0]
+
+    return None
+
+
+
 def zfill_int(number):
     number_str = str(number)
 

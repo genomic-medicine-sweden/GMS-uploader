@@ -169,76 +169,37 @@
          </layout>
         </item>
         <item>
-         <widget class="Line" name="line_2">
+         <spacer name="verticalSpacer">
           <property name="orientation">
-           <enum>Qt::Horizontal</enum>
+           <enum>Qt::Vertical</enum>
           </property>
-         </widget>
+          <property name="sizeType">
+           <enum>QSizePolicy::Fixed</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>5</height>
+           </size>
+          </property>
+         </spacer>
         </item>
         <item>
          <layout class="QGridLayout" name="gridLayout">
-          <item row="2" column="5">
-           <widget class="QLineEdit" name="lineEdit_filter">
-            <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;freetext filter&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="10">
-           <widget class="QPushButton" name="pushButton_clear">
-            <property name="toolTip">
-             <string>clear table</string>
-            </property>
-            <property name="text">
-             <string>Clear</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="7">
-           <widget class="QPushButton" name="pushButton_filldown">
-            <property name="toolTip">
-             <string>filldown from selected cell
-shortcut: ctrl+f</string>
-            </property>
-            <property name="text">
-             <string>Filldown</string>
-            </property>
-           </widget>
-          </item>
           <item row="2" column="9">
-           <widget class="QPushButton" name="pushButton_drop">
-            <property name="toolTip">
-             <string>delete marked rows</string>
-            </property>
-            <property name="text">
-             <string>Delete </string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="6">
-           <widget class="QPushButton" name="pushButton_resetfilters">
-            <property name="toolTip">
-             <string>reset sort and remove all marks</string>
-            </property>
-            <property name="text">
-             <string>Reset</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="8">
            <widget class="Line" name="line_3">
             <property name="orientation">
              <enum>Qt::Vertical</enum>
             </property>
            </widget>
           </item>
-          <item row="2" column="0">
-           <widget class="QPushButton" name="pushButton_filtermarked">
+          <item row="2" column="11">
+           <widget class="QPushButton" name="pushButton_clear">
             <property name="toolTip">
-             <string>filter to view marked rows only</string>
+             <string>clear table</string>
             </property>
             <property name="text">
-             <string>Filter</string>
+             <string>Clear</string>
             </property>
            </widget>
           </item>
@@ -252,14 +213,62 @@ shortcut: ctrl+f</string>
             </property>
            </widget>
           </item>
+          <item row="2" column="6">
+           <widget class="QPushButton" name="pushButton_resetfilters">
+            <property name="toolTip">
+             <string>reset sort and remove all marks</string>
+            </property>
+            <property name="text">
+             <string>Reset</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QPushButton" name="pushButton_filtermarked">
+            <property name="toolTip">
+             <string>filter to view marked rows only</string>
+            </property>
+            <property name="text">
+             <string>Filter</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="5">
+           <widget class="QLineEdit" name="lineEdit_filter">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;freetext filter&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="8">
+           <widget class="QPushButton" name="pushButton_filldown">
+            <property name="toolTip">
+             <string>filldown from selected cell
+shortcut: ctrl+f</string>
+            </property>
+            <property name="text">
+             <string>Filldown</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="10">
+           <widget class="QPushButton" name="pushButton_drop">
+            <property name="toolTip">
+             <string>delete marked rows</string>
+            </property>
+            <property name="text">
+             <string>Delete </string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="7">
+           <widget class="Line" name="line_2">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+           </widget>
+          </item>
          </layout>
-        </item>
-        <item>
-         <widget class="Line" name="line_4">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-         </widget>
         </item>
         <item>
          <widget class="QTabWidget" name="tabWidget_metadata">

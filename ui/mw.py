@@ -154,66 +154,63 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_2.addLayout(self.horizontalLayout)
 
-        self.line_2 = QFrame(self.stackedWidgetPage1)
-        self.line_2.setObjectName(u"line_2")
-        self.line_2.setFrameShape(QFrame.HLine)
-        self.line_2.setFrameShadow(QFrame.Sunken)
+        self.verticalSpacer = QSpacerItem(20, 5, QSizePolicy.Minimum, QSizePolicy.Fixed)
 
-        self.verticalLayout_2.addWidget(self.line_2)
+        self.verticalLayout_2.addItem(self.verticalSpacer)
 
         self.gridLayout = QGridLayout()
         self.gridLayout.setObjectName(u"gridLayout")
-        self.lineEdit_filter = QLineEdit(self.stackedWidgetPage1)
-        self.lineEdit_filter.setObjectName(u"lineEdit_filter")
-
-        self.gridLayout.addWidget(self.lineEdit_filter, 2, 5, 1, 1)
-
-        self.pushButton_clear = QPushButton(self.stackedWidgetPage1)
-        self.pushButton_clear.setObjectName(u"pushButton_clear")
-
-        self.gridLayout.addWidget(self.pushButton_clear, 2, 10, 1, 1)
-
-        self.pushButton_filldown = QPushButton(self.stackedWidgetPage1)
-        self.pushButton_filldown.setObjectName(u"pushButton_filldown")
-
-        self.gridLayout.addWidget(self.pushButton_filldown, 2, 7, 1, 1)
-
-        self.pushButton_drop = QPushButton(self.stackedWidgetPage1)
-        self.pushButton_drop.setObjectName(u"pushButton_drop")
-
-        self.gridLayout.addWidget(self.pushButton_drop, 2, 9, 1, 1)
-
-        self.pushButton_resetfilters = QPushButton(self.stackedWidgetPage1)
-        self.pushButton_resetfilters.setObjectName(u"pushButton_resetfilters")
-
-        self.gridLayout.addWidget(self.pushButton_resetfilters, 2, 6, 1, 1)
-
         self.line_3 = QFrame(self.stackedWidgetPage1)
         self.line_3.setObjectName(u"line_3")
         self.line_3.setFrameShape(QFrame.VLine)
         self.line_3.setFrameShadow(QFrame.Sunken)
 
-        self.gridLayout.addWidget(self.line_3, 2, 8, 1, 1)
+        self.gridLayout.addWidget(self.line_3, 2, 9, 1, 1)
 
-        self.pushButton_filtermarked = QPushButton(self.stackedWidgetPage1)
-        self.pushButton_filtermarked.setObjectName(u"pushButton_filtermarked")
+        self.pushButton_clear = QPushButton(self.stackedWidgetPage1)
+        self.pushButton_clear.setObjectName(u"pushButton_clear")
 
-        self.gridLayout.addWidget(self.pushButton_filtermarked, 2, 0, 1, 1)
+        self.gridLayout.addWidget(self.pushButton_clear, 2, 11, 1, 1)
 
         self.pushButton_invert = QPushButton(self.stackedWidgetPage1)
         self.pushButton_invert.setObjectName(u"pushButton_invert")
 
         self.gridLayout.addWidget(self.pushButton_invert, 2, 1, 1, 1)
 
+        self.pushButton_resetfilters = QPushButton(self.stackedWidgetPage1)
+        self.pushButton_resetfilters.setObjectName(u"pushButton_resetfilters")
+
+        self.gridLayout.addWidget(self.pushButton_resetfilters, 2, 6, 1, 1)
+
+        self.pushButton_filtermarked = QPushButton(self.stackedWidgetPage1)
+        self.pushButton_filtermarked.setObjectName(u"pushButton_filtermarked")
+
+        self.gridLayout.addWidget(self.pushButton_filtermarked, 2, 0, 1, 1)
+
+        self.lineEdit_filter = QLineEdit(self.stackedWidgetPage1)
+        self.lineEdit_filter.setObjectName(u"lineEdit_filter")
+
+        self.gridLayout.addWidget(self.lineEdit_filter, 2, 5, 1, 1)
+
+        self.pushButton_filldown = QPushButton(self.stackedWidgetPage1)
+        self.pushButton_filldown.setObjectName(u"pushButton_filldown")
+
+        self.gridLayout.addWidget(self.pushButton_filldown, 2, 8, 1, 1)
+
+        self.pushButton_drop = QPushButton(self.stackedWidgetPage1)
+        self.pushButton_drop.setObjectName(u"pushButton_drop")
+
+        self.gridLayout.addWidget(self.pushButton_drop, 2, 10, 1, 1)
+
+        self.line_2 = QFrame(self.stackedWidgetPage1)
+        self.line_2.setObjectName(u"line_2")
+        self.line_2.setFrameShape(QFrame.VLine)
+        self.line_2.setFrameShadow(QFrame.Sunken)
+
+        self.gridLayout.addWidget(self.line_2, 2, 7, 1, 1)
+
 
         self.verticalLayout_2.addLayout(self.gridLayout)
-
-        self.line_4 = QFrame(self.stackedWidgetPage1)
-        self.line_4.setObjectName(u"line_4")
-        self.line_4.setFrameShape(QFrame.HLine)
-        self.line_4.setFrameShadow(QFrame.Sunken)
-
-        self.verticalLayout_2.addWidget(self.line_4)
 
         self.tabWidget_metadata = QTabWidget(self.stackedWidgetPage1)
         self.tabWidget_metadata.setObjectName(u"tabWidget_metadata")
@@ -344,21 +341,13 @@ class Ui_MainWindow(object):
         self.label_6.setText(QCoreApplication.translate("MainWindow", u"seq_technology:", None))
         self.label_9.setText(QCoreApplication.translate("MainWindow", u"library_method:", None))
 #if QT_CONFIG(tooltip)
-        self.lineEdit_filter.setToolTip(QCoreApplication.translate("MainWindow", u"<html><head/><body><p>freetext filter</p></body></html>", None))
-#endif // QT_CONFIG(tooltip)
-#if QT_CONFIG(tooltip)
         self.pushButton_clear.setToolTip(QCoreApplication.translate("MainWindow", u"clear table", None))
 #endif // QT_CONFIG(tooltip)
         self.pushButton_clear.setText(QCoreApplication.translate("MainWindow", u"Clear", None))
 #if QT_CONFIG(tooltip)
-        self.pushButton_filldown.setToolTip(QCoreApplication.translate("MainWindow", u"filldown from selected cell\n"
-"shortcut: ctrl+f", None))
+        self.pushButton_invert.setToolTip(QCoreApplication.translate("MainWindow", u"invert marks", None))
 #endif // QT_CONFIG(tooltip)
-        self.pushButton_filldown.setText(QCoreApplication.translate("MainWindow", u"Filldown", None))
-#if QT_CONFIG(tooltip)
-        self.pushButton_drop.setToolTip(QCoreApplication.translate("MainWindow", u"delete marked rows", None))
-#endif // QT_CONFIG(tooltip)
-        self.pushButton_drop.setText(QCoreApplication.translate("MainWindow", u"Delete ", None))
+        self.pushButton_invert.setText(QCoreApplication.translate("MainWindow", u"Invert", None))
 #if QT_CONFIG(tooltip)
         self.pushButton_resetfilters.setToolTip(QCoreApplication.translate("MainWindow", u"reset sort and remove all marks", None))
 #endif // QT_CONFIG(tooltip)
@@ -368,9 +357,17 @@ class Ui_MainWindow(object):
 #endif // QT_CONFIG(tooltip)
         self.pushButton_filtermarked.setText(QCoreApplication.translate("MainWindow", u"Filter", None))
 #if QT_CONFIG(tooltip)
-        self.pushButton_invert.setToolTip(QCoreApplication.translate("MainWindow", u"invert marks", None))
+        self.lineEdit_filter.setToolTip(QCoreApplication.translate("MainWindow", u"<html><head/><body><p>freetext filter</p></body></html>", None))
 #endif // QT_CONFIG(tooltip)
-        self.pushButton_invert.setText(QCoreApplication.translate("MainWindow", u"Invert", None))
+#if QT_CONFIG(tooltip)
+        self.pushButton_filldown.setToolTip(QCoreApplication.translate("MainWindow", u"filldown from selected cell\n"
+"shortcut: ctrl+f", None))
+#endif // QT_CONFIG(tooltip)
+        self.pushButton_filldown.setText(QCoreApplication.translate("MainWindow", u"Filldown", None))
+#if QT_CONFIG(tooltip)
+        self.pushButton_drop.setToolTip(QCoreApplication.translate("MainWindow", u"delete marked rows", None))
+#endif // QT_CONFIG(tooltip)
+        self.pushButton_drop.setText(QCoreApplication.translate("MainWindow", u"Delete ", None))
         self.tabWidget_metadata.setTabText(self.tabWidget_metadata.indexOf(self.tab_1), QCoreApplication.translate("MainWindow", u"Tab 1", None))
         self.tabWidget_metadata.setTabText(self.tabWidget_metadata.indexOf(self.tab_2), QCoreApplication.translate("MainWindow", u"Tab 2", None))
         self.tabWidget_metadata.setTabText(self.tabWidget_metadata.indexOf(self.tab_3), QCoreApplication.translate("MainWindow", u"Tab 3", None))

@@ -1,21 +1,53 @@
+from PySide6.QtCore import QObject, Signal
 from HCPInterface.hcp import HCPManager
+import json
+from pathlib import Path
 
 
-def hcp_upload(json_file, sample_seqs, dt_str, endpoint, aws_key_id, aws_secret_key, bucket):
+class UploadWorker(QObject):
+    finished = Signal()
+    progress = Signal(str, int)
 
-    try:
-        hcpm = HCPManager(endpoint, aws_key_id, aws_secret_key)
-        hcpm.attach_bucket(bucket)
+    def __init__(self, meta_json, sample_seqs, tag, credentials_path, bucket):
+        super(UploadWorker, self).__init__()
 
-        hcpm.upload_file(str(json_file), dt_str, metadata={'dt_tag': dt_str, 'type': 'json'}, silent=True)
+        self.meta_json = meta_json
+        self.cred = json.loads(Path(credentials_path).read_text())
+        self.sample_seqs = sample_seqs
+        self.tag = tag
+        self.credentials_path = credentials_path
+        self.bucket = bucket
+        self.current_upload = None
 
-        for sample in sample_seqs:
-            for file in sample_seqs[sample]:
-                hcpm.upload_file(str(file), dt_str,
-                                 metadata={'dt_tag': dt_str, 'type': 'fastq', 'sample': sample}, silent=True)
+    def run(self):
+        self.hcp_upload()
+        self.finished.emit()
 
-        return True
+    def hcp_upload(self):
+        hcpm = HCPManager(self.cred['endpoint'],
+                          self.cred["aws_access_key_id"],
+                          self.cred["aws_secret_access_key"])
+        hcpm.attach_bucket(self.bucket)
 
-    except:
-        return False
+        hcpm.upload_file(str(self.meta_json),
+                         self.tag,
+                         metadata={'dt_tag': self.tag, 'type': 'json'},
+                         silent=True)
+
+        for sample in self.sample_seqs:
+            for file in self.sample_seqs[sample]:
+                self.current_upload = file
+                hcpm.upload_file(str(file),
+                                 self.tag,
+                                 metadata={'tag': self.tag, 'type': 'fastq', 'sample': sample},
+                                 callback=self.update_progress
+                                 )
+
+    def update_progress(self, value):
+        self.progress.emit(self.current_upload, value)
+
+
+
+
+
 

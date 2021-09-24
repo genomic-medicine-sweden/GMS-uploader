@@ -7,13 +7,15 @@ from modules.delegates import CompleterDelegate, ComboBoxDelegate, \
     DateAutoCorrectDelegate, CheckBoxDelegate, AgeDelegate
 from modules.dialogs import MsgError, MsgAlert, ValidationDialog
 from modules.sortfilterproxymodel import MultiSortFilterProxyModel, MarkedFilterProxyModel
-from modules.auxiliary_functions import get_pseudo_id_code_number, zfill_int, to_list
+from modules.auxiliary_functions import get_pseudo_id_code_number, zfill_int, to_list, get_pd_row_index
 from modules.validate import validate
-from modules.upload import hcp_upload
+from modules.upload import UploadWorker
+from modules.dialogs import Uploader
 import pandas as pd
 from datetime import datetime
 from pathlib import Path
 import yaml
+import csv
 from ui.mw import Ui_MainWindow
 import qdarktheme
 
@@ -76,6 +78,21 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.set_col_widths()
 
         self.set_delegates()
+
+    def set_signals(self):
+        self.action_show_prefs.triggered.connect(lambda: self.stackedWidget.setCurrentIndex(1))
+        self.action_show_meta.triggered.connect(lambda: self.stackedWidget.setCurrentIndex(0))
+        self.lineEdit_filter.textChanged.connect(self.set_free_filter)
+        self.pushButton_filtermarked.setCheckable(True)
+        self.pushButton_filtermarked.clicked.connect(self.set_mark_filter)
+        self.pushButton_drop.clicked.connect(self.drop_rows)
+        self.pushButton_clear.clicked.connect(self.clear_table)
+        self.action_select_seq_files.triggered.connect(self.get_files_folders)
+        self.action_upload_meta_seqs.triggered.connect(self.upload)
+        self.action_save_meta.triggered.connect(self.pickle_df)
+        self.action_open_meta.triggered.connect(self.unpickle_df)
+        self.pushButton_invert.clicked.connect(self.invert_marks)
+        self.action_import_csv.triggered.connect(self.merge_meta_from_csv)
 
     def validate_settings(self):
         all_keys = self.qsettings.allKeys()
@@ -193,8 +210,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                                               default_fn,
                                               options=QFileDialog.ShowDirsOnly | QFileDialog.DontUseNativeDialog)
 
-        edit = self.stackedWidgetPage2.findChild(QLineEdit, name, Qt.FindChildrenRecursively)
-        edit.setText(dirpath)
+        if dirpath:
+            edit = self.stackedWidgetPage2.findChild(QLineEdit, name, Qt.FindChildrenRecursively)
+            edit.setText(dirpath)
 
     def set_metadata_path(self):
         obj = self.sender()
@@ -315,20 +333,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.set_pseudo_id_start()
         self.set_static_lineedits()
-
-    def set_signals(self):
-        self.action_show_prefs.triggered.connect(lambda: self.stackedWidget.setCurrentIndex(1))
-        self.action_show_meta.triggered.connect(lambda: self.stackedWidget.setCurrentIndex(0))
-        self.lineEdit_filter.textChanged.connect(self.set_free_filter)
-        self.pushButton_filtermarked.setCheckable(True)
-        self.pushButton_filtermarked.clicked.connect(self.set_mark_filter)
-        self.pushButton_drop.clicked.connect(self.drop_rows)
-        self.pushButton_clear.clicked.connect(self.clear_table)
-        self.action_select_seq_files.triggered.connect(self.get_files_folders)
-        self.action_upload_meta_seqs.triggered.connect(self.upload)
-        self.action_save_meta.triggered.connect(self.pickle_df)
-        self.action_open_meta.triggered.connect(self.unpickle_df)
-        self.pushButton_invert.clicked.connect(self.invert_marks)
 
     def get_files_folders(self):
         datadir = self.qsettings.value('qlineedits/data_root_path')
@@ -539,32 +543,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.pushButton_filtermarked.setChecked(False)
         self.set_mark_filter()
 
-    def dragEnterEvent(self, event):
-        if event.mimeData().hasUrls:
-            event.accept()
-        else:
-            event.ignore()
-
-    def dragMoveEvent(self, event):
-        if event.mimeData().hasUrls:
-            event.setDropAction(Qt.CopyAction)
-            event.accept()
-        else:
-            event.ignore()
-
-    def dropEvent(self, event):
-        if event.mimeData().hasUrls:
-            event.setDropAction(Qt.CopyAction)
-            event.accept()
-            files = []
-            for url in event.mimeData().urls():
-                files.append(str(url.toLocalFile()))
-
-            self.parse_files(files)
-
-        else:
-            event.ignore()
-
     def df_insert(self, df, row):
         insert_loc = df.index.max()
 
@@ -692,76 +670,111 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         return pseudo_ids
 
+    def merge_meta_from_csv(self):
+
+        take_smaller = lambda s1, s2: s1 if s1.sum() < s2.sum() else s2
+
+        default_path = ""
+        dialog = QFileDialog()
+        filepath, _ = dialog.getOpenFileName(self,
+                                             'Open an awesome metadata file',
+                                              default_path,
+                                              "metadata csv files (*.csv)",
+                                              options=QFileDialog.DontUseNativeDialog)
+
+        print(filepath)
+
+        if filepath:
+
+            colnames = list(self.df.columns)
+
+            with open(filepath, encoding='utf-8-sig') as csvfile:
+                reader = csv.DictReader(csvfile)
+                for row in reader:
+                    r = get_pd_row_index(self.df, row['internal_lab_id'], 'internal_lab_id')
+                    for key, value in row.items():
+                        if key in colnames:
+                            self.df.at[r, key] = value
+
+            self.update_model()
+
     def upload(self):
         self.df['lab'] = self.qsettings.value('qcomboboxes/lab')
         self.df['host'] = self.qsettings.value('qcomboboxes/host')
         self.df['seq_technology'] = self.qsettings.value('qcomboboxes/seq_technology')
 
-        df2 = self.df.fillna('')
-        errors = validate(df2)
-
-        if errors:
-            vdialog = ValidationDialog(errors)
-            vdialog.exec()
-            return False
+        # df2 = self.df.fillna('')
+        # errors = validate(df2)
+        #
+        # if errors:
+        #     vdialog = ValidationDialog(errors)
+        #     vdialog.exec()
+        #     return False
 
         sample_seqs = {}
+        files_list = []
         for _, row in self.df.iterrows():
             _seqs = []
             if row['fastq1']:
                 _seqs.append(Path(row["seq_path"], row["fastq1"]))
+                files_list.append(Path(row["seq_path"], row["fastq1"]))
             if row['fastq2']:
                 _seqs.append(Path(row["seq_path"], row["fastq2"]))
+                files_list.append(Path(row["seq_path"], row["fastq1"]))
             if row['fast5']:
                 _seqs.append(Path(row["Seq_path"], row["fast5"]))
+                files_list.append(Path(row["seq_path"], row["fastq1"]))
 
             sample_seqs[row['internal_lab_id']] = _seqs
 
-        self.df['lab_code'] = self.df['lab'].apply(lambda x: self.conf['tr']['lab_to_code'][x])
-        self.df['region_code'] = self.df['region'].apply(lambda x: self.conf['tr']['region_to_code'][x])
-        self.df['pseudo_id'] = self.create_pseudo_ids()
+        # self.df['lab_code'] = self.df['lab'].apply(lambda x: self.conf['tr']['lab_to_code'][x])
+        # self.df['region_code'] = self.df['region'].apply(lambda x: self.conf['tr']['region_to_code'][x])
+        # self.df['pseudo_id'] = self.create_pseudo_ids()
 
         meta_fields = [field for field in self.conf['model_fields'] if self.conf['model_fields'][field]['to_meta']]
         df_submit = self.df[meta_fields]
 
         now = datetime.now()
-        dt_str = now.strftime("%Y-%m-%dT%H.%M.%S")
-        json_file = Path(self.qsettings['qlineedits/metadata_path'], dt_str + "_meta.json")
+        tag = now.strftime("%Y-%m-%dT%H.%M.%S")
+        json_file = Path(self.qsettings.value('qlineedits/metadata_path'), tag + "_meta.json")
 
         with open(json_file, 'w', encoding='utf-8') as file:
             df_submit.to_json(file, orient="records", force_ascii=False)
 
-        if json_file \
-                and sample_seqs \
-                and dt_str \
-                and self.qsettings['qlineedits/endpoint'] \
-                and self.qsettings['qlineedits/aws_key_id'] \
-                and self.qsettings['qlineedits/aws_secret_key'] \
-                and self.qsettings['qcomboboxes/hcp_buckets'] \
-                and self.qsettings['qlineedits/pseudo_id_filepath']:
+        # upload_params = [json_file,
+        #                  sample_seqs,
+        #                  tag,
+        #                  self.qsettings['qlineedits/credentials_path'],
+        #                  self.qsettings['qcomboboxes/hcp_bucket']
+        #                  ]
 
-            ret_ok = hcp_upload(json_file,
-                                sample_seqs,
-                                dt_str,
-                                self.qsettings['qlineedits/endpoint'],
-                                self.qsettings['qlineedits/aws_key_id'],
-                                self.qsettings['qlineedits/aws_secret_key'],
-                                self.qsettings['qcomboboxes/hcp_buckets']
-                                )
+        uploader = Uploader(self.qsettings.value('qlineedits/credentials_path'),
+                            tag,
+                            self.qsettings.value('qcomboboxes/hcp_bucket'),
+                            json_file,
+                            files_list)
 
-            if ret_ok:
-                pseudo_id_file = Path(self.qsettings['qlineedits/pseudo_id_filepath'])
+        uploader.exec()
 
-                with pseudo_id_file.open("a") as f:
-                    for i, row in df_submit.iterrows():
-                        f.write(row['pseudo_id'] + "\t" + dt_str)
+        #
+        # if all(upload_params):
+        #     thread = QThread()
+        #     worker = UploadWorker(*upload_params)
+        #     worker.moveToThread(thread)
+        #
+        #     thread.started.connect(self.worker.run)
+        #     worker.finished.connect(self.thread.quit)
+        #     worker.finished.connect(self.worker.deleteLater)
+        #     thread.finished.connect(self.thread.deleteLater)
+        #     worker.progress.connect(self.reportProgress)
+        #
 
     def pickle_df(self):
         now = datetime.now()
         dt_str = now.strftime("%Y-%m-%dT%H.%M.%S")
         dialog = QFileDialog()
         default_fn = dt_str + "_metadata.pkl"
-        filepath, _ = dialog.getSaveFileName(self,
+        filepath, _ = dialog.getOpenFileName(self,
                                              'Save an awesome metadata file',
                                              default_fn,
                                              "metadata files (*.pkl)",
@@ -778,8 +791,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                                               "metadata files (*.pkl)",
                                               options=QFileDialog.DontUseNativeDialog)
 
-        f_obj = Path(filepath)
-        if f_obj.exists():
+        if filepath:
             self.df = pd.read_pickle(filepath)
             self.update_model()
 
@@ -797,6 +809,32 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
             self.model.setData(idx, new_value, Qt.EditRole)
 
+    def dragEnterEvent(self, event):
+        if event.mimeData().hasUrls:
+            event.accept()
+        else:
+            event.ignore()
+
+    def dragMoveEvent(self, event):
+        if event.mimeData().hasUrls:
+            event.setDropAction(Qt.CopyAction)
+            event.accept()
+        else:
+            event.ignore()
+
+    def dropEvent(self, event):
+        if event.mimeData().hasUrls:
+            event.setDropAction(Qt.CopyAction)
+            event.accept()
+            files = []
+            for url in event.mimeData().urls():
+                files.append(str(url.toLocalFile()))
+
+            self.parse_files(files)
+
+        else:
+            event.ignore()
+
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Return:
             visible_tableview = self.get_current_tableview()
@@ -804,7 +842,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 indexes = visible_tableview.selectedIndexes()
                 visible_tableview.edit(indexes[0])
 
-        elif event.key() == (Qt.Key_Control and Qt.Key_F):
+        elif event.key() == (Qt.Key_Control and Qt.Key_D):
             self.filldown()
 
         elif event.key() == Qt.Key_Delete:
