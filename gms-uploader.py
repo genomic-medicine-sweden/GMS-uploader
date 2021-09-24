@@ -35,6 +35,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.setWindowIcon(QIcon('icons/GMS-logo.png'))
         self.setWindowTitle(__title__ + " " + __version__)
 
+        self.set_tb_bkg()
+
         # add icons
         self.set_icons()
 
@@ -78,6 +80,28 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.set_col_widths()
 
         self.set_delegates()
+
+    def set_tb_bkg(self):
+        img = 'img/logo.png'
+
+        for tbv in [self.tableView_patient, self.tableView_organism, self.tableView_lab]:
+            tbv.setStyleSheet(
+                """
+                background-repeat: no-repeat;
+                background-position: center;
+                background-image: url(%s);
+                """
+                % img
+            )
+            tbv.horizontalScrollBar().setStyleSheet(
+                """
+                background: white;
+                """
+            )
+
+    def rem_tb_bkg(self):
+        for tbv in [self.tableView_patient, self.tableView_organism, self.tableView_lab]:
+            tbv.setStyleSheet("background-image: none;")
 
     def set_signals(self):
         self.action_show_prefs.triggered.connect(lambda: self.stackedWidget.setCurrentIndex(1))
@@ -617,6 +641,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.df = self.df.append(new_df)
             self.df = self.df.fillna('')
             self.update_model()
+            self.rem_tb_bkg()
         else:
             msg_box = QMessageBox()
             msg_box.setText("Duplicate SampleIDs present in imported data.")
