@@ -216,7 +216,7 @@
           <item row="2" column="6">
            <widget class="QPushButton" name="pushButton_resetfilters">
             <property name="toolTip">
-             <string>reset sort and remove all marks</string>
+             <string>reset sort, remove filters and marks</string>
             </property>
             <property name="text">
              <string>Reset</string>

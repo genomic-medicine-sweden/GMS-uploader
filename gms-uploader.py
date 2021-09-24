@@ -380,15 +380,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.action_import_csv.setIcon(QIcon('fontawesome/import-csv_own.svg'))
 
         self.pushButton_filldown.setIcon(QIcon('fontawesome/arrow-down_mdi.svg'))
-        # self.pushButton_filldown.setIconSize(QSize(18, 18))
         self.pushButton_drop.setIcon(QIcon('fontawesome/close_mdi.svg'))
-        # self.pushButton_drop.setIconSize(QSize(18, 18))
         self.pushButton_clear.setIcon(QIcon('fontawesome/trash-can-outline_mdi.svg'))
-        # self.pushButton_clear.setIconSize(QSize(14, 14))
         self.pushButton_resetfilters.setIcon(QIcon('fontawesome/filter-remove-outline_mdi.svg'))
-        # self.pushButton_resetfilters.setIconSize(QSize(14, 14))
         self.pushButton_filtermarked.setIcon(QIcon('fontawesome/filter-outline_mdi.svg'))
-        # self.pushButton_filtermarked.setIconSize(QSize(14, 14))
         self.pushButton_invert.setIcon(QIcon('fontawesome/invert_own.svg'))
 
     def drop_rows(self):
@@ -522,7 +517,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.tableView_lab.horizontalHeader().setSectionsMovable(True)
         self.tableView_lab.setSortingEnabled(True)
 
-        self.pushButton_resetfilters.clicked.connect(self.reset_proxy)
+        self.pushButton_resetfilters.clicked.connect(self.reset_sort_filter)
         self.pushButton_filldown.clicked.connect(self.filldown)
         self.tableView_patient.verticalHeader().hide()
         self.tableView_lab.verticalHeader().hide()
@@ -560,12 +555,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.set_col_widths()
 
-    def reset_proxy(self):
+    def reset_sort_filter(self):
         self.mfilter_sort_proxy_model.sort(-1)
         self.tableView_patient.horizontalHeader().setSortIndicator(-1, Qt.SortOrder.DescendingOrder)
         self.lineEdit_filter.setText('')
         self.pushButton_filtermarked.setChecked(False)
         self.set_mark_filter()
+
+        for i in range(0, self.model.rowCount()):
+            idx = self.model.index(i, 0)
+            new_value = "0"
+            self.model.setData(idx, new_value, Qt.EditRole)
 
     def df_insert(self, df, row):
         insert_loc = df.index.max()

@@ -349,7 +349,7 @@ class Ui_MainWindow(object):
 #endif // QT_CONFIG(tooltip)
         self.pushButton_invert.setText(QCoreApplication.translate("MainWindow", u"Invert", None))
 #if QT_CONFIG(tooltip)
-        self.pushButton_resetfilters.setToolTip(QCoreApplication.translate("MainWindow", u"reset sort and remove all marks", None))
+        self.pushButton_resetfilters.setToolTip(QCoreApplication.translate("MainWindow", u"reset sort, remove filters and marks", None))
 #endif // QT_CONFIG(tooltip)
         self.pushButton_resetfilters.setText(QCoreApplication.translate("MainWindow", u"Reset", None))
 #if QT_CONFIG(tooltip)
