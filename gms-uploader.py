@@ -73,7 +73,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.delegates['organism'] = {}
 
         self.set_signals()
-        self.tableview_setup()
+        self.setup_tableviews()
         self.stackedWidget.setCurrentIndex(0)
         self.tabWidget_metadata.setCurrentIndex(0)
         self.set_hidden_columns()
@@ -81,10 +81,19 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.set_delegates()
 
+    # setup and init-related functions
+
     def set_tb_bkg(self):
+        """
+        Sets bg image to tableviews. Image shown before metadata is imported.
+        :return: None
+        """
+
         img = 'img/logo.png'
 
-        for tbv in [self.tableView_patient, self.tableView_organism, self.tableView_lab]:
+        for tbv in [self.tableView_patient,
+                    self.tableView_organism,
+                    self.tableView_lab]:
             tbv.setStyleSheet(
                 """
                 background-repeat: no-repeat;
@@ -100,10 +109,19 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             )
 
     def rem_tb_bkg(self):
+        """
+        Removes bg image from tableviews. Images removed when metadata is imported, otherwise
+        they are visible through the tables.
+        :return: None
+        """
         for tbv in [self.tableView_patient, self.tableView_organism, self.tableView_lab]:
             tbv.setStyleSheet("background-image: none;")
 
     def set_signals(self):
+        """
+        Setup of signals for static widgets (pushbuttons, actionbuttons, lineedit for filter).
+        :return:
+        """
         self.action_show_prefs.triggered.connect(lambda: self.stackedWidget.setCurrentIndex(1))
         self.action_show_meta.triggered.connect(lambda: self.stackedWidget.setCurrentIndex(0))
         self.lineEdit_filter.textChanged.connect(self.set_free_filter)
@@ -111,14 +129,18 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.pushButton_filtermarked.clicked.connect(self.set_mark_filter)
         self.pushButton_drop.clicked.connect(self.drop_rows)
         self.pushButton_clear.clicked.connect(self.clear_table)
-        self.action_select_seq_files.triggered.connect(self.get_files_folders)
+        self.action_select_seq_files.triggered.connect(self.get_seq_files)
         self.action_upload_meta_seqs.triggered.connect(self.upload)
         self.action_save_meta.triggered.connect(self.pickle_df)
         self.action_open_meta.triggered.connect(self.unpickle_df)
         self.pushButton_invert.clicked.connect(self.invert_marks)
-        self.action_import_csv.triggered.connect(self.merge_meta_from_csv)
+        self.action_import_csv.triggered.connect(self.get_csv_file_combine)
 
     def validate_settings(self):
+        """
+        Compares qsetting keys with keys in config file to make sure there is no mismatch.
+        :return: True if ok, False otherwise
+        """
         all_keys = self.qsettings.allKeys()
 
         for key in all_keys:
@@ -141,6 +163,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         return True
 
     def settings_init(self):
+        """
+        If there is a qsettings and config settings don't match, clear qsettings and reset to
+        default values (from config).
+        :return: None
+        """
         self.qsettings.clear()
 
         for name in self.conf['settings']['no_widget']:
@@ -169,6 +196,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.set_pseudo_id_start()
 
     def set_static_lineedits(self):
+        """
+        Sets values in static lineedits on the dataview pane.
+        :return: None
+        """
         self.lineEdit_submitter.setText(self.qsettings.value("qlineedits/submitter"))
         self.lineEdit_credentials_path.setText(self.qsettings.value("qlineedits/credentials_path"))
         self.lineEdit_lab.setText(self.qsettings.value("qcomboboxes/lab"))
@@ -178,94 +209,25 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.lineEdit_bucket.setText(self.qsettings.value("qcomboboxes/hcp_bucket"))
         self.lineEdit_pseudo_id.setText(self.qsettings.value("no_widget/pseudo_id_start"))
 
-    def set_credentials_path(self):
-        obj = self.sender()
-        button_name = obj.objectName()
-        name = button_name.strip("button")
-
-        print("set credentials")
-
-        dialog = QFileDialog()
-
-        credentials_path, _ = dialog.getSaveFileName(self,
-                                                     'Select an awesome credentials json file',
-                                                     "",
-                                                     "json files (*.json)",
-                                                     options=QFileDialog.DontUseNativeDialog |
-                                                             QFileDialog.DontConfirmOverwrite)
-
-        f_obj = Path(credentials_path)
-        if f_obj.parent.exists():
-            edit = self.stackedWidgetPage2.findChild(QLineEdit, name, Qt.FindChildrenRecursively)
-            edit.setText(credentials_path)
-
-    def set_pseudo_id_path(self):
-        obj = self.sender()
-        button_name = obj.objectName()
-        name = button_name.strip("button")
-
-        dialog = QFileDialog()
-
-        default_fn = "gms-uploader_1_pseudoids.txt"
-
-        pseudo_id_fp, _ = dialog.getSaveFileName(self,
-                                                 'Set an awesome pseudo_id filepath',
-                                                 default_fn,
-                                                 "pseudo_ID files (*_pseudoids.txt)",
-                                                 options=QFileDialog.DontUseNativeDialog |
-                                                         QFileDialog.DontConfirmOverwrite)
-        pif_obj = Path(pseudo_id_fp)
-        if pif_obj.parent.exists():
-            edit = self.stackedWidgetPage2.findChild(QLineEdit, name, Qt.FindChildrenRecursively)
-            edit.setText(pseudo_id_fp)
-            pif_obj.touch(exist_ok=True)
-
-    def set_data_root_path(self):
-        obj = self.sender()
-        button_name = obj.objectName()
-        name = button_name.strip("button")
-
-        dialog = QFileDialog()
-
-        default_fn = str(Path.home())
-
-        dirpath = dialog.getExistingDirectory(self,
-                                              'Select an awesome root data path',
-                                              default_fn,
-                                              options=QFileDialog.ShowDirsOnly | QFileDialog.DontUseNativeDialog)
-
-        if dirpath:
-            edit = self.stackedWidgetPage2.findChild(QLineEdit, name, Qt.FindChildrenRecursively)
-            edit.setText(dirpath)
-
-    def set_metadata_path(self):
-        obj = self.sender()
-        button_name = obj.objectName()
-        name = button_name.strip("button")
-
-        dialog = QFileDialog()
-
-        default_fn = str(Path.home())
-
-        dirpath = dialog.getExistingDirectory(self,
-                                              'Select an awesome root data path',
-                                              default_fn,
-                                              options=QFileDialog.ShowDirsOnly | QFileDialog.DontUseNativeDialog)
-
-        edit = self.stackedWidgetPage2.findChild(QLineEdit, name, Qt.FindChildrenRecursively)
-        edit.setText(dirpath)
-
     def settings_setup(self):
+        """
+        Creates and sets up dymamic setting widgets based on config file
+        :return: None
+        """
         for name in self.conf['settings']['qlineedits']:
             if name in self.conf['add_buttons']:
                 if name == "pseudo_id_filepath":
-                    func = self.set_pseudo_id_path
-                elif name == "data_root_path":
-                    func = self.set_data_root_path
-                elif name == "metadata_path":
-                    func = self.set_metadata_path
-                elif name == "credentials_path":
-                    func = self.set_credentials_path
+                    func = self.set_pseudo_id_filepath
+                elif name == "seq_base_path":
+                    func = self.set_seq_path
+                elif name == "csv_base_path":
+                    func = self.set_csv_path
+                elif name == "metadata_output_path":
+                    func = self.set_metadata_output_path
+                elif name == "metadata_docs_path":
+                    func = self.set_metadata_docs_path
+                elif name == "credentials_filepath":
+                    func = self.set_credentials_filepath
 
                 button_name = name + "button"
                 button = QPushButton("...", objectName=button_name)
@@ -332,6 +294,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.set_static_lineedits()
 
     def settings_update(self):
+        """
+        Called when dynamic setting widgets are changed, updates qsettings values.
+        :return: None
+        """
         obj = self.sender()
         name = obj.objectName()
 
@@ -358,140 +324,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.set_pseudo_id_start()
         self.set_static_lineedits()
 
-    def get_files_folders(self):
-        datadir = self.qsettings.value('qlineedits/data_root_path')
-        dialog = QFileDialog()
-        files, _ = dialog.getOpenFileNames(self,
-                                           "Select sequence data files",
-                                           datadir,
-                                           "Sequence files (*.fast5 *.fastq.gz *.fastq *.fq.gz *.fq",
-                                           options=QFileDialog.DontUseNativeDialog)
-
-        self.parse_files(files)
-
-    def set_icons(self):
-
-        self.action_open_meta.setIcon(QIcon('fontawesome/folder-open-outline_mdi.svg'))
-        self.action_save_meta.setIcon(QIcon('fontawesome/content-save-outline_mdi.svg'))
-        self.action_show_meta.setIcon(QIcon('fontawesome/table_mdi.svg'))
-        self.action_show_prefs.setIcon(QIcon('fontawesome/cog-outline_mdi.svg'))
-        self.action_upload_meta_seqs.setIcon(QIcon('fontawesome/tray-arrow-up_mdi.svg'))
-        self.action_select_seq_files.setIcon(QIcon('fontawesome/dna_mdi.svg'))
-        self.action_import_csv.setIcon(QIcon('fontawesome/import-csv_own.svg'))
-
-        self.pushButton_filldown.setIcon(QIcon('fontawesome/arrow-down_mdi.svg'))
-        self.pushButton_drop.setIcon(QIcon('fontawesome/close_mdi.svg'))
-        self.pushButton_clear.setIcon(QIcon('fontawesome/trash-can-outline_mdi.svg'))
-        self.pushButton_resetfilters.setIcon(QIcon('fontawesome/filter-remove-outline_mdi.svg'))
-        self.pushButton_filtermarked.setIcon(QIcon('fontawesome/filter-outline_mdi.svg'))
-        self.pushButton_invert.setIcon(QIcon('fontawesome/invert_own.svg'))
-
-    def drop_rows(self):
-        self.model.dropMarkedRows()
-        self.update_model()
-
-    def set_col_widths(self):
-        for i, name in enumerate(self.conf['model_fields']):
-            self.tableView_patient.setColumnWidth(i, self.conf['model_fields'][name]['col_width'])
-            self.tableView_organism.setColumnWidth(i, self.conf['model_fields'][name]['col_width'])
-            self.tableView_lab.setColumnWidth(i, self.conf['model_fields'][name]['col_width'])
-
-    def set_hidden_columns(self):
-        for i, name in enumerate(self.conf['model_fields']):
-            if 'patient' not in self.conf['model_fields'][name]['view']:
-                self.tableView_patient.setColumnHidden(i, True)
-            if 'organism' not in self.conf['model_fields'][name]['view']:
-                self.tableView_organism.setColumnHidden(i, True)
-            if 'lab' not in self.conf['model_fields'][name]['view']:
-                self.tableView_lab.setColumnHidden(i, True)
-
-    def set_mark_filter(self):
-        if self.pushButton_filtermarked.isChecked():
-            self.mfilter_sort_proxy_model.setCheckedFilter()
-
-        else:
-            self.mfilter_sort_proxy_model.clearCheckedFilter()
-
-    def set_free_filter(self):
-        text = self.lineEdit_filter.text()
-        search = QRegularExpression(text, QRegularExpression.CaseInsensitiveOption)
-        self.mfilter_sort_proxy_model.setFilterByColumns([1, 2, 3], search)
-
-    def set_delegates(self):
-        for field in self.conf['model_fields']:
-            if 'checkbox' in self.conf['model_fields'][field]['delegates']:
-                self.set_checkbox_delegate(field)
-
-            elif 'combobox' in self.conf['model_fields'][field]['delegates']:
-                self.set_combobox_delegate(field)
-
-            elif 'date' in self.conf['model_fields'][field]['delegates']:
-                self.set_date_delegate(field)
-
-            elif 'age' in self.conf['model_fields'][field]['delegates']:
-                self.set_age_delegate(field)
-
-    def set_combobox_delegate(self, field):
-
-        store_key = "/".join(["qlistwidgets", field])
-        items = ['']
-        items.extend(to_list(self.qsettings.value(store_key)))
-
-        for view in self.conf['model_fields'][field]['view']:
-            self.delegates[view][field] = ComboBoxDelegate(items)
-
-            if view == 'patient':
-                self.tableView_patient.setItemDelegateForColumn(self.tableView_columns.index(field),
-                                                                self.delegates[view][field])
-            elif view == 'lab':
-                self.tableView_lab.setItemDelegateForColumn(self.tableView_columns.index(field),
-                                                            self.delegates[view][field])
-            elif view == 'organism':
-                self.tableView_organism.setItemDelegateForColumn(self.tableView_columns.index(field),
-                                                                 self.delegates[view][field])
-
-    def set_date_delegate(self, field):
-        for view in self.conf['model_fields'][field]['view']:
-            self.delegates[view][field] = DateAutoCorrectDelegate()
-            if view == 'patient':
-                self.tableView_patient.setItemDelegateForColumn(self.tableView_columns.index(field),
-                                                                self.delegates[view][field])
-            elif view == 'lab':
-                self.tableView_lab.setItemDelegateForColumn(self.tableView_columns.index(field),
-                                                            self.delegates[view][field])
-            elif view == 'organism':
-                self.tableView_organism.setItemDelegateForColumn(self.tableView_columns.index(field),
-                                                                 self.delegates[view][field])
-
-    def set_age_delegate(self, field):
-        for view in self.conf['model_fields'][field]['view']:
-            self.delegates[view][field] = AgeDelegate()
-
-            if view == 'patient':
-                self.tableView_patient.setItemDelegateForColumn(self.tableView_columns.index(field),
-                                                                self.delegates[view][field])
-            elif view == 'lab':
-                self.tableView_lab.setItemDelegateForColumn(self.tableView_columns.index(field),
-                                                            self.delegates[view][field])
-            elif view == 'organism':
-                self.tableView_organism.setItemDelegateForColumn(self.tableView_columns.index(field),
-                                                                 self.delegates[view][field])
-
-    def set_checkbox_delegate(self, field):
-        for view in self.conf['model_fields'][field]['view']:
-            self.delegates[view][field] = CheckBoxDelegate(None)
-
-            if view == 'patient':
-                self.tableView_patient.setItemDelegateForColumn(self.tableView_columns.index(field),
-                                                                self.delegates[view][field])
-            elif view == 'lab':
-                self.tableView_lab.setItemDelegateForColumn(self.tableView_columns.index(field),
-                                                            self.delegates[view][field])
-            elif view == 'organism':
-                self.tableView_organism.setItemDelegateForColumn(self.tableView_columns.index(field),
-                                                                 self.delegates[view][field])
-
-    def tableview_setup(self):
+    def setup_tableviews(self):
+        """
+        Setup of data tableviews, connects to mfilter_sort_proxy_model, and the pandas model.
+        :return: None
+        """
 
         self.mfilter_sort_proxy_model.setSourceModel(self.model)
 
@@ -524,26 +361,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.tableView_organism.verticalHeader().hide()
         self.update_model()
 
-    def filldown(self):
-        visible_tableview = self.get_current_tableview()
-        if visible_tableview:
-            select = visible_tableview.selectionModel()
-            index = select.currentIndex()
-
-            max_rows = self.mfilter_sort_proxy_model.rowCount()
-            data_orig = self.mfilter_sort_proxy_model.data(index, Qt.DisplayRole)
-
-            for r in range(index.row() + 1, max_rows):
-                index_new = self.mfilter_sort_proxy_model.index(r, index.column())
-                data_new = self.mfilter_sort_proxy_model.data(index_new, Qt.DisplayRole)
-                if data_new == '':
-                    self.mfilter_sort_proxy_model.setData(index_new, data_orig, Qt.EditRole)
-                else:
-                    break
-
-    def clear_table(self):
-        self.df = pd.DataFrame(columns=self.tableView_columns)
-        self.update_model()
+    # model and data-import related functions
 
     def update_model(self):
         self.model = PandasModel(self.df, self.conf['model_fields'])
@@ -554,18 +372,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.tableView_organism.setModel(self.mfilter_sort_proxy_model)
 
         self.set_col_widths()
-
-    def reset_sort_filter(self):
-        self.mfilter_sort_proxy_model.sort(-1)
-        self.tableView_patient.horizontalHeader().setSortIndicator(-1, Qt.SortOrder.DescendingOrder)
-        self.lineEdit_filter.setText('')
-        self.pushButton_filtermarked.setChecked(False)
-        self.set_mark_filter()
-
-        for i in range(0, self.model.rowCount()):
-            idx = self.model.index(i, 0)
-            new_value = "0"
-            self.model.setData(idx, new_value, Qt.EditRole)
 
     def df_insert(self, df, row):
         insert_loc = df.index.max()
@@ -647,10 +453,305 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             msg_box.setText("Duplicate SampleIDs present in imported data.")
             msg_box.exec()
 
+    # set path functions
+
+    def set_seq_path(self):
+        """
+        Sets sequence base path in dynamic lineedit widget from file-picker.
+        :return: None
+        """
+        obj = self.sender()
+        button_name = obj.objectName()
+        name = button_name.strip("button")
+
+        dialog = QFileDialog()
+
+        default_fn = str(Path.home())
+
+        dirpath = dialog.getExistingDirectory(self,
+                                              'Set an awesome seq root path',
+                                              default_fn,
+                                              options=QFileDialog.ShowDirsOnly | QFileDialog.DontUseNativeDialog)
+
+        if dirpath:
+            edit = self.stackedWidgetPage2.findChild(QLineEdit, name, Qt.FindChildrenRecursively)
+            edit.setText(dirpath)
+
+    def set_csv_path(self):
+        obj = self.sender()
+        button_name = obj.objectName()
+        name = button_name.strip("button")
+
+        dialog = QFileDialog()
+
+        default_fn = str(Path.home())
+
+        dirpath = dialog.getExistingDirectory(self,
+                                              'Set an awesome csv root path',
+                                              default_fn,
+                                              options=QFileDialog.ShowDirsOnly | QFileDialog.DontUseNativeDialog)
+
+        if dirpath:
+            edit = self.stackedWidgetPage2.findChild(QLineEdit, name, Qt.FindChildrenRecursively)
+            edit.setText(dirpath)
+
+    def set_metadata_output_path(self):
+        obj = self.sender()
+        button_name = obj.objectName()
+        name = button_name.strip("button")
+
+        dialog = QFileDialog()
+
+        default_fn = str(Path.home())
+
+        dirpath = dialog.getExistingDirectory(self,
+                                              'Set an awesome metadata output path',
+                                              default_fn,
+                                              options=QFileDialog.ShowDirsOnly | QFileDialog.DontUseNativeDialog)
+
+        edit = self.stackedWidgetPage2.findChild(QLineEdit, name, Qt.FindChildrenRecursively)
+        edit.setText(dirpath)
+
+    def set_metadata_docs_path(self):
+        obj = self.sender()
+        button_name = obj.objectName()
+        name = button_name.strip("button")
+
+        dialog = QFileDialog()
+
+        default_fn = str(Path.home())
+
+        dirpath = dialog.getExistingDirectory(self,
+                                              'Set an awesome metadata docs path',
+                                              default_fn,
+                                              options=QFileDialog.ShowDirsOnly | QFileDialog.DontUseNativeDialog)
+
+        edit = self.stackedWidgetPage2.findChild(QLineEdit, name, Qt.FindChildrenRecursively)
+        edit.setText(dirpath)
+
+    def set_pseudo_id_filepath(self):
+        obj = self.sender()
+        button_name = obj.objectName()
+        name = button_name.strip("button")
+
+        dialog = QFileDialog()
+
+        default_fn = "gms-uploader_1_pseudoids.txt"
+
+        pseudo_id_fp, _ = dialog.getSaveFileName(self,
+                                                 'Set an awesome pseudo_id filepath',
+                                                 default_fn,
+                                                 "pseudo_ID files (*_pseudoids.txt)",
+                                                 options=QFileDialog.DontUseNativeDialog |
+                                                         QFileDialog.DontConfirmOverwrite)
+        pif_obj = Path(pseudo_id_fp)
+        if pif_obj.parent.exists():
+            edit = self.stackedWidgetPage2.findChild(QLineEdit, name, Qt.FindChildrenRecursively)
+            edit.setText(pseudo_id_fp)
+            pif_obj.touch(exist_ok=True)
+
+    def set_credentials_filepath(self):
+        obj = self.sender()
+        button_name = obj.objectName()
+        name = button_name.strip("button")
+
+        print("set credentials")
+
+        dialog = QFileDialog()
+
+        credentials_path, _ = dialog.getSaveFileName(self,
+                                                     'Select an awesome credentials json file',
+                                                     "",
+                                                     "json files (*.json)",
+                                                     options=QFileDialog.DontUseNativeDialog |
+                                                             QFileDialog.DontConfirmOverwrite)
+
+        f_obj = Path(credentials_path)
+        if f_obj.parent.exists():
+            edit = self.stackedWidgetPage2.findChild(QLineEdit, name, Qt.FindChildrenRecursively)
+            edit.setText(credentials_path)
+
+    # utility functions
+
+    def set_icons(self):
+
+        self.action_open_meta.setIcon(QIcon('fontawesome/folder-open-outline_mdi.svg'))
+        self.action_save_meta.setIcon(QIcon('fontawesome/content-save-outline_mdi.svg'))
+        self.action_show_meta.setIcon(QIcon('fontawesome/table_mdi.svg'))
+        self.action_show_prefs.setIcon(QIcon('fontawesome/cog-outline_mdi.svg'))
+        self.action_upload_meta_seqs.setIcon(QIcon('fontawesome/tray-arrow-up_mdi.svg'))
+        self.action_select_seq_files.setIcon(QIcon('fontawesome/dna_mdi.svg'))
+        self.action_import_csv.setIcon(QIcon('fontawesome/import-csv_own.svg'))
+
+        self.pushButton_filldown.setIcon(QIcon('fontawesome/arrow-down_mdi.svg'))
+        self.pushButton_drop.setIcon(QIcon('fontawesome/close_mdi.svg'))
+        self.pushButton_clear.setIcon(QIcon('fontawesome/trash-can-outline_mdi.svg'))
+        self.pushButton_resetfilters.setIcon(QIcon('fontawesome/filter-remove-outline_mdi.svg'))
+        self.pushButton_filtermarked.setIcon(QIcon('fontawesome/filter-outline_mdi.svg'))
+        self.pushButton_invert.setIcon(QIcon('fontawesome/invert_own.svg'))
+
+    def drop_rows(self):
+        self.model.dropMarkedRows()
+        self.update_model()
+
+    def set_col_widths(self):
+        for i, name in enumerate(self.conf['model_fields']):
+            self.tableView_patient.setColumnWidth(i, self.conf['model_fields'][name]['col_width'])
+            self.tableView_organism.setColumnWidth(i, self.conf['model_fields'][name]['col_width'])
+            self.tableView_lab.setColumnWidth(i, self.conf['model_fields'][name]['col_width'])
+
+    def set_hidden_columns(self):
+        for i, name in enumerate(self.conf['model_fields']):
+            if 'patient' not in self.conf['model_fields'][name]['view']:
+                self.tableView_patient.setColumnHidden(i, True)
+            if 'organism' not in self.conf['model_fields'][name]['view']:
+                self.tableView_organism.setColumnHidden(i, True)
+            if 'lab' not in self.conf['model_fields'][name]['view']:
+                self.tableView_lab.setColumnHidden(i, True)
+
+    def set_mark_filter(self):
+        if self.pushButton_filtermarked.isChecked():
+            self.mfilter_sort_proxy_model.setCheckedFilter()
+
+        else:
+            self.mfilter_sort_proxy_model.clearCheckedFilter()
+
+    def set_free_filter(self):
+        text = self.lineEdit_filter.text()
+        search = QRegularExpression(text, QRegularExpression.CaseInsensitiveOption)
+        self.mfilter_sort_proxy_model.setFilterByColumns([1, 2, 3], search)
+
+    # delegates
+
+    def set_delegates(self):
+        for field in self.conf['model_fields']:
+            if 'checkbox' in self.conf['model_fields'][field]['delegates']:
+                self.set_checkbox_delegate(field)
+
+            elif 'combobox' in self.conf['model_fields'][field]['delegates']:
+                self.set_combobox_delegate(field)
+
+            elif 'date' in self.conf['model_fields'][field]['delegates']:
+                self.set_date_delegate(field)
+
+            elif 'age' in self.conf['model_fields'][field]['delegates']:
+                self.set_age_delegate(field)
+
+    def set_combobox_delegate(self, field):
+
+        store_key = "/".join(["qlistwidgets", field])
+        items = ['']
+        items.extend(to_list(self.qsettings.value(store_key)))
+
+        for view in self.conf['model_fields'][field]['view']:
+            self.delegates[view][field] = ComboBoxDelegate(items)
+
+            if view == 'patient':
+                self.tableView_patient.setItemDelegateForColumn(self.tableView_columns.index(field),
+                                                                self.delegates[view][field])
+            elif view == 'lab':
+                self.tableView_lab.setItemDelegateForColumn(self.tableView_columns.index(field),
+                                                            self.delegates[view][field])
+            elif view == 'organism':
+                self.tableView_organism.setItemDelegateForColumn(self.tableView_columns.index(field),
+                                                                 self.delegates[view][field])
+
+    def set_date_delegate(self, field):
+        for view in self.conf['model_fields'][field]['view']:
+            self.delegates[view][field] = DateAutoCorrectDelegate()
+            if view == 'patient':
+                self.tableView_patient.setItemDelegateForColumn(self.tableView_columns.index(field),
+                                                                self.delegates[view][field])
+            elif view == 'lab':
+                self.tableView_lab.setItemDelegateForColumn(self.tableView_columns.index(field),
+                                                            self.delegates[view][field])
+            elif view == 'organism':
+                self.tableView_organism.setItemDelegateForColumn(self.tableView_columns.index(field),
+                                                                 self.delegates[view][field])
+
+    def set_age_delegate(self, field):
+        for view in self.conf['model_fields'][field]['view']:
+            self.delegates[view][field] = AgeDelegate()
+
+            if view == 'patient':
+                self.tableView_patient.setItemDelegateForColumn(self.tableView_columns.index(field),
+                                                                self.delegates[view][field])
+            elif view == 'lab':
+                self.tableView_lab.setItemDelegateForColumn(self.tableView_columns.index(field),
+                                                            self.delegates[view][field])
+            elif view == 'organism':
+                self.tableView_organism.setItemDelegateForColumn(self.tableView_columns.index(field),
+                                                                 self.delegates[view][field])
+
+    def set_checkbox_delegate(self, field):
+        for view in self.conf['model_fields'][field]['view']:
+            self.delegates[view][field] = CheckBoxDelegate(None)
+
+            if view == 'patient':
+                self.tableView_patient.setItemDelegateForColumn(self.tableView_columns.index(field),
+                                                                self.delegates[view][field])
+            elif view == 'lab':
+                self.tableView_lab.setItemDelegateForColumn(self.tableView_columns.index(field),
+                                                            self.delegates[view][field])
+            elif view == 'organism':
+                self.tableView_organism.setItemDelegateForColumn(self.tableView_columns.index(field),
+                                                                 self.delegates[view][field])
+
+    # Data-view related functions
+
+    def filldown(self):
+        visible_tableview = self.get_current_tableview()
+        if visible_tableview:
+            select = visible_tableview.selectionModel()
+            index = select.currentIndex()
+
+            max_rows = self.mfilter_sort_proxy_model.rowCount()
+            data_orig = self.mfilter_sort_proxy_model.data(index, Qt.DisplayRole)
+
+            for r in range(index.row() + 1, max_rows):
+                index_new = self.mfilter_sort_proxy_model.index(r, index.column())
+                data_new = self.mfilter_sort_proxy_model.data(index_new, Qt.DisplayRole)
+                if data_new == '':
+                    self.mfilter_sort_proxy_model.setData(index_new, data_orig, Qt.EditRole)
+                else:
+                    break
+
+    def clear_table(self):
+        self.df = pd.DataFrame(columns=self.tableView_columns)
+        self.update_model()
+
+    def reset_sort_filter(self):
+        self.mfilter_sort_proxy_model.sort(-1)
+        self.tableView_patient.horizontalHeader().setSortIndicator(-1, Qt.SortOrder.DescendingOrder)
+        self.lineEdit_filter.setText('')
+        self.pushButton_filtermarked.setChecked(False)
+        self.set_mark_filter()
+
+        for i in range(0, self.model.rowCount()):
+            idx = self.model.index(i, 0)
+            new_value = "0"
+            self.model.setData(idx, new_value, Qt.EditRole)
+
     def get_current_tableview(self):
         for tbv in [self.tableView_patient, self.tableView_lab, self.tableView_organism]:
             if tbv.isVisible():
                 return tbv
+
+    def invert_marks(self):
+        for i in range(0, self.model.rowCount()):
+            idx = self.model.index(i, 0)
+            value = self.model.data(idx, Qt.DisplayRole)
+
+            if value == "0":
+                new_value = "1"
+            else:
+                new_value = "0"
+
+            print(value, new_value)
+
+            self.model.setData(idx, new_value, Qt.EditRole)
+
+    # pseudo_id-related functions
 
     def set_pseudo_id_start(self):
         file = self.qsettings.value("qlineedits/pseudo_id_filepath")
@@ -695,33 +796,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         return pseudo_ids
 
-    def merge_meta_from_csv(self):
-
-        take_smaller = lambda s1, s2: s1 if s1.sum() < s2.sum() else s2
-
-        default_path = ""
-        dialog = QFileDialog()
-        filepath, _ = dialog.getOpenFileName(self,
-                                             'Open an awesome metadata file',
-                                              default_path,
-                                              "metadata csv files (*.csv)",
-                                              options=QFileDialog.DontUseNativeDialog)
-
-        print(filepath)
-
-        if filepath:
-
-            colnames = list(self.df.columns)
-
-            with open(filepath, encoding='utf-8-sig') as csvfile:
-                reader = csv.DictReader(csvfile)
-                for row in reader:
-                    r = get_pd_row_index(self.df, row['internal_lab_id'], 'internal_lab_id')
-                    for key, value in row.items():
-                        if key in colnames:
-                            self.df.at[r, key] = value
-
-            self.update_model()
+    # Import/export functions
 
     def upload(self):
         self.df['lab'] = self.qsettings.value('qcomboboxes/lab')
@@ -820,19 +895,46 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.df = pd.read_pickle(filepath)
             self.update_model()
 
-    def invert_marks(self):
-        for i in range(0, self.model.rowCount()):
-            idx = self.model.index(i, 0)
-            value = self.model.data(idx, Qt.DisplayRole)
+    def get_seq_files(self):
+        datadir = self.qsettings.value('qlineedits/data_root_path')
+        dialog = QFileDialog()
+        files, _ = dialog.getOpenFileNames(self,
+                                           "Select sequence data files",
+                                           datadir,
+                                           "Sequence files (*.fast5 *.fastq.gz *.fastq *.fq.gz *.fq",
+                                           options=QFileDialog.DontUseNativeDialog)
 
-            if value == "0":
-                new_value = "1"
-            else:
-                new_value = "0"
+        self.parse_files(files)
 
-            print(value, new_value)
+    def get_csv_file_combine(self):
 
-            self.model.setData(idx, new_value, Qt.EditRole)
+        take_smaller = lambda s1, s2: s1 if s1.sum() < s2.sum() else s2
+
+        default_path = ""
+        dialog = QFileDialog()
+        filepath, _ = dialog.getOpenFileName(self,
+                                             'Open an awesome metadata file',
+                                              default_path,
+                                              "metadata csv files (*.csv)",
+                                              options=QFileDialog.DontUseNativeDialog)
+
+        print(filepath)
+
+        if filepath:
+
+            colnames = list(self.df.columns)
+
+            with open(filepath, encoding='utf-8-sig') as csvfile:
+                reader = csv.DictReader(csvfile)
+                for row in reader:
+                    r = get_pd_row_index(self.df, row['internal_lab_id'], 'internal_lab_id')
+                    for key, value in row.items():
+                        if key in colnames:
+                            self.df.at[r, key] = value
+
+            self.update_model()
+
+    # Reimplemented functions
 
     def dragEnterEvent(self, event):
         if event.mimeData().hasUrls:

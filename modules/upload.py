@@ -39,9 +39,9 @@ class UploadWorker(QObject):
                 self.current_upload = file
                 hcpm.upload_file(str(file),
                                  self.tag,
-                                 metadata={'tag': self.tag, 'type': 'fastq', 'sample': sample},
-                                 callback=self.update_progress
+                                 metadata={'tag': self.tag, 'type': 'fastq', 'sample': sample}
                                  )
+                self.update_progress(100)
 
     def update_progress(self, value):
         self.progress.emit(self.current_upload, value)

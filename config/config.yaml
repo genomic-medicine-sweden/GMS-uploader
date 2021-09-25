@@ -194,10 +194,12 @@ model_fields:
     validators: False
 settings:
   qlineedits:
-    data_root_path: None
-    metadata_path: None
+    seq_base_path: None
+    csv_base_path: None
+    metadata_output_path: None
+    metadata_docs_path: None
     pseudo_id_filepath: None
-    credentials_path: None
+    credentials_filepath: None
     submitter: None
   qcomboboxes:
     hcp_bucket:
@@ -306,10 +308,12 @@ settings:
     pseudo_id_start_prefix: None
 
 add_buttons:
-  pseudo_id_filepath: True
-  data_root_path: True
-  metadata_path: True
-  credentials_path: True
+    seq_base_path: True
+    csv_base_path: True
+    metadata_output_path: True
+    metadata_docs_path: True
+    pseudo_id_filepath: True
+    credentials_filepath: True
 
 echomode_password:
   qlineedits:

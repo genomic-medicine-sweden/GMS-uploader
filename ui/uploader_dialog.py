@@ -71,10 +71,10 @@ class Ui_Dialog(object):
 
         self.horizontalLayout.addWidget(self.pushButton_start)
 
-        self.pushButton_terminate = QPushButton(Dialog)
-        self.pushButton_terminate.setObjectName(u"pushButton_terminate")
+        self.pushButton_cancel = QPushButton(Dialog)
+        self.pushButton_cancel.setObjectName(u"pushButton_cancel")
 
-        self.horizontalLayout.addWidget(self.pushButton_terminate)
+        self.horizontalLayout.addWidget(self.pushButton_cancel)
 
         self.pushButton_close = QPushButton(Dialog)
         self.pushButton_close.setObjectName(u"pushButton_close")
@@ -95,8 +95,8 @@ class Ui_Dialog(object):
         self.label.setText(QCoreApplication.translate("Dialog", u"tag:", None))
         self.label_2.setText(QCoreApplication.translate("Dialog", u"endpoint", None))
         self.label_3.setText(QCoreApplication.translate("Dialog", u"bucket:", None))
-        self.pushButton_start.setText(QCoreApplication.translate("Dialog", u"Start upload", None))
-        self.pushButton_terminate.setText(QCoreApplication.translate("Dialog", u"Terminate", None))
+        self.pushButton_start.setText(QCoreApplication.translate("Dialog", u"Start", None))
+        self.pushButton_cancel.setText(QCoreApplication.translate("Dialog", u"Cancel", None))
         self.pushButton_close.setText(QCoreApplication.translate("Dialog", u"Close", None))
     # retranslateUi
 

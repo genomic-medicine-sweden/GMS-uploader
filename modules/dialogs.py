@@ -74,32 +74,28 @@ class Uploader(QDialog, UI_Dialog_Uploader):
             self.tableWidget.setItem(i, 1, size_item)
             self.tableWidget.setCellWidget(i, 2, self.progress_bars[file])
 
-    #     self.thread = QThread()
-    #     self.worker = UploadWorker(self, meta_json, files_list, tag, credentials_path, bucket)
-    #     self.worker.moveToThread(self.thread)
+        self.thread = QThread()
+        self.worker = UploadWorker(self, meta_json, files_list, tag, credentials_path, bucket)
+        self.worker.moveToThread(self.thread)
     #
-    #     self.thread.started.connect(self.worker.run)
-    #     self.worker.finished.connect(self.thread.quit)
-    #     self.worker.finished.connect(self.worker.deleteLater)
-    #     self.thread.finished.connect(self.thread.deleteLater)
-    #     self.worker.progress.connect(self.upload_complete)
+        self.thread.started.connect(self.worker.run)
+        self.worker.finished.connect(self.thread.quit)
+        self.worker.finished.connect(self.worker.deleteLater)
+        self.thread.finished.connect(self.thread.deleteLater)
+        self.worker.progress.connect(self.upload_complete)
     #
-    #     self.pushButton_terminate.clicked.connect(self.terminate)
-    #     self.pushButton_start.clicked.connect(self.start)
+        self.pushButton_terminate.clicked.connect(self.terminate)
+        self.pushButton_start.clicked.connect(self.start)
         self.pushButton_close.clicked.connect(self.close)
-    #
-    #
+
     def bytes_to_megabytes(self, b):
         return b/(1024*2014)
-    #
-    # def terminate(self):
-    #     self.thread.terminate()
-    #
-    # def start(self):
-    #     self.thread.start()
-    #
-    # def upload_complete(self, filename):
-    #     self.items[filename].setCheckState(Qt.Checked)
+
+    def stop(self):
+        self.thread.terminate()
+
+    def start(self):
+        self.thread.start()
 
 
 class ValidationDialog(QDialog, UI_Dialog_Validation):
