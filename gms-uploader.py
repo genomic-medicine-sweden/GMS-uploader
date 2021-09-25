@@ -201,7 +201,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         :return: None
         """
         self.lineEdit_submitter.setText(self.qsettings.value("qlineedits/submitter"))
-        self.lineEdit_credentials_path.setText(self.qsettings.value("qlineedits/credentials_path"))
+        self.lineEdit_credentials_path.setText(self.qsettings.value("qlineedits/credentials_filepath"))
         self.lineEdit_lab.setText(self.qsettings.value("qcomboboxes/lab"))
         self.lineEdit_seq_technology.setText(self.qsettings.value("qcomboboxes/seq_technology"))
         self.lineEdit_host.setText(self.qsettings.value("qcomboboxes/host"))
@@ -554,8 +554,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         obj = self.sender()
         button_name = obj.objectName()
         name = button_name.strip("button")
-
-        print("set credentials")
 
         dialog = QFileDialog()
 
