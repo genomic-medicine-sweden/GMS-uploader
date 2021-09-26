@@ -19,7 +19,7 @@ import csv
 from ui.mw import Ui_MainWindow
 import qdarktheme
 
-__version__ = '0.1.1-beta.2'
+__version__ = '0.1.1-beta.3'
 __title__ = 'GMS-uploader'
 
 
@@ -135,6 +135,38 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.action_open_meta.triggered.connect(self.unpickle_df)
         self.pushButton_invert.clicked.connect(self.invert_marks)
         self.action_import_csv.triggered.connect(self.get_csv_file_combine)
+
+    def set_icons(self):
+
+        self.action_open_meta.setIcon(QIcon('fontawesome/folder-open-outline_mdi.svg'))
+        self.action_save_meta.setIcon(QIcon('fontawesome/content-save-outline_mdi.svg'))
+        self.action_show_meta.setIcon(QIcon('fontawesome/table_mdi.svg'))
+        self.action_show_prefs.setIcon(QIcon('fontawesome/cog-outline_mdi.svg'))
+        self.action_upload_meta_seqs.setIcon(QIcon('fontawesome/tray-arrow-up_mdi.svg'))
+        self.action_select_seq_files.setIcon(QIcon('fontawesome/dna_mdi.svg'))
+        self.action_import_csv.setIcon(QIcon('fontawesome/import-csv_own.svg'))
+
+        self.pushButton_filldown.setIcon(QIcon('fontawesome/arrow-down_mdi.svg'))
+        self.pushButton_drop.setIcon(QIcon('fontawesome/close_mdi.svg'))
+        self.pushButton_clear.setIcon(QIcon('fontawesome/trash-can-outline_mdi.svg'))
+        self.pushButton_resetfilters.setIcon(QIcon('fontawesome/filter-remove-outline_mdi.svg'))
+        self.pushButton_filtermarked.setIcon(QIcon('fontawesome/filter-outline_mdi.svg'))
+        self.pushButton_invert.setIcon(QIcon('fontawesome/invert_own.svg'))
+
+    def set_col_widths(self):
+        for i, name in enumerate(self.conf['model_fields']):
+            self.tableView_patient.setColumnWidth(i, self.conf['model_fields'][name]['col_width'])
+            self.tableView_organism.setColumnWidth(i, self.conf['model_fields'][name]['col_width'])
+            self.tableView_lab.setColumnWidth(i, self.conf['model_fields'][name]['col_width'])
+
+    def set_hidden_columns(self):
+        for i, name in enumerate(self.conf['model_fields']):
+            if 'patient' not in self.conf['model_fields'][name]['view']:
+                self.tableView_patient.setColumnHidden(i, True)
+            if 'organism' not in self.conf['model_fields'][name]['view']:
+                self.tableView_organism.setColumnHidden(i, True)
+            if 'lab' not in self.conf['model_fields'][name]['view']:
+                self.tableView_lab.setColumnHidden(i, True)
 
     def validate_settings(self):
         """
@@ -381,24 +413,41 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         else:
             df.loc[insert_loc + 1] = row
 
-    def parse_files(self, files):
-        parsed_files = []
+    def verify_files(self, files):
+        """
+        Ensures that all filespaths in a list exist and have correct suffixes, corresponding to
+        raw sequence data files. Only correct files are returned. If a path is a dir, paths for files in that directory are listed,
+        verified and returned.
+        :param files: list of filepaths and/or dirpaths
+        :return: list of verified filepaths
+        """
+        verified_files = []
         for file in files:
             f = Path(file)
             if f.is_dir():
                 for type in self.conf['seq_files']:
                     ext = self.conf['seq_files'][type]['ext']
                     for fp in f.rglob(ext):
-                        parsed_files.append(fp)
+                        if Path(fp).exists():
+                            verified_files.append(fp)
 
             else:
                 for type in self.conf['seq_files']:
                     ext = self.conf['seq_files'][type]['ext']
-                    if f.match(ext):
-                        parsed_files.append(f)
+                    if f.match(ext) and f.exists():
+                        verified_files.append(f)
+
+        return verified_files
+
+    def extract_metadata_from_filenames(self, files):
+        """
+        Extract metadata from sequence data filenames
+        :param files: list of filepaths
+        :return: list of dicts with metadata from filenames
+        """
 
         _data = {}
-        for file in parsed_files:
+        for file in files:
             seq_path = file.parent
             filename = file.name
             filename_obj = Path(filename)
@@ -424,23 +473,35 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     if filename_obj.match(pat):
                         _data[sample][field] = str(filename)
 
-        out_data = []
+        filename_metadata = []
         for sample in _data:
             row = dict()
-            row['mark'] = 0
+            row['mark'] = 0 # add mark column
             row['internal_lab_id'] = sample
             for key in _data[sample]:
                 row[key] = _data[sample][key]
 
-            out_data.append(row)
+            filename_metadata.append(row)
 
-        self.add_data(out_data)
+        return filename_metadata
 
     def find_duplicates(self, df1, df2):
+        """
+        Checks if the same internal_lab_id are present in two dataframes
+        :param df1: dataframe1
+        :param df2: dataframe2
+        :return: Bool
+        """
         df3 = df1.append(df2)
         return df3['internal_lab_id'].duplicated().any()
 
-    def add_data(self, data):
+    def add_files_metadata_to_model(self, data):
+        """
+        Creates new pandas df, from files and metadata, check for duplicates
+        and merge with existing df dataset and create new model.
+        :param data: list of dicts containing metadata and filenames
+        :return: None
+        """
         new_df = pd.DataFrame(data)
 
         if not self.find_duplicates(self.df, new_df):
@@ -478,6 +539,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             edit.setText(dirpath)
 
     def set_csv_path(self):
+        """
+        Set base path to for filedialog for importing csv files.
+        :return: None
+        """
         obj = self.sender()
         button_name = obj.objectName()
         name = button_name.strip("button")
@@ -496,6 +561,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             edit.setText(dirpath)
 
     def set_metadata_output_path(self):
+        """
+        Sets dir where metadata json files should be stored.
+        :return: None
+        """
         obj = self.sender()
         button_name = obj.objectName()
         name = button_name.strip("button")
@@ -513,6 +582,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         edit.setText(dirpath)
 
     def set_metadata_docs_path(self):
+        """
+        Sets base dir path where to save and open pickeled metadata dataframes.
+        :return: None
+        """
         obj = self.sender()
         button_name = obj.objectName()
         name = button_name.strip("button")
@@ -530,6 +603,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         edit.setText(dirpath)
 
     def set_pseudo_id_filepath(self):
+        """
+        Set filepath to textfile where pseudo_ids should be stored
+        :return: None
+        """
         obj = self.sender()
         button_name = obj.objectName()
         name = button_name.strip("button")
@@ -551,6 +628,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             pif_obj.touch(exist_ok=True)
 
     def set_credentials_filepath(self):
+        """
+        Sets filepath to credentials json file, used for S3 upload to the HCP/NGP
+        :return: None
+        """
         obj = self.sender()
         button_name = obj.objectName()
         name = button_name.strip("button")
@@ -568,44 +649,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if f_obj.parent.exists():
             edit = self.stackedWidgetPage2.findChild(QLineEdit, name, Qt.FindChildrenRecursively)
             edit.setText(credentials_path)
-
-    # utility functions
-
-    def set_icons(self):
-
-        self.action_open_meta.setIcon(QIcon('fontawesome/folder-open-outline_mdi.svg'))
-        self.action_save_meta.setIcon(QIcon('fontawesome/content-save-outline_mdi.svg'))
-        self.action_show_meta.setIcon(QIcon('fontawesome/table_mdi.svg'))
-        self.action_show_prefs.setIcon(QIcon('fontawesome/cog-outline_mdi.svg'))
-        self.action_upload_meta_seqs.setIcon(QIcon('fontawesome/tray-arrow-up_mdi.svg'))
-        self.action_select_seq_files.setIcon(QIcon('fontawesome/dna_mdi.svg'))
-        self.action_import_csv.setIcon(QIcon('fontawesome/import-csv_own.svg'))
-
-        self.pushButton_filldown.setIcon(QIcon('fontawesome/arrow-down_mdi.svg'))
-        self.pushButton_drop.setIcon(QIcon('fontawesome/close_mdi.svg'))
-        self.pushButton_clear.setIcon(QIcon('fontawesome/trash-can-outline_mdi.svg'))
-        self.pushButton_resetfilters.setIcon(QIcon('fontawesome/filter-remove-outline_mdi.svg'))
-        self.pushButton_filtermarked.setIcon(QIcon('fontawesome/filter-outline_mdi.svg'))
-        self.pushButton_invert.setIcon(QIcon('fontawesome/invert_own.svg'))
-
-    def drop_rows(self):
-        self.model.dropMarkedRows()
-        self.update_model()
-
-    def set_col_widths(self):
-        for i, name in enumerate(self.conf['model_fields']):
-            self.tableView_patient.setColumnWidth(i, self.conf['model_fields'][name]['col_width'])
-            self.tableView_organism.setColumnWidth(i, self.conf['model_fields'][name]['col_width'])
-            self.tableView_lab.setColumnWidth(i, self.conf['model_fields'][name]['col_width'])
-
-    def set_hidden_columns(self):
-        for i, name in enumerate(self.conf['model_fields']):
-            if 'patient' not in self.conf['model_fields'][name]['view']:
-                self.tableView_patient.setColumnHidden(i, True)
-            if 'organism' not in self.conf['model_fields'][name]['view']:
-                self.tableView_organism.setColumnHidden(i, True)
-            if 'lab' not in self.conf['model_fields'][name]['view']:
-                self.tableView_lab.setColumnHidden(i, True)
 
     def set_mark_filter(self):
         if self.pushButton_filtermarked.isChecked():
@@ -695,7 +738,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.tableView_organism.setItemDelegateForColumn(self.tableView_columns.index(field),
                                                                  self.delegates[view][field])
 
-    # Data-view related functions
+    # Data-view related functions, utility functions
+
+    def drop_rows(self):
+        self.model.dropMarkedRows()
+        self.update_model()
 
     def filldown(self):
         visible_tableview = self.get_current_tableview()
@@ -902,7 +949,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                                            "Sequence files (*.fast5 *.fastq.gz *.fastq *.fq.gz *.fq",
                                            options=QFileDialog.DontUseNativeDialog)
 
-        self.parse_files(files)
+        verified_files = self.verify_files(files)
+        file_metadata = self.extract_metadata_from_filenames(verified_files)
+        self.add_files_metadata_to_model(file_metadata)
 
     def get_csv_file_combine(self):
 
@@ -955,7 +1004,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             for url in event.mimeData().urls():
                 files.append(str(url.toLocalFile()))
 
-            self.parse_files(files)
+            verified_files = self.verify_files(files)
+            file_metadata = self.extract_metadata_from_filenames(verified_files)
+            self.add_files_metadata_to_model(file_metadata)
 
         else:
             event.ignore()
