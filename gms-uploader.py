@@ -131,8 +131,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.pushButton_clear.clicked.connect(self.clear_table)
         self.action_select_seq_files.triggered.connect(self.get_seq_files)
         self.action_upload_meta_seqs.triggered.connect(self.upload)
-        self.action_save_meta.triggered.connect(self.pickle_df)
-        self.action_open_meta.triggered.connect(self.unpickle_df)
+        self.action_save_meta.triggered.connect(self.save_metadata_file)
+        self.action_open_meta.triggered.connect(self.open_metadata_file)
         self.pushButton_invert.clicked.connect(self.invert_marks)
         self.action_import_csv.triggered.connect(self.get_csv_file_combine)
 
@@ -527,11 +527,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         dialog = QFileDialog()
 
-        default_fn = str(Path.home())
+        default_path = str(Path.home())
 
         dirpath = dialog.getExistingDirectory(self,
                                               'Set an awesome seq root path',
-                                              default_fn,
+                                              default_path,
                                               options=QFileDialog.ShowDirsOnly | QFileDialog.DontUseNativeDialog)
 
         if dirpath:
@@ -913,21 +913,39 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         #     worker.progress.connect(self.reportProgress)
         #
 
-    def pickle_df(self):
+    def save_metadata_file(self):
         now = datetime.now()
         dt_str = now.strftime("%Y-%m-%dT%H.%M.%S")
         dialog = QFileDialog()
-        default_fn = dt_str + "_metadata.pkl"
+
+        p_str = self.qsettings.value('qlineedits/metadata_docs_path')
+
+        if p_str and Path(p_str).exists():
+            default_path = p_str
+        else:
+            default_path = str(Path.home())
+
+
+        default_path = Path(default_path, dt_str + "_metadata.pkl")
+        print(default_path)
+
         filepath, _ = dialog.getSaveFileName(self,
                                              'Save an awesome metadata file',
-                                             default_fn,
+                                             str(default_path),
                                              "metadata files (*.pkl)",
                                              options=QFileDialog.DontUseNativeDialog)
         if filepath:
             self.df.to_pickle(filepath)
 
-    def unpickle_df(self):
-        default_path = ""
+    def open_metadata_file(self):
+
+        p_str = self.qsettings.value('qlineedits/metadata_docs_path')
+
+        if p_str and Path(p_str).exists():
+            default_path = p_str
+        else:
+            default_path = str(Path.home())
+
         dialog = QFileDialog()
         filepath, _ = dialog.getOpenFileName(self,
                                              'Open an awesome metadata file',
@@ -942,11 +960,18 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.rem_tb_bkg()
 
     def get_seq_files(self):
-        datadir = self.qsettings.value('qlineedits/data_root_path')
+
+        p_str = self.qsettings.value('qlineedits/seq_base_path')
+
+        if p_str and Path(p_str).exists():
+            default_path = p_str
+        else:
+            default_path = str(Path.home())
+
         dialog = QFileDialog()
         files, _ = dialog.getOpenFileNames(self,
                                            "Select sequence data files",
-                                           datadir,
+                                           default_path,
                                            "Sequence files (*.fast5 *.fastq.gz *.fastq *.fq.gz *.fq",
                                            options=QFileDialog.DontUseNativeDialog)
 
@@ -956,9 +981,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def get_csv_file_combine(self):
 
-        take_smaller = lambda s1, s2: s1 if s1.sum() < s2.sum() else s2
+        p_str = self.qsettings.value('qlineedits/csv_base_path')
 
-        default_path = ""
+        if p_str and Path(p_str).exists():
+            default_path = p_str
+        else:
+            default_path = str(Path.home())
+
         dialog = QFileDialog()
         filepath, _ = dialog.getOpenFileName(self,
                                              'Open an awesome metadata file',
