@@ -145,6 +145,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.action_upload_meta_seqs.setIcon(QIcon('fontawesome/tray-arrow-up_mdi.svg'))
         self.action_select_seq_files.setIcon(QIcon('fontawesome/dna_mdi.svg'))
         self.action_import_csv.setIcon(QIcon('fontawesome/import-csv_own.svg'))
+        self.action_import_paste_fx.setIcon(QIcon('fontawesome/content-paste-func_own.svg'))
 
         self.pushButton_filldown.setIcon(QIcon('fontawesome/arrow-down_mdi.svg'))
         self.pushButton_drop.setIcon(QIcon('fontawesome/close_mdi.svg'))
@@ -892,9 +893,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         #                  self.qsettings['qcomboboxes/hcp_bucket']
         #                  ]
 
-        uploader = Uploader(self.qsettings.value('qlineedits/credentials_path'),
+        c_path = self.qsettings.value('qlineedits/credentials_filepath')
+        bucket = self.qsettings.value('qcomboboxes/hcp_bucket')
+
+        print(c_path, tag, bucket, json_file, files_list)
+
+        uploader = Uploader(c_path,
                             tag,
-                            self.qsettings.value('qcomboboxes/hcp_bucket'),
+                            bucket,
                             json_file,
                             files_list)
 

@@ -381,6 +381,8 @@ shortcut: ctrl+f</string>
    <addaction name="action_select_seq_files"/>
    <addaction name="action_import_csv"/>
    <addaction name="separator"/>
+   <addaction name="action_import_paste_fx"/>
+   <addaction name="separator"/>
    <addaction name="action_show_meta"/>
    <addaction name="action_show_prefs"/>
    <addaction name="separator"/>
@@ -446,6 +448,14 @@ shortcut: ctrl+f</string>
    </property>
    <property name="toolTip">
     <string>import metadata from csv</string>
+   </property>
+  </action>
+  <action name="action_import_paste_fx">
+   <property name="text">
+    <string>import_paste_fx</string>
+   </property>
+   <property name="toolTip">
+    <string>import data via parsing clipboard data</string>
    </property>
   </action>
  </widget>

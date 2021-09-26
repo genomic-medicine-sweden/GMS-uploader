@@ -63,6 +63,7 @@ class Uploader(QDialog, UI_Dialog_Uploader):
 
             self.progress_bars[file] = QProgressBar()
             self.progress_bars[file].setValue(50)
+            self.progress_bars[file].setAlignment(Qt.AlignRight)
 
             self.tableWidget.insertRow(i)
 
@@ -75,16 +76,21 @@ class Uploader(QDialog, UI_Dialog_Uploader):
             self.tableWidget.setCellWidget(i, 2, self.progress_bars[file])
 
         self.thread = QThread()
-        self.worker = UploadWorker(self, meta_json, files_list, tag, credentials_path, bucket)
+
+        # meta_json, sample_seqs, tag, credentials_path, bucket
+
+        print(meta_json, files_list, tag, credentials_path, bucket)
+
+        self.worker = UploadWorker(meta_json, files_list, tag, credentials_path, bucket)
         self.worker.moveToThread(self.thread)
-    #
-        self.thread.started.connect(self.worker.run)
+
+        # self.thread.started.connect(self.worker.run)
         self.worker.finished.connect(self.thread.quit)
         self.worker.finished.connect(self.worker.deleteLater)
-        self.thread.finished.connect(self.thread.deleteLater)
-        self.worker.progress.connect(self.upload_complete)
-    #
-        self.pushButton_terminate.clicked.connect(self.terminate)
+        # self.thread.finished.connect(self.thread.deleteLater)
+        # self.worker.progress.connect(self.upload_complete)
+
+        # self.pushButton_terminate.clicked.connect(self.terminate)
         self.pushButton_start.clicked.connect(self.start)
         self.pushButton_close.clicked.connect(self.close)
 
