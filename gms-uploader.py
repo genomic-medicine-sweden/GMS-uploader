@@ -742,7 +742,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def drop_rows(self):
         self.model.dropMarkedRows()
-        self.update_model()
 
     def filldown(self):
         visible_tableview = self.get_current_tableview()
