@@ -638,7 +638,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         dialog = QFileDialog()
 
-        credentials_path, _ = dialog.getSaveFileName(self,
+        credentials_path, _ = dialog.getOpenFileName(self,
                                                      'Select an awesome credentials json file',
                                                      "",
                                                      "json files (*.json)",
@@ -847,13 +847,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.df['host'] = self.qsettings.value('qcomboboxes/host')
         self.df['seq_technology'] = self.qsettings.value('qcomboboxes/seq_technology')
 
-        # df2 = self.df.fillna('')
-        # errors = validate(df2)
-        #
-        # if errors:
-        #     vdialog = ValidationDialog(errors)
-        #     vdialog.exec()
-        #     return False
+        df2 = self.df.fillna('')
+        errors = validate(df2)
+
+        if errors:
+            vdialog = ValidationDialog(errors)
+            vdialog.exec()
+            return False
 
         sample_seqs = {}
         files_list = []
@@ -871,16 +871,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
             sample_seqs[row['internal_lab_id']] = _seqs
 
-        # self.df['lab_code'] = self.df['lab'].apply(lambda x: self.conf['tr']['lab_to_code'][x])
-        # self.df['region_code'] = self.df['region'].apply(lambda x: self.conf['tr']['region_to_code'][x])
-        # self.df['pseudo_id'] = self.create_pseudo_ids()
+        self.df['lab_code'] = self.df['lab'].apply(lambda x: self.conf['tr']['lab_to_code'][x])
+        self.df['region_code'] = self.df['region'].apply(lambda x: self.conf['tr']['region_to_code'][x])
+        self.df['pseudo_id'] = self.create_pseudo_ids()
 
         meta_fields = [field for field in self.conf['model_fields'] if self.conf['model_fields'][field]['to_meta']]
         df_submit = self.df[meta_fields]
 
         now = datetime.now()
         tag = now.strftime("%Y-%m-%dT%H.%M.%S")
-        json_file = Path(self.qsettings.value('qlineedits/metadata_path'), tag + "_meta.json")
+        json_file = Path(self.qsettings.value('qlineedits/metadata_output_path'), tag + "_meta.json")
 
         with open(json_file, 'w', encoding='utf-8') as file:
             df_submit.to_json(file, orient="records", force_ascii=False)
@@ -918,7 +918,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         dt_str = now.strftime("%Y-%m-%dT%H.%M.%S")
         dialog = QFileDialog()
         default_fn = dt_str + "_metadata.pkl"
-        filepath, _ = dialog.getOpenFileName(self,
+        filepath, _ = dialog.getSaveFileName(self,
                                              'Save an awesome metadata file',
                                              default_fn,
                                              "metadata files (*.pkl)",
@@ -929,7 +929,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def unpickle_df(self):
         default_path = ""
         dialog = QFileDialog()
-        filepath, _ = dialog.getSaveFileName(self,
+        filepath, _ = dialog.getOpenFileName(self,
                                              'Open an awesome metadata file',
                                               default_path,
                                               "metadata files (*.pkl)",
@@ -938,6 +938,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if filepath:
             self.df = pd.read_pickle(filepath)
             self.update_model()
+
+        self.rem_tb_bkg()
 
     def get_seq_files(self):
         datadir = self.qsettings.value('qlineedits/data_root_path')
