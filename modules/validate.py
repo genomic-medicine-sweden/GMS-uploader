@@ -40,8 +40,7 @@ def validate(df):
         Column('seq_technology', []),
         Column('library_method', []),
         Column('lane', []),
-        Column('fastq1', []),
-        Column('fastq2', []),
+        Column('fastq', []),
         Column('fast5', []),
         Column('seq_path', []),
         Column('comment', [])

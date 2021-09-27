@@ -152,15 +152,7 @@ model_fields:
     checkable: False
     delegates: ['None']
     validators: False
-  fastq1:
-    to_meta: True
-    col_width: 100
-    edit: False
-    view: ['lab']
-    checkable: False
-    delegates: ['None']
-    validators: False
-  fastq2:
+  fastq:
     to_meta: True
     col_width: 100
     edit: False
@@ -378,10 +370,9 @@ seq_files:
   fastq_gz:
     ext: '*.fastq.gz'
     fields:
-      fastq1: '*_R1_*'
-      fastq2: '*_R2_*'
+      fastq: '*.fastq.gz'
   fast5:
     ext: '*.fast5'
     fields:
-      Fast5: '*.fast5'
+      fast5: '*.fast5'
 

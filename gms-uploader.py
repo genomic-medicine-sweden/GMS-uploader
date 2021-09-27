@@ -44,7 +44,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         with default_config_path.open(encoding='utf8') as fp:
             self.conf = yaml.safe_load(fp)
 
-        if not self.validate_settings():
+        if not self.settings_validate():
             msg = MsgAlert("Incompatible saved settings: (re-)initializing...")
             msg.exec()
 
@@ -73,7 +73,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.delegates['organism'] = {}
 
         self.set_signals()
-        self.setup_tableviews()
+        self.tableviews_setup()
         self.stackedWidget.setCurrentIndex(0)
         self.tabWidget_metadata.setCurrentIndex(0)
         self.set_hidden_columns()
@@ -169,16 +169,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             if 'lab' not in self.conf['model_fields'][name]['view']:
                 self.tableView_lab.setColumnHidden(i, True)
 
-    def validate_settings(self):
+    def settings_validate(self):
         """
         Compares qsetting keys with keys in config file to make sure there is no mismatch.
         :return: True if ok, False otherwise
         """
         all_keys = self.qsettings.allKeys()
-
         for key in all_keys:
-            wtype, field = key.split('/')
 
+            wtype, field = key.split('/')
+            print(field)
             if wtype not in self.conf['settings']:
                 print("wtype not in conf settings", wtype)
                 return False
@@ -188,6 +188,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         for wtype in self.conf['settings']:
             for field in self.conf['settings'][wtype]:
+                print(field)
                 store_key = "/".join([wtype, field])
                 if store_key not in all_keys:
                     print("store_key not in all_keys", store_key)
@@ -357,7 +358,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.set_pseudo_id_start()
         self.set_static_lineedits()
 
-    def setup_tableviews(self):
+    def tableviews_setup(self):
         """
         Setup of data tableviews, connects to mfilter_sort_proxy_model, and the pandas model.
         :return: None
@@ -460,19 +461,24 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 _data[sample]['seq_path'] = str(seq_path)
 
             if filename_obj.match(self.conf['seq_files']['fastq_gz']['ext']):
+
                 f = file.stem.split('.')[0]
                 lane = f.split('_')[-1]
 
                 _data[sample]['lane'] = lane
 
-                for field, pat in self.conf['seq_files']['fastq_gz']['fields'].items():
-                    if filename_obj.match(pat):
-                        _data[sample][field] = str(filename)
+                if 'fastq' not in _data[sample]:
+                    _data[sample]['fastq'] = []
+
+                fastq_list = _data[sample]['fastq']
+                fastq_list.append(filename)
 
             elif filename_obj.match(self.conf['seq_files']['fast5']['ext']):
-                for field, pat in self.conf['seq_files']['fast5']['fields'].items():
-                    if filename_obj.match(pat):
-                        _data[sample][field] = str(filename)
+                if 'fast5' not in _data[sample]:
+                    _data[sample]['fast5'] = []
+
+                fast5_list = _data[sample]['fast5']
+                fast5_list.append(filename)
 
         filename_metadata = []
         for sample in _data:
@@ -480,7 +486,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             row['mark'] = 0 # add mark column
             row['internal_lab_id'] = sample
             for key in _data[sample]:
-                row[key] = _data[sample][key]
+                value = _data[sample][key]
+                if isinstance(value, list):
+                    sorted_files = sorted(value)
+                    row[key] = sorted_files
+                else:
+                    row[key] = value
 
             filename_metadata.append(row)
 
@@ -860,15 +871,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         files_list = []
         for _, row in self.df.iterrows():
             _seqs = []
-            if row['fastq1']:
-                _seqs.append(Path(row["seq_path"], row["fastq1"]))
-                files_list.append(Path(row["seq_path"], row["fastq1"]))
-            if row['fastq2']:
-                _seqs.append(Path(row["seq_path"], row["fastq2"]))
-                files_list.append(Path(row["seq_path"], row["fastq1"]))
+            if row['fastq']:
+                _list = row["fastq"]
+                for filename in _list:
+                    files_list.append(Path(row["seq_path"], filename))
+                    _seqs.append(Path(row["seq_path"], filename))
+
             if row['fast5']:
-                _seqs.append(Path(row["Seq_path"], row["fast5"]))
-                files_list.append(Path(row["seq_path"], row["fastq1"]))
+                _list = row["fast5"]
+                for filename in _list:
+                    files_list.append(Path(row["seq_path"], filename))
+                    _seqs.append(Path(row["seq_path"], filename))
 
             sample_seqs[row['internal_lab_id']] = _seqs
 
