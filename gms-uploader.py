@@ -29,6 +29,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.setupUi(self)
         self.setAcceptDrops(True)
         self.clipboard = QGuiApplication.clipboard()
+        self.tabWidget_metadata.setStyleSheet("QTabWidget::pane { border: 0; }")
+        self.scrollArea.setStyleSheet("QScrollArea { border: 0; }")
+        # self.scrollAreaWidgetContents_settings
 
         self.qsettings = QSettings("Genomic Medicine Sweden", "GMS-uploader")
 
@@ -301,7 +304,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             combo.currentTextChanged.connect(self.settings_update)
 
         tabwidget_settings = QTabWidget(objectName='tabwidget_settings')
-        self.verticalLayout_settings.addWidget(tabwidget_settings)
+        tabwidget_settings.setMinimumHeight(420)
+        tabwidget_settings.setStyleSheet("QTabWidget::pane { border: 0; }")
+        self.verticalLayout_tab_settings.addWidget(tabwidget_settings)
 
         for name in self.conf['settings']['qlistwidgets']:
             listwidget = QListWidget(objectName=name)
@@ -811,35 +816,37 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def set_pseudo_id_start(self):
         file = self.qsettings.value("qlineedits/pseudo_id_filepath")
-        file_obj = Path(file)
 
-        self.qsettings.setValue('no_widget/pseudo_id_start', "None")
+        if file:
+            file_obj = Path(file)
 
-        if file_obj.exists():
-            pseudo_ids = file_obj.read_text().splitlines()
+            self.qsettings.setValue('no_widget/pseudo_id_start', "None")
 
-            prev_prefix, prev_number = get_pseudo_id_code_number(pseudo_ids)
+            if file_obj.exists():
+                pseudo_ids = file_obj.read_text().splitlines()
 
-            if prev_number < 0:
-                msg = MsgError("Something is wrong with the set pseudo_id file.")
-                msg.exec()
-            else:
-                lab = self.qsettings.value('qcomboboxes/lab')
+                prev_prefix, prev_number = get_pseudo_id_code_number(pseudo_ids)
 
-                if lab:
-                    curr_prefix = self.conf['tr']['lab_to_code'][lab]
+                if prev_number < 0:
+                    msg = MsgError("Something is wrong with the set pseudo_id file.")
+                    msg.exec()
+                else:
+                    lab = self.qsettings.value('qcomboboxes/lab')
 
-                    if prev_prefix is not None:
-                        if curr_prefix != prev_prefix:
-                            msg = MsgError("Current and previous pseudo_id do not match.")
-                            msg.exec()
+                    if lab:
+                        curr_prefix = self.conf['tr']['lab_to_code'][lab]
 
-                    elif curr_prefix == prev_prefix or prev_prefix is None:
-                        curr_znumber_str = zfill_int(prev_number + 1)
-                        pseudo_id_start = curr_prefix + "-" + curr_znumber_str
-                        self.qsettings.setValue('no_widget/pseudo_id_start', pseudo_id_start)
-                        self.qsettings.setValue('no_widget/pseudo_id_start_int', prev_number + 1)
-                        self.qsettings.setValue('no_widget/pseudo_id_start_prefix', curr_prefix)
+                        if prev_prefix is not None:
+                            if curr_prefix != prev_prefix:
+                                msg = MsgError("Current and previous pseudo_id do not match.")
+                                msg.exec()
+
+                        elif curr_prefix == prev_prefix or prev_prefix is None:
+                            curr_znumber_str = zfill_int(prev_number + 1)
+                            pseudo_id_start = curr_prefix + "-" + curr_znumber_str
+                            self.qsettings.setValue('no_widget/pseudo_id_start', pseudo_id_start)
+                            self.qsettings.setValue('no_widget/pseudo_id_start_int', prev_number + 1)
+                            self.qsettings.setValue('no_widget/pseudo_id_start_prefix', curr_prefix)
 
     def create_pseudo_ids(self):
         pseudo_ids = []

@@ -259,15 +259,32 @@ class Ui_MainWindow(object):
         self.stackedWidgetPage2.setObjectName(u"stackedWidgetPage2")
         self.verticalLayout_3 = QVBoxLayout(self.stackedWidgetPage2)
         self.verticalLayout_3.setObjectName(u"verticalLayout_3")
+        self.scrollArea = QScrollArea(self.stackedWidgetPage2)
+        self.scrollArea.setObjectName(u"scrollArea")
+        self.scrollArea.setFrameShape(QFrame.NoFrame)
+        self.scrollArea.setFrameShadow(QFrame.Plain)
+        self.scrollArea.setLineWidth(0)
+        self.scrollArea.setWidgetResizable(True)
+        self.scrollAreaWidgetContents_settings = QWidget()
+        self.scrollAreaWidgetContents_settings.setObjectName(u"scrollAreaWidgetContents_settings")
+        self.scrollAreaWidgetContents_settings.setGeometry(QRect(0, 0, 671, 582))
+        self.verticalLayout_5 = QVBoxLayout(self.scrollAreaWidgetContents_settings)
+        self.verticalLayout_5.setObjectName(u"verticalLayout_5")
         self.formLayout_settings = QFormLayout()
         self.formLayout_settings.setObjectName(u"formLayout_settings")
+        self.formLayout_settings.setHorizontalSpacing(6)
+        self.formLayout_settings.setVerticalSpacing(6)
 
-        self.verticalLayout_3.addLayout(self.formLayout_settings)
+        self.verticalLayout_5.addLayout(self.formLayout_settings)
 
-        self.verticalLayout_settings = QVBoxLayout()
-        self.verticalLayout_settings.setObjectName(u"verticalLayout_settings")
+        self.verticalLayout_tab_settings = QVBoxLayout()
+        self.verticalLayout_tab_settings.setObjectName(u"verticalLayout_tab_settings")
 
-        self.verticalLayout_3.addLayout(self.verticalLayout_settings)
+        self.verticalLayout_5.addLayout(self.verticalLayout_tab_settings)
+
+        self.scrollArea.setWidget(self.scrollAreaWidgetContents_settings)
+
+        self.verticalLayout_3.addWidget(self.scrollArea)
 
         self.stackedWidget.addWidget(self.stackedWidgetPage2)
 
@@ -293,7 +310,7 @@ class Ui_MainWindow(object):
 
         self.retranslateUi(MainWindow)
 
-        self.stackedWidget.setCurrentIndex(0)
+        self.stackedWidget.setCurrentIndex(1)
         self.tabWidget_metadata.setCurrentIndex(0)
 
 

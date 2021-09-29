@@ -246,6 +246,8 @@ settings:
     library_method:
       'Artic': True
       'NEB': False
+    paste_fx:
+      analytix: True
   qlistwidgets:
     region:
       'Region Stockholm - 01': True
@@ -375,4 +377,8 @@ seq_files:
     ext: '*.fast5'
     fields:
       fast5: '*.fast5'
+
+fx_functions:
+  analytix: True
+
 
