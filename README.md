@@ -13,13 +13,13 @@ GMS-uploader objectives:
     * Simple entering of data is supported by using arrow-keys for moving around, autopopulation, fill-down of cells, and cut-and-paste from other sources using ctrl-c, ctrl-v 
   * Saves as json
 * Upload to the NGP
-  * Upload of data using HCP Interface (S3)
+  * Upload of data using NGPiris (S3)
 
 ## Introduction
 
 The GMS-uploader is a GUI tool intended to simplify contruction of metadata files that go along with sequencing data for upload to the Swedish National Genomics Platform.
 
-The GMS-uploader uses [HCP Interface](https://github.com/genomic-medicine-sweden/HCPInterface) which in turn heavily depends on [Boto3](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html) and uses the S3 protocol. It can therefore be used in any setting where S3 is used.   
+The GMS-uploader uses [NGPinterface](https://github.com/genomic-medicine-sweden/NGPIris) which in turn heavily depends on [Boto3](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html) and uses the S3 protocol. It can therefore be used in any setting where S3 is used.   
 
 ## Installation
 
