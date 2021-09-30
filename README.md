@@ -2,6 +2,8 @@
 GUI utility for uploading sequence and metadata to the NGP. Under development = there will be bugs.
 
 
+**A fully functional release will be available shortly. A few bugs remain that need ironing out.**
+
 GMS-uploader objectives:
 * Construction of metadata files to go along with sequencing data
   * Enforces structure and prevents errors
