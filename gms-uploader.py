@@ -26,6 +26,7 @@ __title__ = 'GMS-uploader'
 class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
+        self.setup_complete = False
         self.setupUi(self)
         self.setAcceptDrops(True)
         self.clipboard = QGuiApplication.clipboard()
@@ -85,6 +86,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.set_col_widths()
 
         self.set_delegates()
+        self.setup_complete = True
 
     # setup and init-related functions
 
@@ -370,6 +372,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.set_pseudo_id_start()
         self.set_static_lineedits()
+        self.update_delegates()
 
     def tableviews_setup(self):
         """
@@ -688,6 +691,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.mfilter_sort_proxy_model.setFilterByColumns(self.filter_cols, search)
 
     # delegates
+
+    def update_delegates(self):
+        if self.setup_complete:
+            self.set_delegates()
 
     def set_delegates(self):
         for field in self.conf['model_fields']:
