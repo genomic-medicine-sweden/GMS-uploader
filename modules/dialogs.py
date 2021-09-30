@@ -35,6 +35,8 @@ class Uploader(QDialog, UI_Dialog_Uploader):
         self.setWindowTitle("Upload")
         self.setWindowIcon(QIcon('icons/GMS-logo.png'))
 
+        self.pushButton_cancel.setDisabled(True)
+
         self.credentials = json.loads(Path(credentials_path).read_text())
 
         self.lineEdit_tag.setReadOnly(True)

@@ -32,7 +32,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.clipboard = QGuiApplication.clipboard()
         self.tabWidget_metadata.setStyleSheet("QTabWidget::pane { border: 0; }")
         self.scrollArea.setStyleSheet("QScrollArea { border: 0; }")
-        # self.scrollAreaWidgetContents_settings
 
         self.qsettings = QSettings("Genomic Medicine Sweden", "GMS-uploader")
 
@@ -86,9 +85,27 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.set_col_widths()
 
         self.set_delegates()
+
+        self.status_widgets = [
+            self.action_import_csv,
+            self.action_upload_meta_seqs,
+            self.pushButton_filtermarked,
+            self.pushButton_invert,
+            self.pushButton_drop,
+            self.pushButton_clear,
+            self.pushButton_filldown,
+            self.pushButton_resetfilters,
+            self.action_save_meta,
+            self.action_import_paste_fx,
+            self.lineEdit_filter
+        ]
+
+        self.set_datastatus_empty(True)
+
         self.setup_complete = True
 
     # setup and init-related functions
+
 
     def get_filter_cols(self):
         cols = list(self.df.columns)
@@ -188,22 +205,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         """
         all_keys = self.qsettings.allKeys()
         for key in all_keys:
-
             wtype, field = key.split('/')
-            print(field)
             if wtype not in self.conf['settings']:
-                print("wtype not in conf settings", wtype)
                 return False
             if field not in self.conf['settings'][wtype]:
-                print("field not in conf settings", field)
                 return False
 
         for wtype in self.conf['settings']:
             for field in self.conf['settings'][wtype]:
-                print(field)
                 store_key = "/".join([wtype, field])
                 if store_key not in all_keys:
-                    print("store_key not in all_keys", store_key)
                     return False
 
         return True
@@ -532,15 +543,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         """
         new_df = pd.DataFrame(data)
 
-        if not self.find_duplicates(self.df, new_df):
-            self.df = self.df.append(new_df)
-            self.df = self.df.fillna('')
-            self.update_model()
-            self.rem_tb_bkg()
-        else:
-            msg_box = QMessageBox()
-            msg_box.setText("Duplicate SampleIDs present in imported data.")
-            msg_box.exec()
+        if not new_df.empty:
+            if not self.find_duplicates(self.df, new_df):
+                self.df = self.df.append(new_df)
+                self.df = self.df.fillna('')
+                self.update_model()
+                self.rem_tb_bkg()
+                self.set_datastatus_empty(False)
+            else:
+                msg_box = QMessageBox()
+                msg_box.setText("Duplicate SampleIDs present in imported data.")
+                msg_box.exec()
 
     # set path functions
 
@@ -678,18 +691,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             edit = self.stackedWidgetPage2.findChild(QLineEdit, name, Qt.FindChildrenRecursively)
             edit.setText(credentials_path)
 
-    def set_mark_filter(self):
-        if self.pushButton_filtermarked.isChecked():
-            self.mfilter_sort_proxy_model.setCheckedFilter()
-
-        else:
-            self.mfilter_sort_proxy_model.clearCheckedFilter()
-
-    def set_free_filter(self):
-        text = self.lineEdit_filter.text()
-        search = QRegularExpression(text, QRegularExpression.CaseInsensitiveOption)
-        self.mfilter_sort_proxy_model.setFilterByColumns(self.filter_cols, search)
-
     # delegates
 
     def update_delegates(self):
@@ -772,8 +773,22 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     # Data-view related functions, utility functions
 
+    def set_mark_filter(self):
+        if self.pushButton_filtermarked.isChecked():
+            self.mfilter_sort_proxy_model.setCheckedFilter()
+
+        else:
+            self.mfilter_sort_proxy_model.clearCheckedFilter()
+
+    def set_free_filter(self):
+        text = self.lineEdit_filter.text()
+        search = QRegularExpression(text, QRegularExpression.CaseInsensitiveOption)
+        self.mfilter_sort_proxy_model.setFilterByColumns(self.filter_cols, search)
+
     def drop_rows(self):
         self.model.dropMarkedRows()
+        if self.df.empty:
+            self.set_datastatus_empty(True)
 
     def filldown(self):
         visible_tableview = self.get_current_tableview()
@@ -795,6 +810,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def clear_table(self):
         self.df = pd.DataFrame(columns=self.tableView_columns)
         self.update_model()
+        self.set_datastatus_empty(True)
 
     def reset_sort_filter(self):
         self.mfilter_sort_proxy_model.sort(-1)
@@ -823,9 +839,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             else:
                 new_value = "0"
 
-            print(value, new_value)
-
             self.model.setData(idx, new_value, Qt.EditRole)
+
+    def set_datastatus_empty(self, value):
+        for w in self.status_widgets:
+            w.setDisabled(value)
 
     # pseudo_id-related functions
 
@@ -931,8 +949,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         c_path = self.qsettings.value('qlineedits/credentials_filepath')
         bucket = self.qsettings.value('qcomboboxes/hcp_bucket')
 
-        print(c_path, tag, bucket, json_file, files_list)
-
         uploader = Uploader(c_path,
                             tag,
                             bucket,
@@ -966,9 +982,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         else:
             default_path = str(Path.home())
 
-
         default_path = Path(default_path, dt_str + "_metadata.pkl")
-        print(default_path)
 
         filepath, _ = dialog.getSaveFileName(self,
                                              'Save an awesome metadata file',
@@ -1036,7 +1050,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                                               "metadata csv files (*.csv)",
                                               options=QFileDialog.DontUseNativeDialog)
 
-        print(filepath)
 
         if filepath:
 
