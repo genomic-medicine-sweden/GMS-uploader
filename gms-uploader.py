@@ -306,9 +306,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
             else:
                 edit = QLineEdit(objectName=name, editingFinished=self.settings_update)
-                if 'qlineedits' in self.conf['echomode_password']:
-                    if name in self.conf['echomode_password']['qlineedits']:
-                        edit.setEchoMode(QLineEdit.Password)
                 store_key = "/".join(['qlineedits', name])
                 value = self.qsettings.value(store_key)
                 edit.setText(value)
@@ -771,7 +768,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.tableView_organism.setItemDelegateForColumn(self.tableView_columns.index(field),
                                                                  self.delegates[view][field])
 
-    # Data-view related functions, utility functions
+    # Data-view, filter and related functions, utility functions
+
+    def validate_paste(self, value, colname):
+        if not self.conf['model_fields'][colname]['edit'] or colname == 'mark':
+            return False
+
+        return True
 
     def set_mark_filter(self):
         if self.pushButton_filtermarked.isChecked():
@@ -1154,10 +1157,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             for i, r in enumerate(rows):
                 columns = r.split("\t")
                 for j, value in enumerate(columns):
-                    model.setData(model.index(i_row + i, i_col + j), value)
+                    colname = self.df.columns[i_col + j]
+                    if self.validate_paste(value, colname):
+                        model.setData(model.index(i_row + i, i_col + j), value)
 
         else:
             super().keyPressEvent(event)
+
 
 
 def main():

@@ -309,10 +309,6 @@ add_buttons:
     pseudo_id_filepath: True
     credentials_filepath: True
 
-echomode_password:
-  qlineedits:
-   aws_secret_key: True
-
 tr:
   region_to_code:
     'Region Stockholm - 01': '01'

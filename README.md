@@ -58,4 +58,4 @@ Download from the [release](https://github.com/genomic-medicine-sweden/GMS-uploa
 
 
 TODO:
-Correct delegates update
+Fix paste validator
