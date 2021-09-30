@@ -55,4 +55,5 @@ Download from the [release](https://github.com/genomic-medicine-sweden/GMS-uploa
   * After matrix is populated, pressing the upload button the data is validated and uploaded using HCP Interface
 
 
-
+TODO:
+Correct delegates update

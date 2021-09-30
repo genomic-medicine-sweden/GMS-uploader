@@ -62,6 +62,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.model = PandasModel(self.df, self.conf['model_fields'])
         self.mfilter_sort_proxy_model = MultiSortFilterProxyModel()
 
+        self.filter_cols = self.get_filter_cols()
+
         self.tabWidget_metadata.setTabText(0, "patient metadata")
         self.tabWidget_metadata.setTabText(1, "organism metadata")
         self.tabWidget_metadata.setTabText(2, "lab metadata")
@@ -85,6 +87,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.set_delegates()
 
     # setup and init-related functions
+
+    def get_filter_cols(self):
+        cols = list(self.df.columns)
+        used_cols = self.conf['freetext_filter']['fields']
+        return [self.df.columns.get_loc(c) for c in cols if c in used_cols]
 
     def set_tb_bkg(self):
         """
@@ -245,6 +252,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.lineEdit_lib_method.setText(self.qsettings.value("qcomboboxes/library_method"))
         self.lineEdit_bucket.setText(self.qsettings.value("qcomboboxes/hcp_bucket"))
         self.lineEdit_pseudo_id.setText(self.qsettings.value("no_widget/pseudo_id_start"))
+        self.lineEdit_paste_fx.setText(self.qsettings.value("qcomboboxes/paste_fx"))
 
     def settings_setup(self):
         """
@@ -677,7 +685,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def set_free_filter(self):
         text = self.lineEdit_filter.text()
         search = QRegularExpression(text, QRegularExpression.CaseInsensitiveOption)
-        self.mfilter_sort_proxy_model.setFilterByColumns([1, 2, 3], search)
+        self.mfilter_sort_proxy_model.setFilterByColumns(self.filter_cols, search)
 
     # delegates
 

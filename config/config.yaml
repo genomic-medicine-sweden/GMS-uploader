@@ -381,4 +381,14 @@ seq_files:
 fx_functions:
   analytix: True
 
+freetext_filter:
+  fields:
+    - internal_lab_id
+    - selection_criterion
+    - passage_details_history
+    - region
+    - patient_sex
+    - patient_age
+    - comment
+
 
