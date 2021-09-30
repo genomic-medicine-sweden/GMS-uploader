@@ -19,7 +19,7 @@ import csv
 from ui.mw import Ui_MainWindow
 import qdarktheme
 
-__version__ = '0.1.1-beta.3'
+__version__ = '0.1.1-beta.4'
 __title__ = 'GMS-uploader'
 
 
@@ -152,7 +152,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.pushButton_filldown.setIcon(QIcon('fontawesome/arrow-down_mdi.svg'))
         self.pushButton_drop.setIcon(QIcon('fontawesome/close_mdi.svg'))
-        self.pushButton_clear.setIcon(QIcon('fontawesome/trash-can-outline_mdi.svg'))
+        self.pushButton_clear.setIcon(QIcon('fontawesome/delete-outline_mdi.svg'))
         self.pushButton_resetfilters.setIcon(QIcon('fontawesome/filter-remove-outline_mdi.svg'))
         self.pushButton_filtermarked.setIcon(QIcon('fontawesome/filter-outline_mdi.svg'))
         self.pushButton_invert.setIcon(QIcon('fontawesome/invert_own.svg'))

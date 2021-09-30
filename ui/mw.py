@@ -48,54 +48,43 @@ class Ui_MainWindow(object):
         self.verticalLayout_2.setObjectName(u"verticalLayout_2")
         self.horizontalLayout = QHBoxLayout()
         self.horizontalLayout.setObjectName(u"horizontalLayout")
-        self.formLayout_3 = QFormLayout()
-        self.formLayout_3.setObjectName(u"formLayout_3")
+        self.formLayout_info_1 = QFormLayout()
+        self.formLayout_info_1.setObjectName(u"formLayout_info_1")
         self.label_2 = QLabel(self.stackedWidgetPage1)
         self.label_2.setObjectName(u"label_2")
 
-        self.formLayout_3.setWidget(0, QFormLayout.LabelRole, self.label_2)
+        self.formLayout_info_1.setWidget(0, QFormLayout.LabelRole, self.label_2)
 
         self.lineEdit_submitter = QLineEdit(self.stackedWidgetPage1)
         self.lineEdit_submitter.setObjectName(u"lineEdit_submitter")
         self.lineEdit_submitter.setReadOnly(True)
 
-        self.formLayout_3.setWidget(0, QFormLayout.FieldRole, self.lineEdit_submitter)
+        self.formLayout_info_1.setWidget(0, QFormLayout.FieldRole, self.lineEdit_submitter)
 
         self.label_5 = QLabel(self.stackedWidgetPage1)
         self.label_5.setObjectName(u"label_5")
 
-        self.formLayout_3.setWidget(1, QFormLayout.LabelRole, self.label_5)
+        self.formLayout_info_1.setWidget(1, QFormLayout.LabelRole, self.label_5)
 
         self.lineEdit_lab = QLineEdit(self.stackedWidgetPage1)
         self.lineEdit_lab.setObjectName(u"lineEdit_lab")
         self.lineEdit_lab.setReadOnly(True)
 
-        self.formLayout_3.setWidget(1, QFormLayout.FieldRole, self.lineEdit_lab)
+        self.formLayout_info_1.setWidget(1, QFormLayout.FieldRole, self.lineEdit_lab)
 
         self.label_7 = QLabel(self.stackedWidgetPage1)
         self.label_7.setObjectName(u"label_7")
 
-        self.formLayout_3.setWidget(2, QFormLayout.LabelRole, self.label_7)
+        self.formLayout_info_1.setWidget(2, QFormLayout.LabelRole, self.label_7)
 
         self.lineEdit_host = QLineEdit(self.stackedWidgetPage1)
         self.lineEdit_host.setObjectName(u"lineEdit_host")
         self.lineEdit_host.setReadOnly(True)
 
-        self.formLayout_3.setWidget(2, QFormLayout.FieldRole, self.lineEdit_host)
-
-        self.label_8 = QLabel(self.stackedWidgetPage1)
-        self.label_8.setObjectName(u"label_8")
-
-        self.formLayout_3.setWidget(3, QFormLayout.LabelRole, self.label_8)
-
-        self.lineEdit_pseudo_id = QLineEdit(self.stackedWidgetPage1)
-        self.lineEdit_pseudo_id.setObjectName(u"lineEdit_pseudo_id")
-        self.lineEdit_pseudo_id.setReadOnly(True)
-
-        self.formLayout_3.setWidget(3, QFormLayout.FieldRole, self.lineEdit_pseudo_id)
+        self.formLayout_info_1.setWidget(2, QFormLayout.FieldRole, self.lineEdit_host)
 
 
-        self.horizontalLayout.addLayout(self.formLayout_3)
+        self.horizontalLayout.addLayout(self.formLayout_info_1)
 
         self.line = QFrame(self.stackedWidgetPage1)
         self.line.setObjectName(u"line")
@@ -104,59 +93,92 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout.addWidget(self.line)
 
-        self.formLayout_2 = QFormLayout()
-        self.formLayout_2.setObjectName(u"formLayout_2")
-        self.label = QLabel(self.stackedWidgetPage1)
-        self.label.setObjectName(u"label")
-
-        self.formLayout_2.setWidget(0, QFormLayout.LabelRole, self.label)
-
-        self.lineEdit_credentials_path = QLineEdit(self.stackedWidgetPage1)
-        self.lineEdit_credentials_path.setObjectName(u"lineEdit_credentials_path")
-        self.lineEdit_credentials_path.setReadOnly(True)
-
-        self.formLayout_2.setWidget(0, QFormLayout.FieldRole, self.lineEdit_credentials_path)
-
-        self.label_10 = QLabel(self.stackedWidgetPage1)
-        self.label_10.setObjectName(u"label_10")
-
-        self.formLayout_2.setWidget(1, QFormLayout.LabelRole, self.label_10)
-
-        self.lineEdit_bucket = QLineEdit(self.stackedWidgetPage1)
-        self.lineEdit_bucket.setObjectName(u"lineEdit_bucket")
-        self.lineEdit_bucket.setReadOnly(True)
-
-        self.formLayout_2.setWidget(1, QFormLayout.FieldRole, self.lineEdit_bucket)
-
+        self.formLayout_info_2 = QFormLayout()
+        self.formLayout_info_2.setObjectName(u"formLayout_info_2")
         self.label_6 = QLabel(self.stackedWidgetPage1)
         self.label_6.setObjectName(u"label_6")
 
-        self.formLayout_2.setWidget(2, QFormLayout.LabelRole, self.label_6)
+        self.formLayout_info_2.setWidget(0, QFormLayout.LabelRole, self.label_6)
 
         self.lineEdit_seq_technology = QLineEdit(self.stackedWidgetPage1)
         self.lineEdit_seq_technology.setObjectName(u"lineEdit_seq_technology")
         self.lineEdit_seq_technology.setReadOnly(True)
 
-        self.formLayout_2.setWidget(2, QFormLayout.FieldRole, self.lineEdit_seq_technology)
+        self.formLayout_info_2.setWidget(0, QFormLayout.FieldRole, self.lineEdit_seq_technology)
 
         self.label_9 = QLabel(self.stackedWidgetPage1)
         self.label_9.setObjectName(u"label_9")
 
-        self.formLayout_2.setWidget(3, QFormLayout.LabelRole, self.label_9)
+        self.formLayout_info_2.setWidget(1, QFormLayout.LabelRole, self.label_9)
 
         self.lineEdit_lib_method = QLineEdit(self.stackedWidgetPage1)
         self.lineEdit_lib_method.setObjectName(u"lineEdit_lib_method")
         self.lineEdit_lib_method.setReadOnly(True)
 
-        self.formLayout_2.setWidget(3, QFormLayout.FieldRole, self.lineEdit_lib_method)
+        self.formLayout_info_2.setWidget(1, QFormLayout.FieldRole, self.lineEdit_lib_method)
+
+        self.label_8 = QLabel(self.stackedWidgetPage1)
+        self.label_8.setObjectName(u"label_8")
+
+        self.formLayout_info_2.setWidget(2, QFormLayout.LabelRole, self.label_8)
+
+        self.lineEdit_pseudo_id = QLineEdit(self.stackedWidgetPage1)
+        self.lineEdit_pseudo_id.setObjectName(u"lineEdit_pseudo_id")
+        self.lineEdit_pseudo_id.setReadOnly(True)
+
+        self.formLayout_info_2.setWidget(2, QFormLayout.FieldRole, self.lineEdit_pseudo_id)
 
 
-        self.horizontalLayout.addLayout(self.formLayout_2)
+        self.horizontalLayout.addLayout(self.formLayout_info_2)
+
+        self.line_4 = QFrame(self.stackedWidgetPage1)
+        self.line_4.setObjectName(u"line_4")
+        self.line_4.setFrameShape(QFrame.VLine)
+        self.line_4.setFrameShadow(QFrame.Sunken)
+
+        self.horizontalLayout.addWidget(self.line_4)
+
+        self.formLayout__info_3 = QFormLayout()
+        self.formLayout__info_3.setObjectName(u"formLayout__info_3")
+        self.label = QLabel(self.stackedWidgetPage1)
+        self.label.setObjectName(u"label")
+
+        self.formLayout__info_3.setWidget(0, QFormLayout.LabelRole, self.label)
+
+        self.lineEdit_credentials_path = QLineEdit(self.stackedWidgetPage1)
+        self.lineEdit_credentials_path.setObjectName(u"lineEdit_credentials_path")
+        self.lineEdit_credentials_path.setReadOnly(True)
+
+        self.formLayout__info_3.setWidget(0, QFormLayout.FieldRole, self.lineEdit_credentials_path)
+
+        self.label_10 = QLabel(self.stackedWidgetPage1)
+        self.label_10.setObjectName(u"label_10")
+
+        self.formLayout__info_3.setWidget(1, QFormLayout.LabelRole, self.label_10)
+
+        self.lineEdit_bucket = QLineEdit(self.stackedWidgetPage1)
+        self.lineEdit_bucket.setObjectName(u"lineEdit_bucket")
+        self.lineEdit_bucket.setReadOnly(True)
+
+        self.formLayout__info_3.setWidget(1, QFormLayout.FieldRole, self.lineEdit_bucket)
+
+        self.label_3 = QLabel(self.stackedWidgetPage1)
+        self.label_3.setObjectName(u"label_3")
+
+        self.formLayout__info_3.setWidget(2, QFormLayout.LabelRole, self.label_3)
+
+        self.lineEdit_paste_fx = QLineEdit(self.stackedWidgetPage1)
+        self.lineEdit_paste_fx.setObjectName(u"lineEdit_paste_fx")
+
+        self.formLayout__info_3.setWidget(2, QFormLayout.FieldRole, self.lineEdit_paste_fx)
+
+
+        self.horizontalLayout.addLayout(self.formLayout__info_3)
 
 
         self.verticalLayout_2.addLayout(self.horizontalLayout)
 
-        self.verticalSpacer = QSpacerItem(20, 5, QSizePolicy.Minimum, QSizePolicy.Fixed)
+        self.verticalSpacer = QSpacerItem(20, 6, QSizePolicy.Minimum, QSizePolicy.Fixed)
 
         self.verticalLayout_2.addItem(self.verticalSpacer)
 
@@ -213,6 +235,10 @@ class Ui_MainWindow(object):
 
 
         self.verticalLayout_2.addLayout(self.gridLayout)
+
+        self.verticalSpacer_2 = QSpacerItem(20, 4, QSizePolicy.Minimum, QSizePolicy.Fixed)
+
+        self.verticalLayout_2.addItem(self.verticalSpacer_2)
 
         self.tabWidget_metadata = QTabWidget(self.stackedWidgetPage1)
         self.tabWidget_metadata.setObjectName(u"tabWidget_metadata")
@@ -310,7 +336,7 @@ class Ui_MainWindow(object):
 
         self.retranslateUi(MainWindow)
 
-        self.stackedWidget.setCurrentIndex(1)
+        self.stackedWidget.setCurrentIndex(0)
         self.tabWidget_metadata.setCurrentIndex(0)
 
 
@@ -355,16 +381,18 @@ class Ui_MainWindow(object):
 #endif // QT_CONFIG(tooltip)
         self.action_import_paste_fx.setText(QCoreApplication.translate("MainWindow", u"import_paste_fx", None))
 #if QT_CONFIG(tooltip)
-        self.action_import_paste_fx.setToolTip(QCoreApplication.translate("MainWindow", u"import data via parsing clipboard data", None))
+        self.action_import_paste_fx.setToolTip(QCoreApplication.translate("MainWindow", u"import data via parsing clipboard data\n"
+"shortcut: ctrl+alt+v", None))
 #endif // QT_CONFIG(tooltip)
         self.label_2.setText(QCoreApplication.translate("MainWindow", u"submitter:", None))
         self.label_5.setText(QCoreApplication.translate("MainWindow", u"lab:", None))
         self.label_7.setText(QCoreApplication.translate("MainWindow", u"host:", None))
-        self.label_8.setText(QCoreApplication.translate("MainWindow", u"pseudo_id_start:", None))
-        self.label.setText(QCoreApplication.translate("MainWindow", u"credentials_path:", None))
+        self.label_6.setText(QCoreApplication.translate("MainWindow", u"seq technology:", None))
+        self.label_9.setText(QCoreApplication.translate("MainWindow", u"library method:", None))
+        self.label_8.setText(QCoreApplication.translate("MainWindow", u"pseudo id start:", None))
+        self.label.setText(QCoreApplication.translate("MainWindow", u"credentials path:", None))
         self.label_10.setText(QCoreApplication.translate("MainWindow", u"bucket:", None))
-        self.label_6.setText(QCoreApplication.translate("MainWindow", u"seq_technology:", None))
-        self.label_9.setText(QCoreApplication.translate("MainWindow", u"library_method:", None))
+        self.label_3.setText(QCoreApplication.translate("MainWindow", u"paste fx:", None))
 #if QT_CONFIG(tooltip)
         self.pushButton_clear.setToolTip(QCoreApplication.translate("MainWindow", u"clear table", None))
 #endif // QT_CONFIG(tooltip)
@@ -386,7 +414,7 @@ class Ui_MainWindow(object):
 #endif // QT_CONFIG(tooltip)
 #if QT_CONFIG(tooltip)
         self.pushButton_filldown.setToolTip(QCoreApplication.translate("MainWindow", u"filldown from selected cell\n"
-"shortcut: ctrl+f", None))
+"shortcut: ctrl+d", None))
 #endif // QT_CONFIG(tooltip)
         self.pushButton_filldown.setText(QCoreApplication.translate("MainWindow", u"Filldown", None))
 #if QT_CONFIG(tooltip)
