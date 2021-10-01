@@ -56,6 +56,48 @@ Download from the [release](https://github.com/genomic-medicine-sweden/GMS-uploa
   * After files have been imported, start populating the matrix
   * After matrix is populated, pressing the upload button the data is validated and uploaded using HCP Interface
 
+## Development
 
-TODO:
-Fix paste validator
+### Clone the project
+
+``` 
+git clone https://github.com/genomic-medicine-sweden/GMS-uploader.git
+cd GMS-uploader
+python -m venv venv
+venv/Scripts/activate
+pip install -r requirements.txt
+```
+
+### Project structure
+```
+├───config              # Config yamls
+├───demo                # Demo data (mock)
+│   ├───credentials
+│   ├───csv
+│   ├───data            # Mock fastq data
+│   ├───data_root
+│   ├───metadata
+│   ├───metadata_docs
+│   ├───metadata_output
+│   ├───pseudo_id
+│   └───saved_pickles
+├───icons               # icons used in the app 
+├───img                 # images used in the app 
+├───modules             # modules
+├───ui                  # ui files and ui classes
+gms-uploader.py
+gms-uploader_do_not_overwrite.spec
+gms-uploader_do_not_overwrite_console.spec
+LICENSE
+README.md
+requirements.py
+setup.py
+```
+
+## Create a dist
+
+``` 
+pyinstaller <spec file>
+```
+
+New dist will be created in the dist folder. Two spec files exist, that generate dists with and without console. The console version can be useful for troubleshooting since tracebacks can be shown.
