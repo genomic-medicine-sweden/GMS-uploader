@@ -9,7 +9,7 @@ GMS-uploader objectives:
   * Enforces structure and prevents errors
     * Many fields are restricted to accepted values and can only entered via comboboxes etc.
   * Data validation before upload
-  * Should (hopefully) be simpler and faster than using for example MS Excel
+  * Should be simpler and faster than for example MS Excel
     * Simple entering of data is supported by using arrow-keys for moving around, autopopulation, fill-down of cells, and cut-and-paste from other sources using ctrl-c, ctrl-v 
   * Saves as json
 * Upload to the NGP
