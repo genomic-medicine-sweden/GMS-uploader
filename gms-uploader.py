@@ -106,10 +106,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     # setup and init-related functions
 
-
     def get_filter_cols(self):
         cols = list(self.df.columns)
-        used_cols = self.conf['freetext_filter']['fields']
+        used_cols = self.conf['freetext_filter']['model_fields']
         return [self.df.columns.get_loc(c) for c in cols if c in used_cols]
 
     def set_tb_bkg(self):
@@ -770,9 +769,22 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     # Data-view, filter and related functions, utility functions
 
-    def validate_paste(self, value, colname):
+    def accept_paste(self, value, colname):
         if not self.conf['model_fields'][colname]['edit'] or colname == 'mark':
             return False
+
+        if isinstance(self.conf['paste_validators']['model_fields'][colname], bool):
+            return self.conf['paste_validators']['model_fields'][colname]
+
+        if 'qsettings' in self.conf['paste_validators']['model_fields'][colname]:
+            key = self.conf['paste_validators']['model_fields'][colname]['qsettings']
+            accepted = self.qsettings.value(key)
+            if isinstance(accepted, list):
+                if value not in accepted:
+                    return False
+            if isinstance(accepted, str):
+                if value != accepted:
+                    return False
 
         return True
 
@@ -1158,7 +1170,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 columns = r.split("\t")
                 for j, value in enumerate(columns):
                     colname = self.df.columns[i_col + j]
-                    if self.validate_paste(value, colname):
+                    if self.accept_paste(value, colname):
                         model.setData(model.index(i_row + i, i_col + j), value)
 
         else:

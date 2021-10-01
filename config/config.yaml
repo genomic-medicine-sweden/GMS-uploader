@@ -7,7 +7,8 @@ model_fields:
     view: ['patient', 'organism', 'lab']
     checkable: True
     delegates: ['checkbox']
-    validators: False
+    model_validators: False
+    paste_validators: False
   internal_lab_id:
     to_meta: True
     col_width: 100
@@ -15,7 +16,8 @@ model_fields:
     view: ['patient', 'organism', 'lab']
     checkable: False
     delegates: ['None']
-    validators: ['distinct']
+    model_validators: ['distinct']
+    paste_validators: False
   selection_criterion:
     to_meta: True
     col_width: 200
@@ -23,7 +25,8 @@ model_fields:
     view: ['patient']
     checkable: False
     delegates: ['combobox']
-    validators: ['len5']
+    model_validators: ['len5']
+    paste_validators: False
   collection_date:
     to_meta: True
     col_width: 100
@@ -31,7 +34,8 @@ model_fields:
     view: ['patient']
     checkable: False
     delegates: ['date']
-    validators: ['date_format']
+    model_validators: ['date_format']
+    paste_validators: False
   patient_age:
     to_meta: True
     col_width: 120
@@ -39,7 +43,8 @@ model_fields:
     view: [ 'patient' ]
     checkable: False
     delegates: ['age']
-    validators: ['age_range']
+    model_validators: ['age_range']
+    paste_validators: False
   patient_sex:
     to_meta: True
     col_width: 120
@@ -47,7 +52,8 @@ model_fields:
     view: [ 'patient' ]
     checkable: False
     delegates: ['combobox']
-    validators: ['inlist']
+    model_validators: ['inlist']
+    paste_validators: False
   patient_status:
     to_meta: True
     col_width: 150
@@ -55,7 +61,8 @@ model_fields:
     view: [ 'patient' ]
     checkable: False
     delegates: ['combobox']
-    validators: ['inlist']
+    model_validators: ['inlist']
+    paste_validators: False
   type:
     to_meta: True
     col_width: 100
@@ -63,7 +70,8 @@ model_fields:
     view: [ 'patient' ]
     checkable: False
     delegates: ['combobox']
-    validators: ['inlist']
+    model_validators: ['inlist']
+    paste_validators: False
   sminet_lid:
     to_meta: True
     col_width: 100
@@ -71,7 +79,8 @@ model_fields:
     view: [ 'lab' ]
     checkable: False
     delegates: [ 'None' ]
-    validators: False
+    model_validators: False
+    paste_validators: False
   pseudo_id:
     to_meta: True
     col_width: 200
@@ -79,7 +88,8 @@ model_fields:
     view: ['None']
     checkable: False
     delegates: ['None']
-    validators: ['distinct']
+    model_validators: ['distinct']
+    paste_validators: False
   region:
     to_meta: True
     col_width: 200
@@ -87,7 +97,8 @@ model_fields:
     view: ['lab']
     checkable: False
     delegates: ['combobox']
-    validators: ['inlist']
+    model_validators: ['inlist']
+    paste_validators: False
   region_code:
     to_meta: True
     col_width: 200
@@ -95,7 +106,8 @@ model_fields:
     view: ['None']
     checkable: False
     delegates: ['None']
-    validators: ['inlist']
+    model_validators: ['inlist']
+    paste_validators: False
   lab:
     to_meta: True
     col_width: 150
@@ -103,7 +115,8 @@ model_fields:
     view: ['None']
     checkable: False
     delegates: ['None']
-    validators: ['inlist']
+    model_validators: ['inlist']
+    paste_validators: False
   lab_code:
     to_meta: True
     col_width: 150
@@ -111,7 +124,8 @@ model_fields:
     view: [ 'None' ]
     checkable: False
     delegates: [ 'None' ]
-    validators: ['inlist']
+    model_validators: ['inlist']
+    paste_validators: False
   host:
     to_meta: True
     col_width: 100
@@ -119,7 +133,8 @@ model_fields:
     view: ['None']
     checkable: False
     delegates: ['None']
-    validators: ['len5']
+    model_validators: ['len5']
+    paste_validators: False
   passage_details:
     to_meta: True
     col_width: 100
@@ -127,7 +142,8 @@ model_fields:
     view: [ 'organism' ]
     checkable: False
     delegates: ['None']
-    validators: False
+    model_validators: False
+    paste_validators: False
   seq_technology:
     to_meta: True
     col_width: 150
@@ -135,7 +151,8 @@ model_fields:
     view: ['None']
     checkable: False
     delegates: ['None']
-    validators: ['inlist']
+    model_validators: ['inlist']
+    paste_validators: False
   library_method:
     to_meta: True
     col_width: 150
@@ -143,7 +160,8 @@ model_fields:
     view: ['None']
     checkable: False
     delegates: ['None']
-    validators: ['inlist']
+    model_validators: ['inlist']
+    paste_validators: False
   lane:
     to_meta: True
     col_width: 80
@@ -151,7 +169,8 @@ model_fields:
     view: ['lab']
     checkable: False
     delegates: ['None']
-    validators: False
+    model_validators: False
+    paste_validators: False
   fastq:
     to_meta: True
     col_width: 100
@@ -159,7 +178,8 @@ model_fields:
     view: ['lab']
     checkable: False
     delegates: ['None']
-    validators: False
+    model_validators: False
+    paste_validators: False
   fast5:
     to_meta: True
     col_width: 100
@@ -167,7 +187,8 @@ model_fields:
     view: [ 'lab' ]
     checkable: False
     delegates: ['None']
-    validators: False
+    model_validators: False
+    paste_validators: False
   seq_path:
     to_meta: False
     col_width: 200
@@ -175,7 +196,8 @@ model_fields:
     view: ['lab']
     checkable: False
     delegates: ['None']
-    validators: False
+    model_validators: False
+    paste_validators: False
   comment:
     to_meta: True
     col_width: 200
@@ -183,7 +205,8 @@ model_fields:
     view: ['patient', 'organism', 'lab']
     checkable: False
     delegates: ['None']
-    validators: False
+    model_validators: False
+    paste_validators: False
 settings:
   qlineedits:
     seq_base_path: None
@@ -378,7 +401,7 @@ fx_functions:
   analytix: True
 
 freetext_filter:
-  fields:
+  model_fields:
     - internal_lab_id
     - selection_criterion
     - passage_details_history
@@ -386,5 +409,41 @@ freetext_filter:
     - patient_sex
     - patient_age
     - comment
+
+paste_validators:
+    model_fields:
+      mark: False
+      internal_lab_id: False
+      selection_criterion:
+        qsettings: 'qlistwidgets/selection_criterion'
+      collection_date: False
+      patient_age: False
+      patient_sex:
+        qsettings: 'qlistwidgets/patient_sex'
+      patient_status:
+        qsettings: 'qlistwidgets/patient_status'
+      type:
+        qsettings: 'qlistwidgets/type'
+      sminet_lid: False
+      pseudo_id: False
+      region:
+        qsettings: 'qlistwidgets/region'
+      region_code: False
+      lab:
+        qsettings: 'qcomboboxes/lab'
+      lab_code: False
+      host:
+        qsettings: 'qcomboboxes/host'
+      passage_details: False
+      seq_technology:
+        qsettings: 'qlistwidgets/seq_technology'
+      library_method:
+        qsettings: 'qcomboboxes/library_method'
+      lane: False
+      fastq: False
+      fast5: False
+      seq_path: False
+      comment: True
+
 
 
