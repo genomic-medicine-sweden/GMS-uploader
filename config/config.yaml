@@ -258,10 +258,8 @@ settings:
       'Dynamic Code - SEDNC': False
     seq_technology:
       'Illumina': True
-      'Miseq': False
-      'Sanger': False
       'Nanopore': False
-      'MinION': False
+      'Sanger': False
       'Ion Torrent': False
     host:
       'Human': True
@@ -269,6 +267,7 @@ settings:
     library_method:
       'Artic': True
       'NEB': False
+      'Midnight': False
     paste_fx:
       analytix: True
   qlistwidgets:
