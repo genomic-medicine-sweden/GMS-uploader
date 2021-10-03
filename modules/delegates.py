@@ -2,6 +2,7 @@ from PySide6.QtWidgets import QStyledItemDelegate, QLineEdit, QComboBox, QComple
     QStyleOptionButton, QApplication, QItemDelegate
 from PySide6.QtCore import Qt, QEvent, QPoint, QRect
 from PySide6.QtGui import QIntValidator
+from datetime import datetime
 from datetime import date
 from dateutil.relativedelta import relativedelta
 import re
@@ -36,75 +37,68 @@ class DateAutoCorrectDelegate(QStyledItemDelegate):
         self.today = date.today()
         self.curr_month = self.today.month
         self.curr_year = self.today.year
-        self.max_delta = relativedelta(years=1, months=0, days=0)
+        self.now = datetime.now()
+        self.two_years_ago = self.now - relativedelta(years=2)
 
-        # possible date matches
-
-        # year-month-day
-        self.p1 = re.compile('(\d\d\d\d)-(\d\d)-(\d\d)$')
-        # year-month-day
-        self.p2 = re.compile('(\d\d)-(\d\d)-(\d\d)$')
-        # year-month-day
-        self.p3 = re.compile('(\d\d)(\d\d)(\d\d)$')
-        # month-day
-        self.p4 = re.compile('(\d\d)(\d\d)$')
-        # day
-        self.p5 = re.compile('(\d\d)$')
+        self.format1 = "%Y-%m-%d"
+        self.format2 = "%y-%m-%d"
+        self.format3 = "%y%m%d"
+        self.format4 = "%m-%d"
+        self.format5 = "%m%d"
+        self.format6 = "%d"
 
     def setModelData(self, editor, model, index):
-        text = editor.text().strip()
+        date_text = editor.text().strip()
+        date_obj = None
 
-        y, m, d = None, None, None
+        if not date_obj:
+            try:
+                date_obj = datetime.strptime(date_text, self.format1)
+            except:
+                pass
 
-        m1 = self.p1.match(text)
-        m2 = self.p2.match(text)
-        m3 = self.p3.match(text)
-        m4 = self.p4.match(text)
-        m5 = self.p5.match(text)
+        if not date_obj:
+            try:
+                date_obj = datetime.strptime(date_text, self.format2)
+            except:
+                pass
 
-        if m1 is not None:
-            # extract year, month, day
-            y, m, d = m3.groups()
-        elif m2 is not None:
-            # extract year, month, day
-            y, m, d = m3.groups()
-            y = "20" + y
-        elif m3 is not None:
-            # extract year, month, day
-            y, m, d = m3.groups()
-            y = "20" + y
-        elif m4 is not None:
-            # extract month, day
-            # set current year
-            m, d = m4.groups()
-            y = self.curr_year
-        elif m5 is not None:
-            # extract day
-            # set current month, year
-            d = m5.group(1)
-            y = self.curr_year
-            m = self.curr_month
+        if not date_obj:
+            try:
+                date_obj = datetime.strptime(date_text, self.format3)
+            except:
+                pass
 
-        if y and m and d:
-            date_obj = self.date_validate(y, m, d)
-            if date_obj:
+        if not date_obj:
+            try:
+                date_obj = datetime.strptime(date_text, self.format4)
+                date_obj = date_obj.replace(year=self.curr_year)
+            except:
+                pass
+
+        if not date_obj:
+            try:
+                date_obj = datetime.strptime(date_text, self.format5)
+                date_obj = date_obj.replace(year=self.curr_year)
+            except:
+                pass
+
+        if not date_obj:
+            try:
+                date_obj = datetime.strptime(date_text, self.format6)
+                date_obj = date_obj.replace(year=self.curr_year, month=self.curr_month)
+            except:
+                pass
+
+        if date_obj:
+            print(date_obj.strftime("%Y-%m-%d"))
+
+            if self.two_years_ago <= date_obj <= self.now:
+                print("setting date")
                 model.setData(index, date_obj.strftime("%Y-%m-%d"), Qt.EditRole)
+                return True
 
-    def date_validate(self, y, m, d):
-        try:
-            date_obj = date(int(y), int(m), int(d))
-        except ValueError as e:
-            return False
-
-        if self.today < date_obj:
-            return False
-
-        delta = relativedelta(self.today - date_obj)
-
-        delta_delta = delta - self.max_delta
-        print(delta_delta)
-
-        return date_obj
+        return False
 
 
 class CompleterDelegate(QStyledItemDelegate):

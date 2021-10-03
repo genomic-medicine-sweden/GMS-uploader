@@ -415,15 +415,18 @@ paste_validators:
       internal_lab_id: False
       selection_criterion:
         qsettings: 'qlistwidgets/selection_criterion'
-      collection_date: False
-      patient_age: False
+      collection_date:
+        func: date_validate
+      patient_age:
+        func: age_parser
       patient_sex:
         qsettings: 'qlistwidgets/patient_sex'
       patient_status:
         qsettings: 'qlistwidgets/patient_status'
       type:
         qsettings: 'qlistwidgets/type'
-      sminet_lid: False
+      sminet_lid:
+        func: sminet_lid_parser
       pseudo_id: False
       region:
         qsettings: 'qlistwidgets/region'
@@ -433,7 +436,7 @@ paste_validators:
       lab_code: False
       host:
         qsettings: 'qcomboboxes/host'
-      passage_details: False
+      passage_details: True
       seq_technology:
         qsettings: 'qlistwidgets/seq_technology'
       library_method:

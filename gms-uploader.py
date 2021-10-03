@@ -7,7 +7,7 @@ from modules.delegates import CompleterDelegate, ComboBoxDelegate, \
     DateAutoCorrectDelegate, CheckBoxDelegate, AgeDelegate
 from modules.dialogs import MsgError, MsgAlert, ValidationDialog
 from modules.sortfilterproxymodel import MultiSortFilterProxyModel, MarkedFilterProxyModel
-from modules.auxiliary_functions import get_pseudo_id_code_number, zfill_int, to_list, get_pd_row_index
+from modules.auxiliary_functions import get_pseudo_id_code_number, zfill_int, to_list, get_pd_row_index, date_validate
 from modules.validate import validate
 from modules.upload import UploadWorker
 import resources
@@ -771,11 +771,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     # Data-view, filter and related functions, utility functions
 
     def accept_paste(self, value, colname):
+
         if not self.conf['model_fields'][colname]['edit'] or colname == 'mark':
             return False
 
         if isinstance(self.conf['paste_validators']['model_fields'][colname], bool):
-            return self.conf['paste_validators']['model_fields'][colname]
+            if self.conf['paste_validators']['model_fields'][colname] is True:
+                return value
+            else:
+                return False
 
         if 'qsettings' in self.conf['paste_validators']['model_fields'][colname]:
             key = self.conf['paste_validators']['model_fields'][colname]['qsettings']
@@ -787,7 +791,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 if value != accepted:
                     return False
 
-        return True
+        if 'func' in self.conf['paste_validators']['model_fields'][colname]:
+            func = self.conf['paste_validators']['model_fields'][colname]['func']
+            if func == "date_validate":
+                return date_validate(value)
+
+        return value
 
     def set_mark_filter(self):
         if self.pushButton_filtermarked.isChecked():
@@ -1032,7 +1041,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.rem_tb_bkg()
                 self.set_datastatus_empty(False)
 
-
     def get_seq_files(self):
 
         p_str = self.qsettings.value('qlineedits/seq_base_path')
@@ -1174,8 +1182,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 columns = r.split("\t")
                 for j, value in enumerate(columns):
                     colname = self.df.columns[i_col + j]
-                    if self.accept_paste(value, colname):
-                        model.setData(model.index(i_row + i, i_col + j), value)
+                    valid_value = self.accept_paste(value, colname)
+                    if valid_value:
+                        model.setData(model.index(i_row + i, i_col + j), valid_value)
 
         else:
             super().keyPressEvent(event)
