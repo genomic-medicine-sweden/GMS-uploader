@@ -1,0 +1,24 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+    <file>icons/arrow-down_mdi.svg</file>
+    <file>icons/close-box-outline_mdi.svg</file>
+    <file>icons/close_mdi.svg</file>
+    <file>icons/cog-outline_mdi.svg</file>
+    <file>icons/content-paste-func_own.svg</file>
+    <file>icons/content-save-outline_mdi.svg</file>
+    <file>icons/delete-outline_mdi.svg</file>
+    <file>icons/dna_mdi.svg</file>
+    <file>icons/filter-outline_mdi.svg</file>
+    <file>icons/filter-remove-outline_mdi.svg</file>
+    <file>icons/folder-open-outline_mdi.svg</file>
+    <file>icons/GMS-logo.ico</file>
+    <file>icons/google-spreadsheet.svg</file>
+    <file>icons/import-csv_own.svg</file>
+    <file>icons/invert_own.svg</file>
+    <file>icons/settings.svg</file>
+    <file>icons/table_mdi.svg</file>
+    <file>icons/tray-arrow-up_mdi.svg</file>
+    <file>img/GMS-logo.png</file>
+    <file>img/logo.png</file>
+</qresource>
+</RCC>

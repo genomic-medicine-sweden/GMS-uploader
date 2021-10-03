@@ -10,6 +10,7 @@ from modules.sortfilterproxymodel import MultiSortFilterProxyModel, MarkedFilter
 from modules.auxiliary_functions import get_pseudo_id_code_number, zfill_int, to_list, get_pd_row_index
 from modules.validate import validate
 from modules.upload import UploadWorker
+import resources
 from modules.dialogs import Uploader
 import pandas as pd
 from datetime import datetime
@@ -35,7 +36,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.qsettings = QSettings("Genomic Medicine Sweden", "GMS-uploader")
 
-        self.setWindowIcon(QIcon('img/GMS-logo.png'))
+        self.setWindowIcon(QIcon(':/img/GMS-logo.png'))
         self.setWindowTitle(__title__ + " " + __version__)
 
         self.set_tb_bkg()
@@ -117,7 +118,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         :return: None
         """
 
-        img = 'img/logo.png'
+        img = ':/img/logo.png'
 
         for tbv in [self.tableView_patient,
                     self.tableView_organism,
@@ -166,21 +167,21 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def set_icons(self):
 
-        self.action_open_meta.setIcon(QIcon('icons/folder-open-outline_mdi.svg'))
-        self.action_save_meta.setIcon(QIcon('icons/content-save-outline_mdi.svg'))
-        self.action_show_meta.setIcon(QIcon('icons/table_mdi.svg'))
-        self.action_show_prefs.setIcon(QIcon('icons/cog-outline_mdi.svg'))
-        self.action_upload_meta_seqs.setIcon(QIcon('icons/tray-arrow-up_mdi.svg'))
-        self.action_select_seq_files.setIcon(QIcon('icons/dna_mdi.svg'))
-        self.action_import_csv.setIcon(QIcon('icons/import-csv_own.svg'))
-        self.action_import_paste_fx.setIcon(QIcon('icons/content-paste-func_own.svg'))
+        self.action_open_meta.setIcon(QIcon(':/icons/folder-open-outline_mdi.svg'))
+        self.action_save_meta.setIcon(QIcon(':/icons/content-save-outline_mdi.svg'))
+        self.action_show_meta.setIcon(QIcon(':/icons/table_mdi.svg'))
+        self.action_show_prefs.setIcon(QIcon(':/icons/cog-outline_mdi.svg'))
+        self.action_upload_meta_seqs.setIcon(QIcon(':/icons/tray-arrow-up_mdi.svg'))
+        self.action_select_seq_files.setIcon(QIcon(':/icons/dna_mdi.svg'))
+        self.action_import_csv.setIcon(QIcon(':/icons/import-csv_own.svg'))
+        self.action_import_paste_fx.setIcon(QIcon(':/icons/content-paste-func_own.svg'))
 
-        self.pushButton_filldown.setIcon(QIcon('icons/arrow-down_mdi.svg'))
-        self.pushButton_drop.setIcon(QIcon('icons/close_mdi.svg'))
-        self.pushButton_clear.setIcon(QIcon('icons/delete-outline_mdi.svg'))
-        self.pushButton_resetfilters.setIcon(QIcon('icons/filter-remove-outline_mdi.svg'))
-        self.pushButton_filtermarked.setIcon(QIcon('icons/filter-outline_mdi.svg'))
-        self.pushButton_invert.setIcon(QIcon('icons/invert_own.svg'))
+        self.pushButton_filldown.setIcon(QIcon(':/icons/arrow-down_mdi.svg'))
+        self.pushButton_drop.setIcon(QIcon(':/icons/close_mdi.svg'))
+        self.pushButton_clear.setIcon(QIcon(':/icons/delete-outline_mdi.svg'))
+        self.pushButton_resetfilters.setIcon(QIcon(':/icons/filter-remove-outline_mdi.svg'))
+        self.pushButton_filtermarked.setIcon(QIcon(':/icons/filter-outline_mdi.svg'))
+        self.pushButton_invert.setIcon(QIcon(':/icons/invert_own.svg'))
 
     def set_col_widths(self):
         for i, name in enumerate(self.conf['model_fields']):
