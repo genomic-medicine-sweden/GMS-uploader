@@ -35,6 +35,18 @@ def get_pd_row_index(df, value, column_name):
     return None
 
 
+def age_validate(age_str):
+    """
+    Sanity check on age input
+    :param age_str: number as string
+    :return: number as string if valid, otherwise False
+    """
+    age_int = int(age_str)
+    if 0 <= age_int <= 120:
+        return age_str
+
+    return False
+
 def date_validate(value):
     """
     Validates and reformats an input date string

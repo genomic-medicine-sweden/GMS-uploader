@@ -7,7 +7,8 @@ from modules.delegates import CompleterDelegate, ComboBoxDelegate, \
     DateAutoCorrectDelegate, CheckBoxDelegate, AgeDelegate
 from modules.dialogs import MsgError, MsgAlert, ValidationDialog
 from modules.sortfilterproxymodel import MultiSortFilterProxyModel, MarkedFilterProxyModel
-from modules.auxiliary_functions import get_pseudo_id_code_number, zfill_int, to_list, get_pd_row_index, date_validate
+from modules.auxiliary_functions import get_pseudo_id_code_number, zfill_int, to_list, get_pd_row_index, \
+    date_validate, age_validate
 from modules.validate import validate
 from modules.upload import UploadWorker
 import resources
@@ -795,6 +796,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             func = self.conf['paste_validators']['model_fields'][colname]['func']
             if func == "date_validate":
                 return date_validate(value)
+
+            if func == "age_validate":
+                return age_validate(value)
 
         return value
 

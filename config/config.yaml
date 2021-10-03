@@ -418,7 +418,7 @@ paste_validators:
       collection_date:
         func: date_validate
       patient_age:
-        func: age_parser
+        func: age_validate
       patient_sex:
         qsettings: 'qlistwidgets/patient_sex'
       patient_status:
