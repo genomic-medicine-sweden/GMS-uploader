@@ -118,7 +118,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         :return: None
         """
 
-        img = ':/img/logo.png'
+        img = ':/img/GMS-logo.png'
 
         for tbv in [self.tableView_patient,
                     self.tableView_organism,
@@ -1028,7 +1028,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.df = pd.read_pickle(filepath)
             self.update_model()
 
-        self.rem_tb_bkg()
+        if not self.df.empty:
+                self.rem_tb_bkg()
+                self.set_datastatus_empty(False)
+
 
     def get_seq_files(self):
 
