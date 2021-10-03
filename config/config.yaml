@@ -407,6 +407,7 @@ freetext_filter:
     - region
     - patient_sex
     - patient_age
+    - patient_status
     - comment
 
 paste_validators:
