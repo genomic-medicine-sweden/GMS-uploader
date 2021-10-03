@@ -9,6 +9,9 @@ __pycache__/
 # RTD / sphinx docs
 _build
 
+# nuitka
+*.build
+
 # Distribution / packaging
 .Python
 build/
