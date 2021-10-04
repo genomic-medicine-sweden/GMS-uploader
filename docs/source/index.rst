@@ -15,14 +15,15 @@ Features
 * Easy and intuitive construction of metadata files
    * Should be simpler, faster and less error-prone than for example MS Excel
    * Prevents errors
+
       * Many fields are restricted to predefined accepted values
-      * Delegate functions provide allowed values in comboboxes (dropdowns)
+      * Delegate functions provide allowed values in comboboxes (drop-downs)
       * Pasted data is validated before entered into the data model
-   * Replicates MS Excel shortcuts
+   * Tries to mimic MS Excel shortcuts
    * Supports filtering and sorting of metadata
    * Use arrow-keys for moving around
    * Autopopulation of fields
-   * Filldown
+   * Filldown on empty cells
    * Cut-and-paste from other sources using CTRL-C, CTRL-V
    * Import metadata from CSV files
    * Paste-FX function provides method to import/paste metadata from the clipboard using custom parsers
@@ -31,15 +32,16 @@ Features
 * Supports saving and opening of metadata files in pickle format
 * Final data validation step before upload
 * Upload to the Swedish National Genomics Platform
+
    * Upload using NGPiris (S3)
 
 
 .. toctree::
    :maxdepth: 2
    :hidden:
-   :caption: installation:
+   :caption: installation and setup:
 
-   installation/installation
+   installation/installation_and_setup
 
 .. toctree::
    :maxdepth: 2
