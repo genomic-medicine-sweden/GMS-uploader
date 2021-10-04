@@ -7,6 +7,9 @@ Welcome to GMS-uploader's documentation!
 ========================================
 GUI utility for compiling metadata and uploading sequence and metadata to the Swedish National Genomics Platform.
 
+.. warning::
+   **Not yes ready for prime-time but soon...**
+
 Features
 -----------------------
 * Easy and intuitive construction of metadata files
