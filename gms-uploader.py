@@ -20,8 +20,9 @@ import yaml
 import csv
 from ui.mw import Ui_MainWindow
 import qdarktheme
+#from qt_material import apply_stylesheet
 
-__version__ = '0.1.1-beta.4'
+__version__ = '0.1.1-beta.5'
 __title__ = 'GMS-uploader'
 
 
@@ -34,6 +35,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.clipboard = QGuiApplication.clipboard()
         self.tabWidget_metadata.setStyleSheet("QTabWidget::pane { border: 0; }")
         self.scrollArea.setStyleSheet("QScrollArea { border: 0; }")
+        self.toolBar.setFixedWidth(50)
+        self.toolBar.setMovable(False)
 
         self.qsettings = QSettings("Genomic Medicine Sweden", "GMS-uploader")
 
@@ -1203,6 +1206,7 @@ def main():
 
     app = QApplication(sys.argv)
     window = MainWindow()
+    # apply_stylesheet(app, theme='light_blue.xml')
     app.setStyleSheet(qdarktheme.load_stylesheet("light"))
     window.show()
 

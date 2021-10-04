@@ -8,8 +8,7 @@ a = Analysis(['gms-uploader.py'],
              pathex=['D:\\PycharmProjects\\GMS-uploader'],
              datas=[('venv\\Lib\\site-packages\\qdarktheme', 'qdarktheme'),
                     ('config', 'config'),
-                    ('icons', 'icons'),
-                    ('fontawesome', 'fontawesome')
+                    ('icons', 'icons')
              ],
              hiddenimports=[],
              hookspath=[],
