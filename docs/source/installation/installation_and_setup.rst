@@ -6,7 +6,7 @@ Installation instructions for GMS-uploader on Windows, Linux and Mac
 
 
 Windows
-+++++++
+^^^^^^^
 
 **Installation**
 
