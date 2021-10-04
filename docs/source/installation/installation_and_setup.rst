@@ -28,4 +28,27 @@ For Windows, GMS-uploader releases are provided as a zipped folder (portable) an
 After GMS-uploader has been installed, the program settings need to be entered.
 
 * Click the COG button |cog| on side panel to enter the settings view
+* Set paths, for simple navigation:
 
+    * ``seq_base_path`` sequence data root
+    * ``csv_base_path`` where you may store csv metadata (import)
+    * ``metadata_output_path`` where metadata json files will be stored before upload
+    * ``metadata_docs_path`` where ``*.pkl`` metadata files can be saved to and loaded from
+    * ``pseudo_id_filepath`` where the pseudo_id file is to be stored (keeping a record of used pseudo ids)
+    * ``credentials_filepath`` where the credentials json file is located
+
+* Set ``submitter`` name (your name?)
+* Set ``bucket``, which hpc bucket to use on the NGP
+* Set default ``seq_technology``, sequencing technology used
+* Set default ``host``, what type of sample is it?
+* Set default ``library_method`` to be used
+* Set ``paste_fx``, custom clipboard parser function
+
+* In the settings tab section, select allowed values for delegates when entering metadata
+
+    * ``region``
+    * ``selection_criterion``
+    * ``patient_sex``
+    * ``patient_details_history``
+    * ``type``
+    * ``patient_status``
