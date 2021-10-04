@@ -21,7 +21,7 @@ a = Analysis(['gms-uploader.py'],
              cipher=block_cipher,
              noarchive=False)
 
-splash = Splash('img/GMS_big_uploader.png',
+splash = Splash('img/gms-splash.png',
                 binaries=a.binaries,
                 datas=a.datas,
                 text_pos=(10, 50),
