@@ -14,6 +14,7 @@ Features
    * Prevents errors
       * Many fields are restricted to predefined accepted values
       * Delegate functions provide allowed values in comboboxes (dropdowns)
+      * Pasted data is validated before entering into the data model
    * Replicates MS Excel shortcuts
    * Supports filtering and sorting of metadata
    * Use arrow-keys for moving around
@@ -26,8 +27,8 @@ Features
 * Saves metadata in json format
 * Supports saving and opening of metadata files in pickle format
 * Final data validation step before upload
-* Upload to the NGP
-  * Upload of data using NGPiris (S3)
+* Upload to the Swedish National Genomics Platform
+   * Upload using NGPiris (S3)
 
 
 .. toctree::
