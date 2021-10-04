@@ -27,7 +27,7 @@ For Windows, GMS-uploader releases are provided as a zipped folder (portable) an
 
 After GMS-uploader has been installed, the program settings need to be entered.
 
-* Click the COG button |cog| in the side panel to enter the settings view
+* Click the COG button |cog| on the sidebar to enter the settings view
 * Set paths, for simple navigation:
 
     * ``seq_base_path`` sequence data root
