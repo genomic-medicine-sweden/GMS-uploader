@@ -332,6 +332,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         for name in self.conf['settings']['qlistwidgets']:
             listwidget = QListWidget(objectName=name)
+
             listwidget.itemChanged.connect(self.settings_update)
             tabwidget_settings.addTab(listwidget, name)
             checked_items = []
@@ -361,6 +362,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         """
         obj = self.sender()
         name = obj.objectName()
+
 
         if isinstance(obj, QLineEdit):
             store_key = "/".join(['qlineedits', name])
@@ -1206,16 +1208,17 @@ def main():
 
     app = QApplication(sys.argv)
     window = MainWindow()
-    # apply_stylesheet(app, theme='light_blue.xml')
+
+    sys.exit(app.exec())
     app.setStyleSheet(qdarktheme.load_stylesheet("light"))
-    window.show()
 
     try:
         pyi_splash.close()
     except:
         pass
 
-    sys.exit(app.exec())
+    window.show()
+
 
 
 if __name__ == "__main__":
