@@ -1208,8 +1208,7 @@ def main():
 
     app = QApplication(sys.argv)
     window = MainWindow()
-
-    sys.exit(app.exec())
+    # apply_stylesheet(app, theme='light_blue.xml')
     app.setStyleSheet(qdarktheme.load_stylesheet("light"))
 
     try:
@@ -1219,6 +1218,8 @@ def main():
 
     window.show()
 
+
+    sys.exit(app.exec())
 
 
 if __name__ == "__main__":
