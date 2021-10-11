@@ -329,28 +329,70 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         tabwidget_settings.setMinimumHeight(420)
         tabwidget_settings.setStyleSheet("QTabWidget::pane { border: 0; }")
         self.verticalLayout_tab_settings.addWidget(tabwidget_settings)
+        tabwidget_settings.setMinimumHeight(550)
 
         for name in self.conf['settings']['select_multi']:
-            listwidget = QListWidget(objectName=name)
-
-            listwidget.itemChanged.connect(self.settings_update)
-            tabwidget_settings.addTab(listwidget, name)
-            checked_items = []
-
             store_key = "/".join(['select_multi', name])
-            items = to_list(self.qsettings.value(store_key))
+            store_checked = to_list(self.qsettings.value(store_key))
+
+            model = QStandardItemModel()
+            model.setColumnCount(2)
+            tableview = QTableView()
+            model = QStandardItemModel(objectName=name)
+            model.setColumnCount(2)
 
             for key, checked in self.conf['settings']['select_multi'][name].items():
-                item = QListWidgetItem()
-                item.setText(key)
-                item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
-                if key in items:
-                    item.setCheckState(Qt.Checked)
-                    checked_items.append(key)
-                else:
-                    item.setCheckState(Qt.Unchecked)
+                item1 = QStandardItem("0")
+                item2 = QStandardItem(key)
 
-                listwidget.addItem(item)
+                if key in store_checked:
+                    item1.setText("1")
+
+                model.appendRow([item1, item2])
+
+            tableview.setModel(model)
+            tableview.setItemDelegateForColumn(0, IconCheckBoxDelegate(None))
+            tableview.setColumnWidth(0, 15)
+            hheader = tableview.horizontalHeader()
+            hheader.setStretchLastSection(True)
+            hheader.hide()
+            tableview.verticalHeader().setDefaultSectionSize(20)
+            tableview.verticalHeader().hide()
+            tableview.setShowGrid(False)
+            model.itemChanged.connect(self.settings_multi_update)
+
+            tabwidget_settings.addTab(tableview, name)
+
+                # if key in store_checked:
+                #     item.setCheckState(Qt.Checked)
+                #     checked_items.append(key)
+                # else:
+                #     item.setCheckState(Qt.Unchecked)
+
+                # listwidget.addItem(item)
+
+        # for name in self.conf['settings']['select_multi']:
+        #     listwidget = QListWidget(objectName=name)
+        #
+        #     listwidget.itemChanged.connect(self.settings_update)
+        #     tabwidget_settings.addTab(listwidget, name)
+        #     checked_items = []
+        #
+        #     store_key = "/".join(['select_multi', name])
+        #     store_checked = to_list(self.qsettings.value(store_key))
+        #
+        #     for key, checked in self.conf['settings']['select_multi'][name].items():
+        #
+        #         item = QListWidgetItem()
+        #         item.setText(key)
+        #         item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
+        #         if key in store_checked:
+        #             item.setCheckState(Qt.Checked)
+        #             checked_items.append(key)
+        #         else:
+        #             item.setCheckState(Qt.Unchecked)
+        #
+        #         listwidget.addItem(item)
 
         self.set_pseudo_id_start()
         self.set_static_lineedits()
@@ -372,20 +414,38 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             store_key = "/".join(['select_single', name])
             value = obj.currentText()
             self.qsettings.setValue(store_key, value)
+            self.update_delegates()
 
-        elif isinstance(obj, QListWidget):
-            store_key = "/".join(['select_multi', name])
 
-            checked_items = []
-            for x in range(obj.count()):
-                key = obj.item(x).text()
-                if obj.item(x).checkState() == Qt.Checked:
-                    checked_items.append(key)
 
-            self.qsettings.setValue(store_key, checked_items)
+        # elif isinstance(obj, QListWidget):
+        #     store_key = "/".join(['select_multi', name])
+        #
+        #     checked_items = []
+        #     for x in range(obj.count()):
+        #         key = obj.item(x).text()
+        #         if obj.item(x).checkState() == Qt.Checked:
+        #             checked_items.append(key)
+        #
+        #     self.qsettings.setValue(store_key, checked_items)
 
         self.set_pseudo_id_start()
         self.set_static_lineedits()
+        # self.update_delegates()
+
+    def settings_multi_update(self, index):
+        model = index.model()
+        name = model.objectName()
+
+        checked_items = []
+        for row in range(model.rowCount()):
+            print(model.data(model.index(row, 0)))
+            if str(model.data(model.index(row, 0)))== "1":
+                checked_items.append(model.data(model.index(row, 1)))
+
+        store_key = "/".join(['select_multi', name])
+        print(checked_items)
+        self.qsettings.setValue(store_key, checked_items)
         self.update_delegates()
 
     def tableviews_setup(self):

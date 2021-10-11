@@ -206,7 +206,6 @@ class IconCheckBoxDelegate(QStyledItemDelegate):
         Paint a checkbox without the label.
         """
         value = index.model().data(index, Qt.EditRole)
-        print(value)
         _button = QStyleOptionButton()
 
         _button.rect = option.rect
