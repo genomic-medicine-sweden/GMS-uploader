@@ -4,7 +4,7 @@ from PySide6.QtGui import *
 from PySide6.QtWidgets import *
 from modules.pandasmodel import PandasModel
 from modules.delegates import CompleterDelegate, ComboBoxDelegate, \
-    DateAutoCorrectDelegate, CheckBoxDelegate, AgeDelegate
+    DateAutoCorrectDelegate, CheckBoxDelegate, AgeDelegate, IconCheckBoxDelegate
 from modules.dialogs import MsgError, MsgAlert, ValidationDialog
 from modules.sortfilterproxymodel import MultiSortFilterProxyModel, MarkedFilterProxyModel
 from modules.auxiliary_functions import get_pseudo_id_code_number, zfill_int, to_list, get_pd_row_index, \
@@ -762,7 +762,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def set_checkbox_delegate(self, field):
         for view in self.conf['model_fields'][field]['view']:
-            self.delegates[view][field] = CheckBoxDelegate(None)
+            self.delegates[view][field] = IconCheckBoxDelegate(None)
 
             if view == 'patient':
                 self.tableView_patient.setItemDelegateForColumn(self.tableView_columns.index(field),
