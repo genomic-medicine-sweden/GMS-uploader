@@ -188,6 +188,9 @@ class CheckBoxDelegate(QItemDelegate):
 class IconCheckBoxDelegate(QStyledItemDelegate):
     """
     A delegate that places a fully functioning QCheckBox cell of the column to which it's applied.
+    Since regular QStandardItem checkboxes do not accept styling, icons must be used.
+
+
     """
     def __init__(self, parent):
         super(IconCheckBoxDelegate, self).__init__(parent)
@@ -204,6 +207,10 @@ class IconCheckBoxDelegate(QStyledItemDelegate):
     def paint(self, painter, option, index):
         """
         Paint a checkbox without the label.
+
+        To create a checkable, transparent pushbutton CE_PushButtonLabel MUST be used.
+        CE_PushButton creates a non-paintable, ugly button
+
         """
         value = index.model().data(index, Qt.EditRole)
         _button = QStyleOptionButton()
