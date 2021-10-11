@@ -235,20 +235,20 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             store_key = "/".join(['no_widget', name])
             self.qsettings.setValue(store_key, self.conf['settings']['no_widget'][name])
 
-        for name in self.conf['settings']['qlineedits']:
-            store_key = "/".join(['qlineedits', name])
-            self.qsettings.setValue(store_key, self.conf['settings']['qlineedits'][name])
+        for name in self.conf['settings']['entered_value']:
+            store_key = "/".join(['entered_value', name])
+            self.qsettings.setValue(store_key, self.conf['settings']['entered_value'][name])
 
-        for name in self.conf['settings']['qcomboboxes']:
-            store_key = "/".join(['qcomboboxes', name])
-            for i, key in enumerate(self.conf['settings']['qcomboboxes'][name]):
-                if self.conf['settings']['qcomboboxes'][name][key]:
+        for name in self.conf['settings']['select_single']:
+            store_key = "/".join(['select_single', name])
+            for i, key in enumerate(self.conf['settings']['select_single'][name]):
+                if self.conf['settings']['select_single'][name][key]:
                     self.qsettings.setValue(store_key, key)
 
-        for name in self.conf['settings']['qlistwidgets']:
-            store_key = "/".join(['qlistwidgets', name])
+        for name in self.conf['settings']['select_multi']:
+            store_key = "/".join(['select_multi', name])
             checked_items = []
-            for key, checked in self.conf['settings']['qlistwidgets'][name].items():
+            for key, checked in self.conf['settings']['select_multi'][name].items():
                 if checked:
                     checked_items.append(key)
 
@@ -261,22 +261,22 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         Sets values in static lineedits on the dataview pane.
         :return: None
         """
-        self.lineEdit_submitter.setText(self.qsettings.value("qlineedits/submitter"))
-        self.lineEdit_credentials_path.setText(self.qsettings.value("qlineedits/credentials_filepath"))
-        self.lineEdit_lab.setText(self.qsettings.value("qcomboboxes/lab"))
-        self.lineEdit_seq_technology.setText(self.qsettings.value("qcomboboxes/seq_technology"))
-        self.lineEdit_host.setText(self.qsettings.value("qcomboboxes/host"))
-        self.lineEdit_lib_method.setText(self.qsettings.value("qcomboboxes/library_method"))
-        self.lineEdit_bucket.setText(self.qsettings.value("qcomboboxes/hcp_bucket"))
+        self.lineEdit_submitter.setText(self.qsettings.value("entered_value/submitter"))
+        self.lineEdit_credentials_path.setText(self.qsettings.value("entered_value/credentials_filepath"))
+        self.lineEdit_lab.setText(self.qsettings.value("select_single/lab"))
+        self.lineEdit_seq_technology.setText(self.qsettings.value("select_single/seq_technology"))
+        self.lineEdit_host.setText(self.qsettings.value("select_single/host"))
+        self.lineEdit_lib_method.setText(self.qsettings.value("select_single/library_method"))
+        self.lineEdit_bucket.setText(self.qsettings.value("select_single/hcp_bucket"))
         self.lineEdit_pseudo_id.setText(self.qsettings.value("no_widget/pseudo_id_start"))
-        self.lineEdit_paste_fx.setText(self.qsettings.value("qcomboboxes/paste_fx"))
+        self.lineEdit_paste_fx.setText(self.qsettings.value("select_single/paste_fx"))
 
     def settings_setup(self):
         """
         Creates and sets up dymamic setting widgets based on config file
         :return: None
         """
-        for name in self.conf['settings']['qlineedits']:
+        for name in self.conf['settings']['entered_value']:
             if name in self.conf['add_buttons']:
                 if name == "pseudo_id_filepath":
                     func = self.set_pseudo_id_filepath
@@ -304,22 +304,22 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
                 self.formLayout_settings.addRow(QLabel(name), hbox)
 
-                store_key = "/".join(['qlineedits', name])
+                store_key = "/".join(['entered_value', name])
                 value = self.qsettings.value(store_key)
                 edit.setText(value)
 
             else:
                 edit = QLineEdit(objectName=name, editingFinished=self.settings_update)
-                store_key = "/".join(['qlineedits', name])
+                store_key = "/".join(['entered_value', name])
                 value = self.qsettings.value(store_key)
                 edit.setText(value)
                 self.formLayout_settings.addRow(QLabel(name), edit)
 
-        for name in self.conf['settings']['qcomboboxes']:
+        for name in self.conf['settings']['select_single']:
             combo = QComboBox(objectName=name)
-            combo.addItems(list(self.conf['settings']['qcomboboxes'][name].keys()))
+            combo.addItems(list(self.conf['settings']['select_single'][name].keys()))
 
-            store_key = "/".join(['qcomboboxes', name])
+            store_key = "/".join(['select_single', name])
             value = self.qsettings.value(store_key)
             combo.setCurrentText(value)
             self.formLayout_settings.addRow(QLabel(name), combo)
@@ -330,17 +330,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         tabwidget_settings.setStyleSheet("QTabWidget::pane { border: 0; }")
         self.verticalLayout_tab_settings.addWidget(tabwidget_settings)
 
-        for name in self.conf['settings']['qlistwidgets']:
+        for name in self.conf['settings']['select_multi']:
             listwidget = QListWidget(objectName=name)
 
             listwidget.itemChanged.connect(self.settings_update)
             tabwidget_settings.addTab(listwidget, name)
             checked_items = []
 
-            store_key = "/".join(['qlistwidgets', name])
+            store_key = "/".join(['select_multi', name])
             items = to_list(self.qsettings.value(store_key))
 
-            for key, checked in self.conf['settings']['qlistwidgets'][name].items():
+            for key, checked in self.conf['settings']['select_multi'][name].items():
                 item = QListWidgetItem()
                 item.setText(key)
                 item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
@@ -365,16 +365,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
 
         if isinstance(obj, QLineEdit):
-            store_key = "/".join(['qlineedits', name])
+            store_key = "/".join(['entered_value', name])
             self.qsettings.setValue(store_key, obj.text())
 
         elif isinstance(obj, QComboBox):
-            store_key = "/".join(['qcomboboxes', name])
+            store_key = "/".join(['select_single', name])
             value = obj.currentText()
             self.qsettings.setValue(store_key, value)
 
         elif isinstance(obj, QListWidget):
-            store_key = "/".join(['qlistwidgets', name])
+            store_key = "/".join(['select_multi', name])
 
             checked_items = []
             for x in range(obj.count()):
@@ -716,7 +716,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def set_combobox_delegate(self, field):
 
-        store_key = "/".join(["qlistwidgets", field])
+        store_key = "/".join(["select_multi", field])
         items = ['']
         items.extend(to_list(self.qsettings.value(store_key)))
 
@@ -882,7 +882,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     # pseudo_id-related functions
 
     def set_pseudo_id_start(self):
-        file = self.qsettings.value("qlineedits/pseudo_id_filepath")
+        file = self.qsettings.value("entered_value/pseudo_id_filepath")
 
         if file:
             file_obj = Path(file)
@@ -898,7 +898,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     msg = MsgError("Something is wrong with the set pseudo_id file.")
                     msg.exec()
                 else:
-                    lab = self.qsettings.value('qcomboboxes/lab')
+                    lab = self.qsettings.value('select_single/lab')
 
                     if lab:
                         curr_prefix = self.conf['tr']['lab_to_code'][lab]
@@ -929,9 +929,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     # Import/export functions
 
     def upload(self):
-        self.df['lab'] = self.qsettings.value('qcomboboxes/lab')
-        self.df['host'] = self.qsettings.value('qcomboboxes/host')
-        self.df['seq_technology'] = self.qsettings.value('qcomboboxes/seq_technology')
+        self.df['lab'] = self.qsettings.value('select_single/lab')
+        self.df['host'] = self.qsettings.value('select_single/host')
+        self.df['seq_technology'] = self.qsettings.value('select_single/seq_technology')
 
         df2 = self.df.fillna('')
         errors = validate(df2)
@@ -968,7 +968,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         now = datetime.now()
         tag = now.strftime("%Y-%m-%dT%H.%M.%S")
-        json_file = Path(self.qsettings.value('qlineedits/metadata_output_path'), tag + "_meta.json")
+        json_file = Path(self.qsettings.value('entered_value/metadata_output_path'), tag + "_meta.json")
 
         with open(json_file, 'w', encoding='utf-8') as file:
             df_submit.to_json(file, orient="records", force_ascii=False)
@@ -976,12 +976,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # upload_params = [json_file,
         #                  sample_seqs,
         #                  tag,
-        #                  self.qsettings['qlineedits/credentials_path'],
-        #                  self.qsettings['qcomboboxes/hcp_bucket']
+        #                  self.qsettings['entered_value/credentials_path'],
+        #                  self.qsettings['select_single/hcp_bucket']
         #                  ]
 
-        c_path = self.qsettings.value('qlineedits/credentials_filepath')
-        bucket = self.qsettings.value('qcomboboxes/hcp_bucket')
+        c_path = self.qsettings.value('entered_value/credentials_filepath')
+        bucket = self.qsettings.value('select_single/hcp_bucket')
 
         uploader = Uploader(c_path,
                             tag,
@@ -1009,7 +1009,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         dt_str = now.strftime("%Y-%m-%dT%H.%M.%S")
         dialog = QFileDialog()
 
-        p_str = self.qsettings.value('qlineedits/metadata_docs_path')
+        p_str = self.qsettings.value('entered_value/metadata_docs_path')
 
         if p_str and Path(p_str).exists():
             default_path = p_str
@@ -1028,7 +1028,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def open_metadata_file(self):
 
-        p_str = self.qsettings.value('qlineedits/metadata_docs_path')
+        p_str = self.qsettings.value('entered_value/metadata_docs_path')
 
         if p_str and Path(p_str).exists():
             default_path = p_str
@@ -1052,7 +1052,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def get_seq_files(self):
 
-        p_str = self.qsettings.value('qlineedits/seq_base_path')
+        p_str = self.qsettings.value('entered_value/seq_base_path')
 
         if p_str and Path(p_str).exists():
             default_path = p_str
@@ -1072,7 +1072,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def get_csv_file_combine(self):
 
-        p_str = self.qsettings.value('qlineedits/csv_base_path')
+        p_str = self.qsettings.value('entered_value/csv_base_path')
 
         if p_str and Path(p_str).exists():
             default_path = p_str

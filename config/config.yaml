@@ -208,7 +208,7 @@ model_fields:
     model_validators: False
     paste_validators: False
 settings:
-  qlineedits:
+  entered_value:
     seq_base_path: None
     csv_base_path: None
     metadata_output_path: None
@@ -216,7 +216,7 @@ settings:
     pseudo_id_filepath: None
     credentials_filepath: None
     submitter: None
-  qcomboboxes:
+  select_single:
     hcp_bucket:
       'goteborg': True
       'linkoping': False
@@ -270,7 +270,7 @@ settings:
       'Midnight': False
     paste_fx:
       analytix: True
-  qlistwidgets:
+  select_multi:
     region:
       'Region Stockholm - 01': True
       'Region Uppsala - 03': False
@@ -415,33 +415,33 @@ paste_validators:
       mark: False
       internal_lab_id: False
       selection_criterion:
-        qsettings: 'qlistwidgets/selection_criterion'
+        qsettings: 'select_multi/selection_criterion'
       collection_date:
         func: date_validate
       patient_age:
         func: age_validate
       patient_sex:
-        qsettings: 'qlistwidgets/patient_sex'
+        qsettings: 'select_multi/patient_sex'
       patient_status:
-        qsettings: 'qlistwidgets/patient_status'
+        qsettings: 'select_multi/patient_status'
       type:
-        qsettings: 'qlistwidgets/type'
+        qsettings: 'select_multi/type'
       sminet_lid:
         func: sminet_lid_parser
       pseudo_id: False
       region:
-        qsettings: 'qlistwidgets/region'
+        qsettings: 'select_multi/region'
       region_code: False
       lab:
-        qsettings: 'qcomboboxes/lab'
+        qsettings: 'select_single/lab'
       lab_code: False
       host:
-        qsettings: 'qcomboboxes/host'
+        qsettings: 'select_single/host'
       passage_details: True
       seq_technology:
-        qsettings: 'qlistwidgets/seq_technology'
+        qsettings: 'select_multi/seq_technology'
       library_method:
-        qsettings: 'qcomboboxes/library_method'
+        qsettings: 'select_single/library_method'
       lane: False
       fastq: False
       fast5: False
