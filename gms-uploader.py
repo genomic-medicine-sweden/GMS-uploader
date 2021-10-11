@@ -171,21 +171,21 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def set_icons(self):
 
-        self.action_open_meta.setIcon(QIcon(':/icons/folder-open-outline_mdi.svg'))
-        self.action_save_meta.setIcon(QIcon(':/icons/content-save-outline_mdi.svg'))
-        self.action_show_meta.setIcon(QIcon(':/icons/table_mdi.svg'))
-        self.action_show_prefs.setIcon(QIcon(':/icons/cog-outline_mdi.svg'))
-        self.action_upload_meta_seqs.setIcon(QIcon(':/icons/tray-arrow-up_mdi.svg'))
-        self.action_select_seq_files.setIcon(QIcon(':/icons/dna_mdi.svg'))
-        self.action_import_csv.setIcon(QIcon(':/icons/import-csv_own.svg'))
-        self.action_import_paste_fx.setIcon(QIcon(':/icons/content-paste-func_own.svg'))
+        self.action_open_meta.setIcon(QIcon(':/icons/AppIcons/folder-open-outline_mdi.svg'))
+        self.action_save_meta.setIcon(QIcon(':/icons/AppIcons/content-save-outline_mdi.svg'))
+        self.action_show_meta.setIcon(QIcon(':/icons/AppIcons/table_mdi.svg'))
+        self.action_show_prefs.setIcon(QIcon(':/icons/AppIcons/cog-outline_mdi.svg'))
+        self.action_upload_meta_seqs.setIcon(QIcon(':/icons/AppIcons/tray-arrow-up_mdi.svg'))
+        self.action_select_seq_files.setIcon(QIcon(':/icons/AppIcons/dna_mdi.svg'))
+        self.action_import_csv.setIcon(QIcon(':/icons/AppIcons/import-csv_own.svg'))
+        self.action_import_paste_fx.setIcon(QIcon(':/icons/AppIcons/content-paste-func_own.svg'))
 
-        self.pushButton_filldown.setIcon(QIcon(':/icons/arrow-down_mdi.svg'))
-        self.pushButton_drop.setIcon(QIcon(':/icons/close_mdi.svg'))
-        self.pushButton_clear.setIcon(QIcon(':/icons/delete-outline_mdi.svg'))
-        self.pushButton_resetfilters.setIcon(QIcon(':/icons/filter-remove-outline_mdi.svg'))
-        self.pushButton_filtermarked.setIcon(QIcon(':/icons/filter-outline_mdi.svg'))
-        self.pushButton_invert.setIcon(QIcon(':/icons/invert_own.svg'))
+        self.pushButton_filldown.setIcon(QIcon(':/icons/AppIcons/arrow-down_mdi.svg'))
+        self.pushButton_drop.setIcon(QIcon(':/icons/AppIcons/close_mdi.svg'))
+        self.pushButton_clear.setIcon(QIcon(':/icons/AppIcons/delete-outline_mdi.svg'))
+        self.pushButton_resetfilters.setIcon(QIcon(':/icons/AppIcons/filter-remove-outline_mdi.svg'))
+        self.pushButton_filtermarked.setIcon(QIcon(':/icons/AppIcons/filter-outline_mdi.svg'))
+        self.pushButton_invert.setIcon(QIcon(':/icons/AppIcons/invert_own.svg'))
 
     def set_col_widths(self):
         for i, name in enumerate(self.conf['model_fields']):
