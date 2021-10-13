@@ -327,7 +327,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
             items = []
             if name in self.conf['add_empty_selection']:
-                items = ['']
+                items = ['None']
 
             items.extend(list(self.conf['settings']['select_single'][name].keys()))
             combo.addItems(items)
@@ -427,22 +427,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             value = obj.currentText()
             self.qsettings.setValue(store_key, value)
             self.update_delegates()
-            self.set_static_lineedits()
-
-        # elif isinstance(obj, QListWidget):
-        #     store_key = "/".join(['select_multi', name])
-        #
-        #     checked_items = []
-        #     for x in range(obj.count()):
-        #         key = obj.item(x).text()
-        #         if obj.item(x).checkState() == Qt.Checked:
-        #             checked_items.append(key)
-        #
-        #     self.qsettings.setValue(store_key, checked_items)
 
         self.set_pseudo_id_start()
         self.set_static_lineedits()
-        # self.update_delegates()
 
     def settings_multi_update(self, index):
         model = index.model()

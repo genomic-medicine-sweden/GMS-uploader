@@ -396,7 +396,7 @@ class Ui_MainWindow(object):
         self.label_8.setText(QCoreApplication.translate("MainWindow", u"pseudo id start:", None))
         self.label.setText(QCoreApplication.translate("MainWindow", u"credentials path:", None))
         self.label_10.setText(QCoreApplication.translate("MainWindow", u"bucket:", None))
-        self.label_3.setText(QCoreApplication.translate("MainWindow", u"paste fx:", None))
+        self.label_3.setText(QCoreApplication.translate("MainWindow", u"import/paste fx:", None))
 #if QT_CONFIG(tooltip)
         self.pushButton_clear.setToolTip(QCoreApplication.translate("MainWindow", u"clear table", None))
 #endif // QT_CONFIG(tooltip)
