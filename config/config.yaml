@@ -268,7 +268,7 @@ settings:
       'Artic': True
       'NEB': False
       'Midnight': False
-    paste_fx:
+    import_fx:
       analytix: True
   select_multi:
     region:
@@ -322,6 +322,9 @@ settings:
     pseudo_id_start: None
     pseudo_id_start_int: None
     pseudo_id_start_prefix: None
+
+add_empty_selection:
+  - import_fx
 
 add_buttons:
     seq_base_path: True
@@ -397,7 +400,9 @@ seq_files:
       fast5: '*.fast5'
 
 fx_functions:
-  analytix: True
+  analytix:
+    fun: analytix
+    conf: fx_analytix.yaml
 
 freetext_filter:
   model_fields:

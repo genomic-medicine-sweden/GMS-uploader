@@ -195,8 +195,8 @@ class IconCheckBoxDelegate(QStyledItemDelegate):
     def __init__(self, parent):
         super(IconCheckBoxDelegate, self).__init__(parent)
         self._icon = QIcon()
-        self._icon.addFile(":/icons/StyleLightIcons/check_box_24dp.svg", QSize(), QIcon.Normal, QIcon.On)
-        self._icon.addFile(":/icons/StyleLightIcons/check_box_outline_blank_24dp.svg", QSize(), QIcon.Normal, QIcon.Off)
+        self._icon.addFile(":/icons/AppIcons/check_box_24dp.png", QSize(), QIcon.Normal, QIcon.On)
+        self._icon.addFile(":/icons/AppIcons/check_box_outline_blank_24dp.png", QSize(), QIcon.Normal, QIcon.Off)
 
     def createEditor(self, parent, option, index):
         """

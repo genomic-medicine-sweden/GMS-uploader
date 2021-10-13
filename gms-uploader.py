@@ -1,4 +1,5 @@
 import sys
+from io import StringIO
 from PySide6.QtCore import *
 from PySide6.QtGui import *
 from PySide6.QtWidgets import *
@@ -33,10 +34,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.setupUi(self)
         self.setAcceptDrops(True)
         self.clipboard = QGuiApplication.clipboard()
-        self.tabWidget_metadata.setStyleSheet("QTabWidget::pane { border: 0; }")
-        self.scrollArea.setStyleSheet("QScrollArea { border: 0; }")
-        self.toolBar.setFixedWidth(50)
-        self.toolBar.setMovable(False)
 
         self.qsettings = QSettings("Genomic Medicine Sweden", "GMS-uploader")
 
@@ -59,6 +56,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.qsettings.clear()
             self.settings_init()
 
+        self.fx_config = None
+
         self.settings_setup()
 
         self.tableView_columns = list(self.conf['model_fields'].keys())
@@ -68,12 +67,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.mfilter_sort_proxy_model = MultiSortFilterProxyModel()
 
         self.filter_cols = self.get_filter_cols()
-
-        self.tabWidget_metadata.setTabText(0, "patient metadata")
-        self.tabWidget_metadata.setTabText(1, "organism metadata")
-        self.tabWidget_metadata.setTabText(2, "lab metadata")
-
-        self.lineEdit_filter.setPlaceholderText("freetext filter")
 
         # setup settings
 
@@ -91,6 +84,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.set_delegates()
 
+        # Status widgets change status to activated when there is data in the model. Default is disabled.
+
         self.status_widgets = [
             self.action_import_csv,
             self.action_upload_meta_seqs,
@@ -101,15 +96,26 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.pushButton_filldown,
             self.pushButton_resetfilters,
             self.action_save_meta,
-            self.action_import_paste_fx,
+            self.action_import_fx,
+            self.action_paste_fx,
             self.lineEdit_filter
         ]
 
         self.set_datastatus_empty(True)
-
+        self.ui_init()
         self.setup_complete = True
 
     # setup and init-related functions
+
+    def ui_init(self):
+        self.tabWidget_metadata.setStyleSheet("QTabWidget::pane { border: 0; }")
+        self.scrollArea.setStyleSheet("QScrollArea { border: 0; }")
+        self.toolBar.setFixedWidth(50)
+        self.toolBar.setMovable(False)
+        self.tabWidget_metadata.setTabText(0, "patient metadata")
+        self.tabWidget_metadata.setTabText(1, "organism metadata")
+        self.tabWidget_metadata.setTabText(2, "lab metadata")
+        self.lineEdit_filter.setPlaceholderText("freetext filter")
 
     def get_filter_cols(self):
         cols = list(self.df.columns)
@@ -168,6 +174,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.action_open_meta.triggered.connect(self.open_metadata_file)
         self.pushButton_invert.clicked.connect(self.invert_marks)
         self.action_import_csv.triggered.connect(self.get_csv_file_combine)
+        self.action_import_fx.triggered.connect(self.str_to_pd)
 
     def set_icons(self):
 
@@ -178,8 +185,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.action_upload_meta_seqs.setIcon(QIcon(':/icons/AppIcons/tray-arrow-up_mdi.svg'))
         self.action_select_seq_files.setIcon(QIcon(':/icons/AppIcons/dna_mdi.svg'))
         self.action_import_csv.setIcon(QIcon(':/icons/AppIcons/import-csv_own.svg'))
-        self.action_import_paste_fx.setIcon(QIcon(':/icons/AppIcons/content-paste-func_own.svg'))
-
+        self.action_import_fx.setIcon(QIcon(':/icons/AppIcons/content-import-fx_own.svg'))
+        self.action_paste_fx.setIcon(QIcon(':/icons/AppIcons/content-paste-fx_own.svg'))
         self.pushButton_filldown.setIcon(QIcon(':/icons/AppIcons/arrow-down_mdi.svg'))
         self.pushButton_drop.setIcon(QIcon(':/icons/AppIcons/close_mdi.svg'))
         self.pushButton_clear.setIcon(QIcon(':/icons/AppIcons/delete-outline_mdi.svg'))
@@ -269,7 +276,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.lineEdit_lib_method.setText(self.qsettings.value("select_single/library_method"))
         self.lineEdit_bucket.setText(self.qsettings.value("select_single/hcp_bucket"))
         self.lineEdit_pseudo_id.setText(self.qsettings.value("no_widget/pseudo_id_start"))
-        self.lineEdit_paste_fx.setText(self.qsettings.value("select_single/paste_fx"))
+        self.lineEdit_import_fx.setText(self.qsettings.value("select_single/import_fx"))
 
     def settings_setup(self):
         """
@@ -317,7 +324,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         for name in self.conf['settings']['select_single']:
             combo = QComboBox(objectName=name)
-            combo.addItems(list(self.conf['settings']['select_single'][name].keys()))
+
+            items = []
+            if name in self.conf['add_empty_selection']:
+                items = ['']
+
+            items.extend(list(self.conf['settings']['select_single'][name].keys()))
+            combo.addItems(items)
 
             store_key = "/".join(['select_single', name])
             value = self.qsettings.value(store_key)
@@ -405,7 +418,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         obj = self.sender()
         name = obj.objectName()
 
-
         if isinstance(obj, QLineEdit):
             store_key = "/".join(['entered_value', name])
             self.qsettings.setValue(store_key, obj.text())
@@ -415,8 +427,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             value = obj.currentText()
             self.qsettings.setValue(store_key, value)
             self.update_delegates()
-
-
+            self.set_static_lineedits()
 
         # elif isinstance(obj, QListWidget):
         #     store_key = "/".join(['select_multi', name])
@@ -484,6 +495,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.tableView_lab.verticalHeader().hide()
         self.tableView_organism.verticalHeader().hide()
         self.update_model()
+
+    def load_fx_settings(self):
+        store_key = "/".join(['select_single', 'import_fx'])
+        fx_name = self.qsettings.value(store_key)
+
+
+        default_config_path = Path('config', 'config.yaml')
+        with default_config_path.open(encoding='utf8') as fp:
+            self.conf = yaml.safe_load(fp)
 
     # model and data-import related functions
 
@@ -1161,6 +1181,28 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
             self.update_model()
 
+    def str_to_pd(self):
+        clipboard = QGuiApplication.clipboard()
+        mime_data = clipboard.mimeData()
+
+        data_str = mime_data.text()
+        print(data_str)
+
+        str_obj = StringIO(data_str)
+        df = pd.read_csv(str_obj, sep="\t")
+        print(df)
+
+
+        # for i, r in enumerate(rows):
+        #     columns = r.split("\t")
+        #     for j, value in enumerate(columns):
+        #         colname = self.df.columns[i_col + j]
+        #         valid_value = self.accept_paste(value, colname)
+        #         if valid_value:
+        #             model.setData(model.index(i_row + i, i_col + j), valid_value)
+        #
+
+
     # Reimplemented functions
 
     def dragEnterEvent(self, event):
@@ -1269,7 +1311,8 @@ def main():
     app = QApplication(sys.argv)
     window = MainWindow()
     # apply_stylesheet(app, theme='light_blue.xml')
-    app.setStyleSheet(qdarktheme.load_stylesheet("light"))
+    style = qdarktheme.load_stylesheet("light") + "QTableView { gridline-color: lightgrey}"
+    app.setStyleSheet(style)
 
     try:
         pyi_splash.close()

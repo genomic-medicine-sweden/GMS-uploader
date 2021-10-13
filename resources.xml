@@ -4,7 +4,8 @@
     <file>icons/AppIcons/close-box-outline_mdi.svg</file>
     <file>icons/AppIcons/close_mdi.svg</file>
     <file>icons/AppIcons/cog-outline_mdi.svg</file>
-    <file>icons/AppIcons/content-paste-func_own.svg</file>
+    <file>icons/AppIcons/content-paste-fx_own.svg</file>
+    <file>icons/AppIcons/content-import-fx_own.svg</file>
     <file>icons/AppIcons/content-save-outline_mdi.svg</file>
     <file>icons/AppIcons/delete-outline_mdi.svg</file>
     <file>icons/AppIcons/dna_mdi.svg</file>
@@ -18,6 +19,8 @@
     <file>icons/AppIcons/settings.svg</file>
     <file>icons/AppIcons/table_mdi.svg</file>
     <file>icons/AppIcons/tray-arrow-up_mdi.svg</file>
+    <file>icons/AppIcons/check_box_24dp.png</file>
+    <file>icons/AppIcons/check_box_outline_blank_24dp.png</file>
     <file>icons/StyleLightIcons/arrow_back_24dp.svg</file>
     <file>icons/StyleLightIcons/arrow_back_disabled_24dp.svg</file>
     <file>icons/StyleLightIcons/arrow_drop_down_24dp.svg</file>

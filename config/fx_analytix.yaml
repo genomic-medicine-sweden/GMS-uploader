@@ -34,6 +34,17 @@ import_fields:
   - 'Godkännandedatum'
   - 'Resultat'
 
+translate_fields:
+  'Beställarkod': 'Beställarkod'
+  'Kön': 'Sex'
+  'Prov ID': 'internal_lab_id'
+  'Provdatum': 'collection_date'
+  'Analys': 'Analys'
+  'Ålder (vid provtagning)': 'patient_age'
+  'ProvNr': 'ProvNr'
+  'Godkännandedatum': 'Godkännandedatum'
+  'Resultat': 'Resultat'
+
 ordercode_to_regionletter:
   'ACBACK': 'AB'
   'ACEREL': 'AC'

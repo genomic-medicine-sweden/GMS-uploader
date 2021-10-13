@@ -32,8 +32,10 @@ class Ui_MainWindow(object):
         self.action_select_seq_files.setObjectName(u"action_select_seq_files")
         self.action_import_csv = QAction(MainWindow)
         self.action_import_csv.setObjectName(u"action_import_csv")
-        self.action_import_paste_fx = QAction(MainWindow)
-        self.action_import_paste_fx.setObjectName(u"action_import_paste_fx")
+        self.action_paste_fx = QAction(MainWindow)
+        self.action_paste_fx.setObjectName(u"action_paste_fx")
+        self.action_import_fx = QAction(MainWindow)
+        self.action_import_fx.setObjectName(u"action_import_fx")
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
         self.verticalLayout = QVBoxLayout(self.centralwidget)
@@ -167,10 +169,10 @@ class Ui_MainWindow(object):
 
         self.formLayout__info_3.setWidget(2, QFormLayout.LabelRole, self.label_3)
 
-        self.lineEdit_paste_fx = QLineEdit(self.stackedWidgetPage1)
-        self.lineEdit_paste_fx.setObjectName(u"lineEdit_paste_fx")
+        self.lineEdit_import_fx = QLineEdit(self.stackedWidgetPage1)
+        self.lineEdit_import_fx.setObjectName(u"lineEdit_import_fx")
 
-        self.formLayout__info_3.setWidget(2, QFormLayout.FieldRole, self.lineEdit_paste_fx)
+        self.formLayout__info_3.setWidget(2, QFormLayout.FieldRole, self.lineEdit_import_fx)
 
 
         self.horizontalLayout.addLayout(self.formLayout__info_3)
@@ -293,7 +295,7 @@ class Ui_MainWindow(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollAreaWidgetContents_settings = QWidget()
         self.scrollAreaWidgetContents_settings.setObjectName(u"scrollAreaWidgetContents_settings")
-        self.scrollAreaWidgetContents_settings.setGeometry(QRect(0, 0, 671, 582))
+        self.scrollAreaWidgetContents_settings.setGeometry(QRect(0, 0, 100, 30))
         self.verticalLayout_5 = QVBoxLayout(self.scrollAreaWidgetContents_settings)
         self.verticalLayout_5.setObjectName(u"verticalLayout_5")
         self.formLayout_settings = QFormLayout()
@@ -325,9 +327,10 @@ class Ui_MainWindow(object):
         self.toolBar.addAction(self.action_save_meta)
         self.toolBar.addSeparator()
         self.toolBar.addAction(self.action_select_seq_files)
-        self.toolBar.addAction(self.action_import_csv)
         self.toolBar.addSeparator()
-        self.toolBar.addAction(self.action_import_paste_fx)
+        self.toolBar.addAction(self.action_import_csv)
+        self.toolBar.addAction(self.action_import_fx)
+        self.toolBar.addAction(self.action_paste_fx)
         self.toolBar.addSeparator()
         self.toolBar.addAction(self.action_show_meta)
         self.toolBar.addAction(self.action_show_prefs)
@@ -379,11 +382,12 @@ class Ui_MainWindow(object):
 #if QT_CONFIG(tooltip)
         self.action_import_csv.setToolTip(QCoreApplication.translate("MainWindow", u"import metadata from csv", None))
 #endif // QT_CONFIG(tooltip)
-        self.action_import_paste_fx.setText(QCoreApplication.translate("MainWindow", u"import_paste_fx", None))
+        self.action_paste_fx.setText(QCoreApplication.translate("MainWindow", u"paste_fx", None))
 #if QT_CONFIG(tooltip)
-        self.action_import_paste_fx.setToolTip(QCoreApplication.translate("MainWindow", u"import data via parsing clipboard data\n"
+        self.action_paste_fx.setToolTip(QCoreApplication.translate("MainWindow", u"import data via parsing clipboard data\n"
 "shortcut: ctrl+alt+v", None))
 #endif // QT_CONFIG(tooltip)
+        self.action_import_fx.setText(QCoreApplication.translate("MainWindow", u"import_fx", None))
         self.label_2.setText(QCoreApplication.translate("MainWindow", u"submitter:", None))
         self.label_5.setText(QCoreApplication.translate("MainWindow", u"lab:", None))
         self.label_7.setText(QCoreApplication.translate("MainWindow", u"host:", None))
