@@ -207,7 +207,46 @@ model_fields:
     delegates: ['None']
     model_validators: False
     paste_validators: False
-settings:
+
+settings_structure:
+  - submitter: "Submitter"
+    items:
+      - entered_value:
+        - submitter
+  - base_paths: "Base paths"
+    items:
+      - entered_value:
+        - seq_base_path
+        - csv_base_path
+        - metadata_output_path
+        - metadata_docs_path
+  - pseudo_id: "PseudoID"
+    items:
+      - entered_value:
+        - pseudo_id_filepath
+  - upload: "Upload connection"
+    items:
+      - entered_value:
+        - credentials_filepath
+      - select_single:
+        - hcp_bucket
+  - metadata_preset: "Metadata preset"
+    items:
+    - select_single:
+      - lab
+      - seq_technology
+      - host
+      - library_method
+  - metadata_accepted_values: "Metadata accepted values"
+    items:
+    - select_multi:
+      - region
+      - selection_criterion
+      - patient_sex
+      - passage_details_history
+      - type
+      - patient_status
+settings_values:
   entered_value:
     seq_base_path: None
     csv_base_path: None

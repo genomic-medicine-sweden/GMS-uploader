@@ -183,7 +183,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.action_show_meta.setIcon(QIcon(':/icons/AppIcons/table_mdi.svg'))
         self.action_show_prefs.setIcon(QIcon(':/icons/AppIcons/cog-outline_mdi.svg'))
         self.action_upload_meta_seqs.setIcon(QIcon(':/icons/AppIcons/tray-arrow-up_mdi.svg'))
-        self.action_select_seq_files.setIcon(QIcon(':/icons/AppIcons/dna_mdi.svg'))
+        self.action_select_seq_files.setIcon(QIcon(':/icons/AppIcons/folder-open-outline-dna_mdi.svg'))
         self.action_import_csv.setIcon(QIcon(':/icons/AppIcons/import-csv_own.svg'))
         self.action_import_fx.setIcon(QIcon(':/icons/AppIcons/content-import-fx_own.svg'))
         self.action_paste_fx.setIcon(QIcon(':/icons/AppIcons/content-paste-fx_own.svg'))
@@ -217,13 +217,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         all_keys = self.qsettings.allKeys()
         for key in all_keys:
             wtype, field = key.split('/')
-            if wtype not in self.conf['settings']:
+            if wtype not in self.conf['settings_values']:
                 return False
-            if field not in self.conf['settings'][wtype]:
+            if field not in self.conf['settings_values'][wtype]:
                 return False
 
-        for wtype in self.conf['settings']:
-            for field in self.conf['settings'][wtype]:
+        for wtype in self.conf['settings_values']:
+            for field in self.conf['settings_values'][wtype]:
                 store_key = "/".join([wtype, field])
                 if store_key not in all_keys:
                     return False
@@ -238,24 +238,24 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         """
         self.qsettings.clear()
 
-        for name in self.conf['settings']['no_widget']:
+        for name in self.conf['settings_values']['no_widget']:
             store_key = "/".join(['no_widget', name])
-            self.qsettings.setValue(store_key, self.conf['settings']['no_widget'][name])
+            self.qsettings.setValue(store_key, self.conf['settings_values']['no_widget'][name])
 
-        for name in self.conf['settings']['entered_value']:
+        for name in self.conf['settings_values']['entered_value']:
             store_key = "/".join(['entered_value', name])
-            self.qsettings.setValue(store_key, self.conf['settings']['entered_value'][name])
+            self.qsettings.setValue(store_key, self.conf['settings_values']['entered_value'][name])
 
-        for name in self.conf['settings']['select_single']:
+        for name in self.conf['settings_values']['select_single']:
             store_key = "/".join(['select_single', name])
-            for i, key in enumerate(self.conf['settings']['select_single'][name]):
-                if self.conf['settings']['select_single'][name][key]:
+            for i, key in enumerate(self.conf['settings_values']['select_single'][name]):
+                if self.conf['settings_values']['select_single'][name][key]:
                     self.qsettings.setValue(store_key, key)
 
-        for name in self.conf['settings']['select_multi']:
+        for name in self.conf['settings_values']['select_multi']:
             store_key = "/".join(['select_multi', name])
             checked_items = []
-            for key, checked in self.conf['settings']['select_multi'][name].items():
+            for key, checked in self.conf['settings_values']['select_multi'][name].items():
                 if checked:
                     checked_items.append(key)
 
@@ -283,7 +283,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         Creates and sets up dymamic setting widgets based on config file
         :return: None
         """
-        for name in self.conf['settings']['entered_value']:
+        for name in self.conf['settings_values']['entered_value']:
             if name in self.conf['add_buttons']:
                 if name == "pseudo_id_filepath":
                     func = self.set_pseudo_id_filepath
@@ -322,14 +322,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 edit.setText(value)
                 self.formLayout_settings.addRow(QLabel(name), edit)
 
-        for name in self.conf['settings']['select_single']:
+        for name in self.conf['settings_values']['select_single']:
             combo = QComboBox(objectName=name)
 
             items = []
             if name in self.conf['add_empty_selection']:
                 items = ['None']
 
-            items.extend(list(self.conf['settings']['select_single'][name].keys()))
+            items.extend(list(self.conf['settings_values']['select_single'][name].keys()))
             combo.addItems(items)
 
             store_key = "/".join(['select_single', name])
@@ -344,7 +344,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.verticalLayout_tab_settings.addWidget(tabwidget_settings)
         tabwidget_settings.setMinimumHeight(550)
 
-        for name in self.conf['settings']['select_multi']:
+        for name in self.conf['settings_values']['select_multi']:
             store_key = "/".join(['select_multi', name])
             store_checked = to_list(self.qsettings.value(store_key))
 
@@ -354,7 +354,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             model = QStandardItemModel(objectName=name)
             model.setColumnCount(2)
 
-            for key, checked in self.conf['settings']['select_multi'][name].items():
+            for key, checked in self.conf['settings_values']['select_multi'][name].items():
                 item1 = QStandardItem("0")
                 item2 = QStandardItem(key)
 
@@ -384,7 +384,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
                 # listwidget.addItem(item)
 
-        # for name in self.conf['settings']['select_multi']:
+        # for name in self.conf['settings_values']['select_multi']:
         #     listwidget = QListWidget(objectName=name)
         #
         #     listwidget.itemChanged.connect(self.settings_update)
@@ -394,7 +394,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         #     store_key = "/".join(['select_multi', name])
         #     store_checked = to_list(self.qsettings.value(store_key))
         #
-        #     for key, checked in self.conf['settings']['select_multi'][name].items():
+        #     for key, checked in self.conf['settings_values']['select_multi'][name].items():
         #
         #         item = QListWidgetItem()
         #         item.setText(key)

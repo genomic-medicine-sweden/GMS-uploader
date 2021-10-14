@@ -1,4 +1,10 @@
+---
 
+name: analytix
+
+functions:
+  - import
+  - paste
 
 regionletter_to_region:
   'K': 'Region Blekinge - 10'
