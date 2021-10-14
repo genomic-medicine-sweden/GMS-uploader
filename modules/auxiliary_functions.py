@@ -1,4 +1,5 @@
 from datetime import datetime
+from PySide6.QtWidgets import *
 
 
 def get_pseudo_id_code_number(pseudo_ids):
@@ -18,6 +19,27 @@ def get_pseudo_id_code_number(pseudo_ids):
     else:
         return None, -1
 
+
+def add_gridlayout_row(layout, widget1, widget2):
+    """
+    :param layout: qgridlayout
+    :param widget1: qwidget (label)
+    :param widget2: qwidget (combobox/lineedit/layout)
+    :return: None
+    """
+    new_row = layout.rowCount() + 1
+
+    print(new_row)
+    print(layout)
+    print(type(layout))
+    print(type(widget2))
+
+    layout.addWidget(widget1, new_row, 0)
+
+    if isinstance(widget2, type(QHBoxLayout())):
+        layout.addLayout(widget2, new_row, 1)
+    else:
+        layout.addWidget(widget2, new_row, 1)
 
 def get_pd_row_index(df, value, column_name):
     """

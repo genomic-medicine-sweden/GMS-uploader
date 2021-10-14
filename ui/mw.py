@@ -295,20 +295,18 @@ class Ui_MainWindow(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollAreaWidgetContents_settings = QWidget()
         self.scrollAreaWidgetContents_settings.setObjectName(u"scrollAreaWidgetContents_settings")
-        self.scrollAreaWidgetContents_settings.setGeometry(QRect(0, 0, 100, 30))
+        self.scrollAreaWidgetContents_settings.setGeometry(QRect(0, 0, 671, 582))
         self.verticalLayout_5 = QVBoxLayout(self.scrollAreaWidgetContents_settings)
         self.verticalLayout_5.setObjectName(u"verticalLayout_5")
-        self.formLayout_settings = QFormLayout()
-        self.formLayout_settings.setObjectName(u"formLayout_settings")
-        self.formLayout_settings.setHorizontalSpacing(6)
-        self.formLayout_settings.setVerticalSpacing(6)
+        self.verticalLayout_forms = QVBoxLayout()
+        self.verticalLayout_forms.setObjectName(u"verticalLayout_forms")
 
-        self.verticalLayout_5.addLayout(self.formLayout_settings)
+        self.verticalLayout_5.addLayout(self.verticalLayout_forms)
 
-        self.verticalLayout_tab_settings = QVBoxLayout()
-        self.verticalLayout_tab_settings.setObjectName(u"verticalLayout_tab_settings")
+        self.verticalLayout_tabs = QVBoxLayout()
+        self.verticalLayout_tabs.setObjectName(u"verticalLayout_tabs")
 
-        self.verticalLayout_5.addLayout(self.verticalLayout_tab_settings)
+        self.verticalLayout_5.addLayout(self.verticalLayout_tabs)
 
         self.scrollArea.setWidget(self.scrollAreaWidgetContents_settings)
 
@@ -339,7 +337,7 @@ class Ui_MainWindow(object):
 
         self.retranslateUi(MainWindow)
 
-        self.stackedWidget.setCurrentIndex(0)
+        self.stackedWidget.setCurrentIndex(1)
         self.tabWidget_metadata.setCurrentIndex(0)
 
 

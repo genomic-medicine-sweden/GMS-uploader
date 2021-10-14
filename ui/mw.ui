@@ -33,7 +33,7 @@
     <item>
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="stackedWidgetPage1">
        <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -409,23 +409,16 @@ shortcut: ctrl+d</string>
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>100</width>
-             <height>30</height>
+             <width>671</width>
+             <height>582</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_5">
             <item>
-             <layout class="QFormLayout" name="formLayout_settings">
-              <property name="horizontalSpacing">
-               <number>6</number>
-              </property>
-              <property name="verticalSpacing">
-               <number>6</number>
-              </property>
-             </layout>
+             <layout class="QVBoxLayout" name="verticalLayout_forms"/>
             </item>
             <item>
-             <layout class="QVBoxLayout" name="verticalLayout_tab_settings"/>
+             <layout class="QVBoxLayout" name="verticalLayout_tabs"/>
             </item>
            </layout>
           </widget>

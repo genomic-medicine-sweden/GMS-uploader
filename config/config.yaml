@@ -209,35 +209,41 @@ model_fields:
     paste_validators: False
 
 settings_structure:
-  - submitter: "Submitter"
+  - label: "Submitter"
+    target_layout: form
     items:
       - entered_value:
         - submitter
-  - base_paths: "Base paths"
+  - label: "Base paths"
+    target_layout: form
     items:
       - entered_value:
         - seq_base_path
         - csv_base_path
         - metadata_output_path
         - metadata_docs_path
-  - pseudo_id: "PseudoID"
+  - label: "PseudoID"
+    target_layout: form
     items:
       - entered_value:
         - pseudo_id_filepath
-  - upload: "Upload connection"
+  - label: "Upload connection"
+    target_layout: form
     items:
       - entered_value:
         - credentials_filepath
       - select_single:
         - hcp_bucket
-  - metadata_preset: "Metadata preset"
+  - label: "Metadata preset"
+    target_layout: form
     items:
     - select_single:
       - lab
       - seq_technology
       - host
       - library_method
-  - metadata_accepted_values: "Metadata accepted values"
+  - label: "Metadata accepted values"
+    target_layout: tabs
     items:
     - select_multi:
       - region
@@ -246,6 +252,7 @@ settings_structure:
       - passage_details_history
       - type
       - patient_status
+
 settings_values:
   entered_value:
     seq_base_path: None

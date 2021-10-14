@@ -9,7 +9,7 @@ from modules.delegates import CompleterDelegate, ComboBoxDelegate, \
 from modules.dialogs import MsgError, MsgAlert, ValidationDialog
 from modules.sortfilterproxymodel import MultiSortFilterProxyModel, MarkedFilterProxyModel
 from modules.auxiliary_functions import get_pseudo_id_code_number, zfill_int, to_list, get_pd_row_index, \
-    date_validate, age_validate
+    date_validate, age_validate, add_gridlayout_row
 from modules.validate import validate
 from modules.upload import UploadWorker
 import resources
@@ -280,132 +280,230 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def settings_setup(self):
         """
-        Creates and sets up dymamic setting widgets based on config file
+        Creates and sets up dymamic setting widgets based on the config file
         :return: None
         """
-        for name in self.conf['settings_values']['entered_value']:
-            if name in self.conf['add_buttons']:
-                if name == "pseudo_id_filepath":
-                    func = self.set_pseudo_id_filepath
-                elif name == "seq_base_path":
-                    func = self.set_seq_path
-                elif name == "csv_base_path":
-                    func = self.set_csv_path
-                elif name == "metadata_output_path":
-                    func = self.set_metadata_output_path
-                elif name == "metadata_docs_path":
-                    func = self.set_metadata_docs_path
-                elif name == "credentials_filepath":
-                    func = self.set_credentials_filepath
 
-                button_name = name + "button"
-                button = QPushButton("...", objectName=button_name)
-                button.clicked.connect(func)
-                edit = QLineEdit(objectName=name)
-                edit.textChanged.connect(self.settings_update)
-                edit.setReadOnly(True)
+        for category in self.conf['settings_structure']:
+            category_name = category['label']
+            label = QLabel(category_name)
+            label.setProperty("class", "bold")
+            self.verticalLayout_forms.addWidget(label)
 
-                hbox = QHBoxLayout()
-                hbox.addWidget(edit)
-                hbox.addWidget(button)
+            if category['target_layout'] == "form":
+                # label.setStyleSheet("background-color : red")
 
-                self.formLayout_settings.addRow(QLabel(name), hbox)
 
-                store_key = "/".join(['entered_value', name])
-                value = self.qsettings.value(store_key)
-                edit.setText(value)
+                # label.setObjectName("bold")
+                # font = label.font()
+                # font.setWeight(QFont.Bold)
+                # font.setPixelSize(25)
+                # label.setFont(font)
+                grid_layout = QGridLayout()
+                grid_layout.setColumnMinimumWidth(0, 150)
 
-            else:
-                edit = QLineEdit(objectName=name, editingFinished=self.settings_update)
-                store_key = "/".join(['entered_value', name])
-                value = self.qsettings.value(store_key)
-                edit.setText(value)
-                self.formLayout_settings.addRow(QLabel(name), edit)
+                self.verticalLayout_forms.addLayout(grid_layout)
 
-        for name in self.conf['settings_values']['select_single']:
-            combo = QComboBox(objectName=name)
+                for item in category['items']:
+                    for field_type, fields in item.items():
+                        if field_type == "entered_value":
+                            for field in fields:
+                                func = self.get_button_func(field)
+                                if func:
+                                    button_name = field + "button"
+                                    button = QPushButton("...", objectName=button_name)
+                                    button.clicked.connect(func)
+                                    edit = QLineEdit(objectName=field)
+                                    edit.textChanged.connect(self.settings_update)
+                                    edit.setReadOnly(True)
 
-            items = []
-            if name in self.conf['add_empty_selection']:
-                items = ['None']
+                                    hbox = QHBoxLayout()
+                                    hbox.addWidget(edit)
+                                    hbox.addWidget(button)
 
-            items.extend(list(self.conf['settings_values']['select_single'][name].keys()))
-            combo.addItems(items)
+                                    label = QLabel(field)
+                                    label.setProperty("class", "padding-left")
+                                    label.setMinimumWidth(40)
 
-            store_key = "/".join(['select_single', name])
-            value = self.qsettings.value(store_key)
-            combo.setCurrentText(value)
-            self.formLayout_settings.addRow(QLabel(name), combo)
-            combo.currentTextChanged.connect(self.settings_update)
+                                    store_key = "/".join([field_type, field])
+                                    value = self.qsettings.value(store_key)
+                                    edit.setText(value)
 
-        tabwidget_settings = QTabWidget(objectName='tabwidget_settings')
-        tabwidget_settings.setMinimumHeight(420)
-        tabwidget_settings.setStyleSheet("QTabWidget::pane { border: 0; }")
-        self.verticalLayout_tab_settings.addWidget(tabwidget_settings)
-        tabwidget_settings.setMinimumHeight(550)
+                                    add_gridlayout_row(grid_layout, label, hbox)
 
-        for name in self.conf['settings_values']['select_multi']:
-            store_key = "/".join(['select_multi', name])
-            store_checked = to_list(self.qsettings.value(store_key))
+                                else:
+                                    edit = QLineEdit(objectName=field, editingFinished=self.settings_update)
+                                    store_key = "/".join([field_type, field])
+                                    value = self.qsettings.value(store_key)
+                                    edit.setText(value)
 
-            model = QStandardItemModel()
-            model.setColumnCount(2)
-            tableview = QTableView()
-            model = QStandardItemModel(objectName=name)
-            model.setColumnCount(2)
+                                    label = QLabel(field)
+                                    label.setProperty("class", "padding-left")
+                                    label.setMinimumWidth(40)
 
-            for key, checked in self.conf['settings_values']['select_multi'][name].items():
-                item1 = QStandardItem("0")
-                item2 = QStandardItem(key)
+                                    add_gridlayout_row(grid_layout, label, edit)
 
-                if key in store_checked:
-                    item1.setText("1")
+                        elif field_type == "select_single":
+                            for field in fields:
+                                combo = QComboBox(objectName=field)
+                                combo.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
-                model.appendRow([item1, item2])
+                                items = []
+                                if field in self.conf['add_empty_selection']:
+                                    items = ['None']
 
-            tableview.setModel(model)
-            tableview.setItemDelegateForColumn(0, IconCheckBoxDelegate(None))
-            tableview.setColumnWidth(0, 15)
-            hheader = tableview.horizontalHeader()
-            hheader.setStretchLastSection(True)
-            hheader.hide()
-            tableview.verticalHeader().setDefaultSectionSize(20)
-            tableview.verticalHeader().hide()
-            tableview.setShowGrid(False)
-            model.itemChanged.connect(self.settings_multi_update)
+                                items.extend(list(self.conf['settings_values']['select_single'][field].keys()))
+                                combo.addItems(items)
 
-            tabwidget_settings.addTab(tableview, name)
+                                store_key = "/".join(['select_single', field])
+                                value = self.qsettings.value(store_key)
+                                combo.setCurrentText(value)
 
-                # if key in store_checked:
-                #     item.setCheckState(Qt.Checked)
-                #     checked_items.append(key)
-                # else:
-                #     item.setCheckState(Qt.Unchecked)
+                                label = QLabel(field)
+                                label.setProperty("class", "padding-left")
+                                label.setMinimumWidth(40)
 
-                # listwidget.addItem(item)
+                                combo.currentTextChanged.connect(self.settings_update)
+
+                                add_gridlayout_row(grid_layout, label, combo)
+
+            elif category['target_layout'] == "tabs":
+                # self.verticalLayout_forms.addWidget(QLabel(category_name))
+
+                tabwidget_settings = QTabWidget(objectName='tabwidget_settings')
+                tabwidget_settings.setMinimumHeight(420)
+                tabwidget_settings.setStyleSheet("QTabWidget::pane { border: 0; }")
+                tabwidget_settings.setMinimumHeight(550)
+                self.verticalLayout_tabs.addWidget(tabwidget_settings)
+
+                for item in category['items']:
+                    for field_type, fields in item.items():
+                        if field_type == "select_multi":
+                            for field in fields:
+                                store_key = "/".join([field_type, field])
+                                store_checked = to_list(self.qsettings.value(store_key))
+
+                                model = QStandardItemModel()
+                                model.setColumnCount(2)
+                                tableview = QTableView()
+                                model = QStandardItemModel(objectName=field)
+                                model.setColumnCount(2)
+
+                                for key, checked in self.conf['settings_values'][field_type][field].items():
+                                    item1 = QStandardItem("0")
+                                    item2 = QStandardItem(key)
+
+                                    if key in store_checked:
+                                        item1.setText("1")
+
+                                    model.appendRow([item1, item2])
+
+                                tableview.setModel(model)
+                                tableview.setItemDelegateForColumn(0, IconCheckBoxDelegate(None))
+                                tableview.setColumnWidth(0, 15)
+                                hheader = tableview.horizontalHeader()
+                                hheader.setStretchLastSection(True)
+                                hheader.hide()
+                                tableview.verticalHeader().setDefaultSectionSize(20)
+                                tableview.verticalHeader().hide()
+                                tableview.setShowGrid(False)
+                                model.itemChanged.connect(self.settings_multi_update)
+
+                                tabwidget_settings.addTab(tableview, field)
+
+
+        # for name in self.conf['settings_values']['entered_value']:
+        #     if name in self.conf['add_buttons']:
+        #         if name == "pseudo_id_filepath":
+        #             func = self.set_pseudo_id_filepath
+        #         elif name == "seq_base_path":
+        #             func = self.set_seq_path
+        #         elif name == "csv_base_path":
+        #             func = self.set_csv_path
+        #         elif name == "metadata_output_path":
+        #             func = self.set_metadata_output_path
+        #         elif name == "metadata_docs_path":
+        #             func = self.set_metadata_docs_path
+        #         elif name == "credentials_filepath":
+        #             func = self.set_credentials_filepath
+        #
+        #         button_name = name + "button"
+        #         button = QPushButton("...", objectName=button_name)
+        #         button.clicked.connect(func)
+        #         edit = QLineEdit(objectName=name)
+        #         edit.textChanged.connect(self.settings_update)
+        #         edit.setReadOnly(True)
+        #
+        #         hbox = QHBoxLayout()
+        #         hbox.addWidget(edit)
+        #         hbox.addWidget(button)
+        #
+        #         self.formLayout_settings.addRow(QLabel(name), hbox)
+        #
+        #         store_key = "/".join(['entered_value', name])
+        #         value = self.qsettings.value(store_key)
+        #         edit.setText(value)
+        #
+        #     else:
+        #         edit = QLineEdit(objectName=name, editingFinished=self.settings_update)
+        #         store_key = "/".join(['entered_value', name])
+        #         value = self.qsettings.value(store_key)
+        #         edit.setText(value)
+        #         self.formLayout_settings.addRow(QLabel(name), edit)
+        #
+        # for name in self.conf['settings_values']['select_single']:
+        #     combo = QComboBox(objectName=name)
+        #
+        #     items = []
+        #     if name in self.conf['add_empty_selection']:
+        #         items = ['None']
+        #
+        #     items.extend(list(self.conf['settings_values']['select_single'][name].keys()))
+        #     combo.addItems(items)
+        #
+        #     store_key = "/".join(['select_single', name])
+        #     value = self.qsettings.value(store_key)
+        #     combo.setCurrentText(value)
+        #     self.formLayout_settings.addRow(QLabel(name), combo)
+        #     combo.currentTextChanged.connect(self.settings_update)
+
+        # tabwidget_settings = QTabWidget(objectName='tabwidget_settings')
+        # tabwidget_settings.setMinimumHeight(420)
+        # tabwidget_settings.setStyleSheet("QTabWidget::pane { border: 0; }")
+        # self.verticalLayout_tab_settings.addWidget(tabwidget_settings)
+        # tabwidget_settings.setMinimumHeight(550)
 
         # for name in self.conf['settings_values']['select_multi']:
-        #     listwidget = QListWidget(objectName=name)
-        #
-        #     listwidget.itemChanged.connect(self.settings_update)
-        #     tabwidget_settings.addTab(listwidget, name)
-        #     checked_items = []
-        #
         #     store_key = "/".join(['select_multi', name])
         #     store_checked = to_list(self.qsettings.value(store_key))
         #
+        #     model = QStandardItemModel()
+        #     model.setColumnCount(2)
+        #     tableview = QTableView()
+        #     model = QStandardItemModel(objectName=name)
+        #     model.setColumnCount(2)
+        #
         #     for key, checked in self.conf['settings_values']['select_multi'][name].items():
+        #         item1 = QStandardItem("0")
+        #         item2 = QStandardItem(key)
         #
-        #         item = QListWidgetItem()
-        #         item.setText(key)
-        #         item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
         #         if key in store_checked:
-        #             item.setCheckState(Qt.Checked)
-        #             checked_items.append(key)
-        #         else:
-        #             item.setCheckState(Qt.Unchecked)
+        #             item1.setText("1")
         #
-        #         listwidget.addItem(item)
+        #         model.appendRow([item1, item2])
+        #
+        #     tableview.setModel(model)
+        #     tableview.setItemDelegateForColumn(0, IconCheckBoxDelegate(None))
+        #     tableview.setColumnWidth(0, 15)
+        #     hheader = tableview.horizontalHeader()
+        #     hheader.setStretchLastSection(True)
+        #     hheader.hide()
+        #     tableview.verticalHeader().setDefaultSectionSize(20)
+        #     tableview.verticalHeader().hide()
+        #     tableview.setShowGrid(False)
+        #     model.itemChanged.connect(self.settings_multi_update)
+        #
+        #     tabwidget_settings.addTab(tableview, name)
 
         self.set_pseudo_id_start()
         self.set_static_lineedits()
@@ -828,6 +926,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                                                                  self.delegates[view][field])
 
     def set_checkbox_delegate(self, field):
+        """
+        sets checboxdelegate
+        :param field: field name
+        :return: Nothing
+        """
         for view in self.conf['model_fields'][field]['view']:
             self.delegates[view][field] = IconCheckBoxDelegate(None)
 
@@ -842,6 +945,29 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                                                                  self.delegates[view][field])
 
     # Data-view, filter and related functions, utility functions
+
+    def get_button_func(self, name):
+        """
+        gets correct slot function for button
+        :param name: name of settings field
+        :return: func or None if field has no associated button
+        """
+        func = None
+        if name in self.conf['add_buttons']:
+            if name == "pseudo_id_filepath":
+                func = self.set_pseudo_id_filepath
+            elif name == "seq_base_path":
+                func = self.set_seq_path
+            elif name == "csv_base_path":
+                func = self.set_csv_path
+            elif name == "metadata_output_path":
+                func = self.set_metadata_output_path
+            elif name == "metadata_docs_path":
+                func = self.set_metadata_docs_path
+            elif name == "credentials_filepath":
+                func = self.set_credentials_filepath
+
+        return func
 
     def accept_paste(self, value, colname):
 
@@ -1297,8 +1423,25 @@ def main():
 
     app = QApplication(sys.argv)
     window = MainWindow()
-    # apply_stylesheet(app, theme='light_blue.xml')
-    style = qdarktheme.load_stylesheet("light") + "QTableView { gridline-color: lightgrey}"
+
+    style_add = """
+    QTableView { 
+        gridline-color: lightgrey;
+    }
+    .bold { 
+        font-weight: bold;
+        font-size: 16px;
+        padding-top: 10px;
+        padding-bottom: 10px;
+        color: grey;
+    }
+    .padding-left { 
+        padding-left: 10px;
+    }
+
+    """
+
+    style = qdarktheme.load_stylesheet("light") + style_add
     app.setStyleSheet(style)
 
     try:
