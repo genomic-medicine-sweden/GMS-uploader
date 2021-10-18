@@ -214,7 +214,7 @@ settings_structure:
     items:
       - entered_value:
         - submitter
-  - label: "Base paths"
+  - label: "Paths"
     target_layout: form
     items:
       - entered_value:
@@ -227,6 +227,18 @@ settings_structure:
     items:
       - entered_value:
         - pseudo_id_filepath
+  - label: "Upload connection"
+    target_layout: form
+    items:
+      - entered_value:
+        - credentials_filepath
+      - select_single:
+        - hcp_bucket
+  - label: "Import/paste fx"
+    target_layout: form
+    items:
+      - select_single_fx:
+        - import_paste_fx
   - label: "Upload connection"
     target_layout: form
     items:
@@ -314,8 +326,9 @@ settings_values:
       'Artic': True
       'NEB': False
       'Midnight': False
-    import_fx:
-      analytix: True
+    import_paste_fx:
+      None: True
+      analytix: False
   select_multi:
     region:
       'Region Stockholm - 01': True
@@ -364,13 +377,14 @@ settings_values:
       'Live': True
       'Deceased': True
       'Unknown': True
-  no_widget:
+  hidden:
     pseudo_id_start: None
     pseudo_id_start_int: None
     pseudo_id_start_prefix: None
+    fx_path: None
 
 add_empty_selection:
-  - import_fx
+  - import_paste_fx
 
 add_buttons:
     seq_base_path: True

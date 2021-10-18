@@ -1,5 +1,5 @@
 from PySide6.QtCore import QObject, Signal
-from HCPInterface.hcp import HCPManager
+from NGPIris.hcp import HCPManager
 import json
 from pathlib import Path
 

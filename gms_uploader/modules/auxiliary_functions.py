@@ -29,11 +29,6 @@ def add_gridlayout_row(layout, widget1, widget2):
     """
     new_row = layout.rowCount() + 1
 
-    print(new_row)
-    print(layout)
-    print(type(layout))
-    print(type(widget2))
-
     layout.addWidget(widget1, new_row, 0)
 
     if isinstance(widget2, type(QHBoxLayout())):

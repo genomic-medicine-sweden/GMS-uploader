@@ -3,23 +3,22 @@ from io import StringIO
 from PySide6.QtCore import *
 from PySide6.QtGui import *
 from PySide6.QtWidgets import *
+import resources
 from modules.pandasmodel import PandasModel
-from modules.delegates import CompleterDelegate, ComboBoxDelegate, \
-    DateAutoCorrectDelegate, CheckBoxDelegate, AgeDelegate, IconCheckBoxDelegate
+from modules.delegates import ComboBoxDelegate, \
+    DateAutoCorrectDelegate, AgeDelegate, IconCheckBoxDelegate
 from modules.dialogs import MsgError, MsgAlert, ValidationDialog
-from modules.sortfilterproxymodel import MultiSortFilterProxyModel, MarkedFilterProxyModel
+from modules.sortfilterproxymodel import MultiSortFilterProxyModel
 from modules.auxiliary_functions import get_pseudo_id_code_number, zfill_int, to_list, get_pd_row_index, \
     date_validate, age_validate, add_gridlayout_row
 from modules.validate import validate
-from modules.upload import UploadWorker
-import resources
 from modules.dialogs import Uploader
 import pandas as pd
 from datetime import datetime
 from pathlib import Path
 import yaml
 import csv
-from ui.mw import Ui_MainWindow
+from gms_uploader.ui.mw import Ui_MainWindow
 import qdarktheme
 #from qt_material import apply_stylesheet
 
@@ -174,7 +173,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.action_open_meta.triggered.connect(self.open_metadata_file)
         self.pushButton_invert.clicked.connect(self.invert_marks)
         self.action_import_csv.triggered.connect(self.get_csv_file_combine)
-        self.action_import_fx.triggered.connect(self.str_to_pd)
+        self.action_import_fx.triggered.connect(self.import_fx_file)
 
     def set_icons(self):
 
@@ -238,9 +237,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         """
         self.qsettings.clear()
 
-        for name in self.conf['settings_values']['no_widget']:
-            store_key = "/".join(['no_widget', name])
-            self.qsettings.setValue(store_key, self.conf['settings_values']['no_widget'][name])
+        for name in self.conf['settings_values']['hidden']:
+            store_key = "/".join(['hidden', name])
+            self.qsettings.setValue(store_key, self.conf['settings_values']['hidden'][name])
 
         for name in self.conf['settings_values']['entered_value']:
             store_key = "/".join(['entered_value', name])
@@ -275,7 +274,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.lineEdit_host.setText(self.qsettings.value("select_single/host"))
         self.lineEdit_lib_method.setText(self.qsettings.value("select_single/library_method"))
         self.lineEdit_bucket.setText(self.qsettings.value("select_single/hcp_bucket"))
-        self.lineEdit_pseudo_id.setText(self.qsettings.value("no_widget/pseudo_id_start"))
+        self.lineEdit_pseudo_id.setText(self.qsettings.value("hidden/pseudo_id_start"))
         self.lineEdit_import_fx.setText(self.qsettings.value("select_single/import_fx"))
 
     def settings_setup(self):
@@ -291,14 +290,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.verticalLayout_forms.addWidget(label)
 
             if category['target_layout'] == "form":
-                # label.setStyleSheet("background-color : red")
-
-
-                # label.setObjectName("bold")
-                # font = label.font()
-                # font.setWeight(QFont.Bold)
-                # font.setPixelSize(25)
-                # label.setFont(font)
                 grid_layout = QGridLayout()
                 grid_layout.setColumnMinimumWidth(0, 150)
 
@@ -367,8 +358,35 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
                                 add_gridlayout_row(grid_layout, label, combo)
 
+                        elif field_type == "select_single_fx":
+                            for field in fields:
+                                combo = QComboBox(objectName=field)
+                                combo.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+
+                                if field in self.conf['add_empty_selection']:
+                                    items = ['None']
+
+                                base = Path(__file__).parent
+                                fx_module_dirs = list(Path(base, 'fx').iterdir())
+
+                                for d in fx_module_dirs:
+                                    items.append(str(d.name))
+
+                                combo.addItems(items)
+
+                                store_key = "/".join(['select_single', field])
+                                value = self.qsettings.value(store_key)
+                                combo.setCurrentText(value)
+
+                                label = QLabel(field)
+                                label.setProperty("class", "padding-left")
+                                label.setMinimumWidth(40)
+
+                                combo.currentTextChanged.connect(self.settings_update)
+
+                                add_gridlayout_row(grid_layout, label, combo)
+
             elif category['target_layout'] == "tabs":
-                # self.verticalLayout_forms.addWidget(QLabel(category_name))
 
                 tabwidget_settings = QTabWidget(objectName='tabwidget_settings')
                 tabwidget_settings.setMinimumHeight(420)
@@ -412,99 +430,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                                 tabwidget_settings.addTab(tableview, field)
 
 
-        # for name in self.conf['settings_values']['entered_value']:
-        #     if name in self.conf['add_buttons']:
-        #         if name == "pseudo_id_filepath":
-        #             func = self.set_pseudo_id_filepath
-        #         elif name == "seq_base_path":
-        #             func = self.set_seq_path
-        #         elif name == "csv_base_path":
-        #             func = self.set_csv_path
-        #         elif name == "metadata_output_path":
-        #             func = self.set_metadata_output_path
-        #         elif name == "metadata_docs_path":
-        #             func = self.set_metadata_docs_path
-        #         elif name == "credentials_filepath":
-        #             func = self.set_credentials_filepath
-        #
-        #         button_name = name + "button"
-        #         button = QPushButton("...", objectName=button_name)
-        #         button.clicked.connect(func)
-        #         edit = QLineEdit(objectName=name)
-        #         edit.textChanged.connect(self.settings_update)
-        #         edit.setReadOnly(True)
-        #
-        #         hbox = QHBoxLayout()
-        #         hbox.addWidget(edit)
-        #         hbox.addWidget(button)
-        #
-        #         self.formLayout_settings.addRow(QLabel(name), hbox)
-        #
-        #         store_key = "/".join(['entered_value', name])
-        #         value = self.qsettings.value(store_key)
-        #         edit.setText(value)
-        #
-        #     else:
-        #         edit = QLineEdit(objectName=name, editingFinished=self.settings_update)
-        #         store_key = "/".join(['entered_value', name])
-        #         value = self.qsettings.value(store_key)
-        #         edit.setText(value)
-        #         self.formLayout_settings.addRow(QLabel(name), edit)
-        #
-        # for name in self.conf['settings_values']['select_single']:
-        #     combo = QComboBox(objectName=name)
-        #
-        #     items = []
-        #     if name in self.conf['add_empty_selection']:
-        #         items = ['None']
-        #
-        #     items.extend(list(self.conf['settings_values']['select_single'][name].keys()))
-        #     combo.addItems(items)
-        #
-        #     store_key = "/".join(['select_single', name])
-        #     value = self.qsettings.value(store_key)
-        #     combo.setCurrentText(value)
-        #     self.formLayout_settings.addRow(QLabel(name), combo)
-        #     combo.currentTextChanged.connect(self.settings_update)
-
-        # tabwidget_settings = QTabWidget(objectName='tabwidget_settings')
-        # tabwidget_settings.setMinimumHeight(420)
-        # tabwidget_settings.setStyleSheet("QTabWidget::pane { border: 0; }")
-        # self.verticalLayout_tab_settings.addWidget(tabwidget_settings)
-        # tabwidget_settings.setMinimumHeight(550)
-
-        # for name in self.conf['settings_values']['select_multi']:
-        #     store_key = "/".join(['select_multi', name])
-        #     store_checked = to_list(self.qsettings.value(store_key))
-        #
-        #     model = QStandardItemModel()
-        #     model.setColumnCount(2)
-        #     tableview = QTableView()
-        #     model = QStandardItemModel(objectName=name)
-        #     model.setColumnCount(2)
-        #
-        #     for key, checked in self.conf['settings_values']['select_multi'][name].items():
-        #         item1 = QStandardItem("0")
-        #         item2 = QStandardItem(key)
-        #
-        #         if key in store_checked:
-        #             item1.setText("1")
-        #
-        #         model.appendRow([item1, item2])
-        #
-        #     tableview.setModel(model)
-        #     tableview.setItemDelegateForColumn(0, IconCheckBoxDelegate(None))
-        #     tableview.setColumnWidth(0, 15)
-        #     hheader = tableview.horizontalHeader()
-        #     hheader.setStretchLastSection(True)
-        #     hheader.hide()
-        #     tableview.verticalHeader().setDefaultSectionSize(20)
-        #     tableview.verticalHeader().hide()
-        #     tableview.setShowGrid(False)
-        #     model.itemChanged.connect(self.settings_multi_update)
-        #
-        #     tabwidget_settings.addTab(tableview, name)
-
         self.set_pseudo_id_start()
         self.set_static_lineedits()
 
@@ -535,12 +460,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         checked_items = []
         for row in range(model.rowCount()):
-            print(model.data(model.index(row, 0)))
             if str(model.data(model.index(row, 0)))== "1":
                 checked_items.append(model.data(model.index(row, 1)))
 
         store_key = "/".join(['select_multi', name])
-        print(checked_items)
         self.qsettings.setValue(store_key, checked_items)
         self.update_delegates()
 
@@ -1080,7 +1003,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if file:
             file_obj = Path(file)
 
-            self.qsettings.setValue('no_widget/pseudo_id_start', "None")
+            self.qsettings.setValue('hidden/pseudo_id_start', "None")
 
             if file_obj.exists():
                 pseudo_ids = file_obj.read_text().splitlines()
@@ -1104,14 +1027,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                         elif curr_prefix == prev_prefix or prev_prefix is None:
                             curr_znumber_str = zfill_int(prev_number + 1)
                             pseudo_id_start = curr_prefix + "-" + curr_znumber_str
-                            self.qsettings.setValue('no_widget/pseudo_id_start', pseudo_id_start)
-                            self.qsettings.setValue('no_widget/pseudo_id_start_int', prev_number + 1)
-                            self.qsettings.setValue('no_widget/pseudo_id_start_prefix', curr_prefix)
+                            self.qsettings.setValue('hidden/pseudo_id_start', pseudo_id_start)
+                            self.qsettings.setValue('hidden/pseudo_id_start_int', prev_number + 1)
+                            self.qsettings.setValue('hidden/pseudo_id_start_prefix', curr_prefix)
 
     def create_pseudo_ids(self):
         pseudo_ids = []
-        prefix = self.qsettings.value('no_widget/pseudo_id_start_prefix')
-        start = self.qsettings.value('no_widget/pseudo_id_start_int')
+        prefix = self.qsettings.value('hidden/pseudo_id_start_prefix')
+        start = self.qsettings.value('hidden/pseudo_id_start_int')
         end = start + len(self.df)
 
         for number in range(start, end):
@@ -1299,12 +1222,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         mime_data = clipboard.mimeData()
 
         data_str = mime_data.text()
-        print(data_str)
 
         str_obj = StringIO(data_str)
         df = pd.read_csv(str_obj, sep="\t")
-        print(df)
-
 
         # for i, r in enumerate(rows):
         #     columns = r.split("\t")
@@ -1315,6 +1235,52 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         #             model.setData(model.index(i_row + i, i_col + j), valid_value)
         #
 
+    def import_fx_file(self):
+
+        store_key = "/".join(['select_single', 'import_paste_fx'])
+        fx_name = self.qsettings.value(store_key)
+
+        print(fx_name)
+
+
+        filetypes = None
+        if fx_name == "analytix":
+            filetypes = "metadata fx files (*.xls)"
+
+        if not filetypes:
+            return False
+
+        p_str = self.qsettings.value('entered_value/csv_base_path')
+
+        if p_str and Path(p_str).exists():
+            default_path = p_str
+        else:
+            default_path = str(Path.home())
+
+        dialog = QFileDialog()
+        filepath, _ = dialog.getOpenFileName(self,
+                                             'Open an awesome fx metadata file',
+                                              default_path,
+                                              filetypes,
+                                              options=QFileDialog.DontUseNativeDialog)
+
+
+        if filepath:
+            data = pd.read_csv(filepath, delimiter=";")
+            print(data)
+
+
+            # colnames = list(self.df.columns)
+            #
+            # with open(filepath, encoding='utf-8-sig') as csvfile:
+            #     reader = csv.DictReader(csvfile)
+            #     for row in reader:
+            #         r = get_pd_row_index(self.df, row['internal_lab_id'], 'internal_lab_id')
+            #         for key, value in row.items():
+            #             if key in colnames:
+            #                 self.df.at[r, key] = value
+            #
+            # self.update_model()
 
     # Reimplemented functions
 

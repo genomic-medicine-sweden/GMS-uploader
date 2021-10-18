@@ -32,6 +32,8 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
+
+#secret_umu_data
 data_umu
 
 # PyInstaller
@@ -76,7 +78,7 @@ instance/
 .scrapy
 
 # Sphinx documentation
-docs/_build/
+gms_uploader/docs/_build/
 
 # PyBuilder
 target/

@@ -1,9 +1,9 @@
 from PySide6.QtWidgets import QMessageBox, QDialog, QTableWidgetItem, QProgressBar, QHeaderView
 from PySide6.QtGui import QIcon, Qt
 from PySide6.QtCore import QThread
-from ui.validation_dialog import Ui_Dialog as UI_Dialog_Validation
-from ui.uploader_dialog import Ui_Dialog as UI_Dialog_Uploader
-from modules.upload import UploadWorker
+from gms_uploader.ui.validation_dialog import Ui_Dialog as UI_Dialog_Validation
+from gms_uploader.ui.uploader_dialog import Ui_Dialog as UI_Dialog_Uploader
+from gms_uploader.modules.upload import UploadWorker
 from pathlib import Path
 import json
 

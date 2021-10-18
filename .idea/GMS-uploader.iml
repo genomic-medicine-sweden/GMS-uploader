@@ -5,7 +5,7 @@
       <excludeFolder url="file://$MODULE_DIR$/opt/AdoptOpenJDK/jdk-16.0.1.9-hotspot/lib" />
       <excludeFolder url="file://$MODULE_DIR$/venv" />
     </content>
-    <orderEntry type="jdk" jdkName="Python 3.8 (GMS-uploader)" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="Python 3.9 (GMS-uploader)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
   <component name="PackageRequirementsSettings">
