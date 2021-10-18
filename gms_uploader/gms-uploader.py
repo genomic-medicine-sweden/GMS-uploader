@@ -36,8 +36,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.setAcceptDrops(True)
         self.clipboard = QGuiApplication.clipboard()
 
-        self.qsettings = QSettings("Genomic Medicine Sweden", "GMS-uploader")
-
         self.setWindowIcon(QIcon(':/img/GMS-logo.png'))
         self.setWindowTitle(__title__ + " " + __version__)
 
@@ -50,16 +48,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         with default_config_path.open(encoding='utf8') as fp:
             self.conf = yaml.safe_load(fp)
 
-        if not self.settings_validate():
-            msg = MsgAlert("Incompatible saved settings: (re-)initializing...")
-            msg.exec()
-
-            self.qsettings.clear()
-            self.settings_init()
+        self.settings = Settings(self.conf)
 
         self.fx_config = None
-
-        self.settings_setup()
 
         self.tableView_columns = list(self.conf['model_fields'].keys())
 
@@ -78,10 +69,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.set_signals()
         self.tableviews_setup()
+        self.set_dataview_setting_widget_values()
+
         self.stackedWidget.setCurrentIndex(0)
         self.tabWidget_metadata.setCurrentIndex(0)
         self.set_hidden_columns()
         self.set_col_widths()
+
+        self.setup_settingview_widgets()
 
         self.set_delegates()
 
@@ -210,76 +205,76 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             if 'lab' not in self.conf['model_fields'][name]['view']:
                 self.tableView_lab.setColumnHidden(i, True)
 
-    def settings_validate(self):
-        """
-        Compares qsetting keys with keys in config file to make sure there is no mismatch.
-        :return: True if ok, False otherwise
-        """
-        all_keys = self.qsettings.allKeys()
-        for key in all_keys:
-            wtype, field = key.split('/')
-            if wtype not in self.conf['settings_values']:
-                return False
-            if field not in self.conf['settings_values'][wtype]:
-                return False
+    # def settings_validate(self):
+    #     """
+    #     Compares qsetting keys with keys in config file to make sure there is no mismatch.
+    #     :return: True if ok, False otherwise
+    #     """
+    #     all_keys = self.qsettings.allKeys()
+    #     for key in all_keys:
+    #         wtype, field = key.split('/')
+    #         if wtype not in self.conf['settings_values']:
+    #             return False
+    #         if field not in self.conf['settings_values'][wtype]:
+    #             return False
+    #
+    #     for wtype in self.conf['settings_values']:
+    #         for field in self.conf['settings_values'][wtype]:
+    #             store_key = "/".join([wtype, field])
+    #             if store_key not in all_keys:
+    #                 return False
+    #
+    #     return True
 
-        for wtype in self.conf['settings_values']:
-            for field in self.conf['settings_values'][wtype]:
-                store_key = "/".join([wtype, field])
-                if store_key not in all_keys:
-                    return False
+    # def settings_init(self):
+    #     """
+    #     If there is a qsettings and config settings don't match, clear qsettings and reset to
+    #     default values (from config).
+    #     :return: None
+    #     """
+    #     self.qsettings.clear()
+    #
+    #     for name in self.conf['settings_values']['hidden']:
+    #         store_key = "/".join(['hidden', name])
+    #         self.qsettings.setValue(store_key, self.conf['settings_values']['hidden'][name])
+    #
+    #     for name in self.conf['settings_values']['entered_value']:
+    #         store_key = "/".join(['entered_value', name])
+    #         self.qsettings.setValue(store_key, self.conf['settings_values']['entered_value'][name])
+    #
+    #     for name in self.conf['settings_values']['select_single']:
+    #         store_key = "/".join(['select_single', name])
+    #         for i, key in enumerate(self.conf['settings_values']['select_single'][name]):
+    #             if self.conf['settings_values']['select_single'][name][key]:
+    #                 self.qsettings.setValue(store_key, key)
+    #
+    #     for name in self.conf['settings_values']['select_multi']:
+    #         store_key = "/".join(['select_multi', name])
+    #         checked_items = []
+    #         for key, checked in self.conf['settings_values']['select_multi'][name].items():
+    #             if checked:
+    #                 checked_items.append(key)
+    #
+    #         self.qsettings.setValue(store_key, checked_items)
+    #
+    #     self.set_pseudo_id_start()
 
-        return True
-
-    def settings_init(self):
-        """
-        If there is a qsettings and config settings don't match, clear qsettings and reset to
-        default values (from config).
-        :return: None
-        """
-        self.qsettings.clear()
-
-        for name in self.conf['settings_values']['hidden']:
-            store_key = "/".join(['hidden', name])
-            self.qsettings.setValue(store_key, self.conf['settings_values']['hidden'][name])
-
-        for name in self.conf['settings_values']['entered_value']:
-            store_key = "/".join(['entered_value', name])
-            self.qsettings.setValue(store_key, self.conf['settings_values']['entered_value'][name])
-
-        for name in self.conf['settings_values']['select_single']:
-            store_key = "/".join(['select_single', name])
-            for i, key in enumerate(self.conf['settings_values']['select_single'][name]):
-                if self.conf['settings_values']['select_single'][name][key]:
-                    self.qsettings.setValue(store_key, key)
-
-        for name in self.conf['settings_values']['select_multi']:
-            store_key = "/".join(['select_multi', name])
-            checked_items = []
-            for key, checked in self.conf['settings_values']['select_multi'][name].items():
-                if checked:
-                    checked_items.append(key)
-
-            self.qsettings.setValue(store_key, checked_items)
-
-        self.set_pseudo_id_start()
-
-    def set_static_lineedits(self):
+    def set_dataview_setting_widget_values(self):
         """
         Sets values in static lineedits on the dataview pane.
         :return: None
         """
-        self.lineEdit_submitter.setText(self.qsettings.value("entered_value/submitter"))
-        self.lineEdit_credentials_path.setText(self.qsettings.value("entered_value/credentials_filepath"))
-        self.lineEdit_lab.setText(self.qsettings.value("select_single/lab"))
-        self.lineEdit_seq_technology.setText(self.qsettings.value("select_single/seq_technology"))
-        self.lineEdit_host.setText(self.qsettings.value("select_single/host"))
-        self.lineEdit_lib_method.setText(self.qsettings.value("select_single/library_method"))
-        self.lineEdit_bucket.setText(self.qsettings.value("select_single/hcp_bucket"))
-        self.lineEdit_pseudo_id.setText(self.qsettings.value("hidden/pseudo_id_start"))
-        self.lineEdit_import_fx.setText(self.qsettings.value("select_single/import_fx"))
+        self.lineEdit_submitter.setText(self.settings.get_value("entered_value", "submitter"))
+        self.lineEdit_credentials_path.setText(self.settings.get_value("entered_value", "credentials_filepath"))
+        self.lineEdit_lab.setText(self.settings.get_value("select_single", "lab"))
+        self.lineEdit_seq_technology.setText(self.settings.get_value("select_single", "seq_technology"))
+        self.lineEdit_host.setText(self.settings.get_value("select_single", "host"))
+        self.lineEdit_lib_method.setText(self.settings.get_value("select_single", "library_method"))
+        self.lineEdit_bucket.setText(self.settings.get_value("select_single", "hcp_bucket"))
+        self.lineEdit_pseudo_id.setText(self.settings.get_value("hidden", "pseudo_id_start"))
+        self.lineEdit_import_fx.setText(self.settings.get_value("select_single", "import_fx"))
 
-    def settings_setup(self):
+    def setup_settingview_widgets(self):
         """
         Creates and sets up dymamic setting widgets based on the config file
         :return: None
@@ -307,7 +302,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                                     button = QPushButton("...", objectName=button_name)
                                     button.clicked.connect(func)
                                     edit = QLineEdit(objectName=field)
-                                    edit.textChanged.connect(self.settings_update)
+                                    edit.textChanged.connect(self.update_setting)
                                     edit.setReadOnly(True)
 
                                     hbox = QHBoxLayout()
@@ -318,16 +313,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                                     label.setProperty("class", "padding-left")
                                     label.setMinimumWidth(40)
 
-                                    store_key = "/".join([field_type, field])
-                                    value = self.qsettings.value(store_key)
+                                    value = self.settings.get_value(field_type, field)
                                     edit.setText(value)
 
                                     add_gridlayout_row(grid_layout, label, hbox)
 
                                 else:
-                                    edit = QLineEdit(objectName=field, editingFinished=self.settings_update)
-                                    store_key = "/".join([field_type, field])
-                                    value = self.qsettings.value(store_key)
+                                    edit = QLineEdit(objectName=field, editingFinished=self.update_setting)
+                                    value = self.settings.get_value(field_type, field)
                                     edit.setText(value)
 
                                     label = QLabel(field)
@@ -348,15 +341,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                                 items.extend(list(self.conf['settings_values']['select_single'][field].keys()))
                                 combo.addItems(items)
 
-                                store_key = "/".join(['select_single', field])
-                                value = self.qsettings.value(store_key)
+                                value = self.settings.get_value(field_type, field)
                                 combo.setCurrentText(value)
 
                                 label = QLabel(field)
                                 label.setProperty("class", "padding-left")
                                 label.setMinimumWidth(40)
 
-                                combo.currentTextChanged.connect(self.settings_update)
+                                combo.currentTextChanged.connect(self.update_setting)
 
                                 add_gridlayout_row(grid_layout, label, combo)
 
@@ -376,15 +368,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
                                 combo.addItems(items)
 
-                                store_key = "/".join(['select_single', field])
-                                value = self.qsettings.value(store_key)
+                                value = self.settings.get_value(field_type, field)
                                 combo.setCurrentText(value)
 
                                 label = QLabel(field)
                                 label.setProperty("class", "padding-left")
                                 label.setMinimumWidth(40)
 
-                                combo.currentTextChanged.connect(self.settings_update)
+                                combo.currentTextChanged.connect(self.update_setting)
 
                                 add_gridlayout_row(grid_layout, label, combo)
 
@@ -400,8 +391,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     for field_type, fields in item.items():
                         if field_type == "select_multi":
                             for field in fields:
-                                store_key = "/".join([field_type, field])
-                                store_checked = to_list(self.qsettings.value(store_key))
+                                value = self.settings.get_value(field_type, field)
+                                store_checked = to_list(value)
 
                                 model = QStandardItemModel()
                                 model.setColumnCount(2)
@@ -427,47 +418,21 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                                 tableview.verticalHeader().setDefaultSectionSize(20)
                                 tableview.verticalHeader().hide()
                                 tableview.setShowGrid(False)
-                                model.itemChanged.connect(self.settings_multi_update)
+                                model.itemChanged.connect(self.update_setting)
 
                                 tabwidget_settings.addTab(tableview, field)
 
-
         self.set_pseudo_id_start()
-        self.set_static_lineedits()
+        self.set_dataview_setting_widget_values()
 
-    def settings_update(self):
-        """
-        Called when dynamic setting widgets are changed, updates qsettings values.
-        :return: None
-        """
-        obj = self.sender()
-        name = obj.objectName()
+    def update_setting(self, index=None):
+        if not index:
+            obj = self.sender()
+            self.settings.update_setting(obj=obj)
 
-        if isinstance(obj, QLineEdit):
-            store_key = "/".join(['entered_value', name])
-            self.qsettings.setValue(store_key, obj.text())
-
-        elif isinstance(obj, QComboBox):
-            store_key = "/".join(['select_single', name])
-            value = obj.currentText()
-            self.qsettings.setValue(store_key, value)
-            self.update_delegates()
-
-        self.set_pseudo_id_start()
-        self.set_static_lineedits()
-
-    def settings_multi_update(self, index):
-        model = index.model()
-        name = model.objectName()
-
-        checked_items = []
-        for row in range(model.rowCount()):
-            if str(model.data(model.index(row, 0)))== "1":
-                checked_items.append(model.data(model.index(row, 1)))
-
-        store_key = "/".join(['select_multi', name])
-        self.qsettings.setValue(store_key, checked_items)
-        self.update_delegates()
+        else:
+            print(index)
+            self.settings.update_setting(index=index)
 
     def tableviews_setup(self):
         """
@@ -806,9 +771,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def set_combobox_delegate(self, field):
 
-        store_key = "/".join(["select_multi", field])
         items = ['']
-        items.extend(to_list(self.qsettings.value(store_key)))
+        items.extend(to_list(self.settings.get_value("select_multi", field)))
 
         for view in self.conf['model_fields'][field]['view']:
             self.delegates[view][field] = ComboBoxDelegate(items)
@@ -1000,12 +964,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     # pseudo_id-related functions
 
     def set_pseudo_id_start(self):
-        file = self.qsettings.value("entered_value/pseudo_id_filepath")
+        file = self.settings.get_value("entered_value", "pseudo_id_filepath")
 
         if file:
             file_obj = Path(file)
 
-            self.qsettings.setValue('hidden/pseudo_id_start', "None")
+            self.settings.set_value("hidden", "pseudo_id_start", "None")
 
             if file_obj.exists():
                 pseudo_ids = file_obj.read_text().splitlines()
@@ -1016,7 +980,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     msg = MsgError("Something is wrong with the set pseudo_id file.")
                     msg.exec()
                 else:
-                    lab = self.qsettings.value('select_single/lab')
+                    lab = self.settings.get_value("select_single", "lab")
 
                     if lab:
                         curr_prefix = self.conf['tr']['lab_to_code'][lab]
@@ -1029,20 +993,21 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                         elif curr_prefix == prev_prefix or prev_prefix is None:
                             curr_znumber_str = zfill_int(prev_number + 1)
                             pseudo_id_start = curr_prefix + "-" + curr_znumber_str
-                            self.qsettings.setValue('hidden/pseudo_id_start', pseudo_id_start)
-                            self.qsettings.setValue('hidden/pseudo_id_start_int', prev_number + 1)
-                            self.qsettings.setValue('hidden/pseudo_id_start_prefix', curr_prefix)
+                            self.settings.get_value("hidden", "pseudo_id_start", pseudo_id_start)
+                            self.settings.get_value("hidden", "pseudo_id_start_int", prev_number + 1)
+                            self.settings.get_value("hidden", "pseudo_id_start_prefix", curr_prefix)
 
-    def create_pseudo_ids(self):
-        pseudo_ids = []
-        prefix = self.qsettings.value('hidden/pseudo_id_start_prefix')
-        start = self.qsettings.value('hidden/pseudo_id_start_int')
-        end = start + len(self.df)
 
-        for number in range(start, end):
-            pseudo_ids.append(prefix + "-" + zfill_int(number))
-
-        return pseudo_ids
+                # self.settings.get_value(ds(self):
+                #         pseudo_ids = []
+                #         prefix = self.qsettings.value('hidden/pseudo_id_start_prefix')
+                #         start = self.qsettings.value('hidden/pseudo_id_start_int')
+                #         end = start + len(self.df)
+                #
+                #         for number in range(start, end):
+                #             pseudo_ids.append(prefix + "-" + zfill_int(number))
+                #
+                #         return pseudo_ids
 
     # Import/export functions
 
