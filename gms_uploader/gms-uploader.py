@@ -3,16 +3,17 @@ from io import StringIO
 from PySide6.QtCore import *
 from PySide6.QtGui import *
 from PySide6.QtWidgets import *
-import resources
-from modules.pandasmodel import PandasModel
-from modules.delegates import ComboBoxDelegate, \
+from modules.settings.settings import Settings
+
+from gms_uploader.modules.models.pandasmodel import PandasModel
+from gms_uploader.modules.delegates.delegates import ComboBoxDelegate, \
     DateAutoCorrectDelegate, AgeDelegate, IconCheckBoxDelegate
-from modules.dialogs import MsgError, MsgAlert, ValidationDialog
-from modules.sortfilterproxymodel import MultiSortFilterProxyModel
-from modules.auxiliary_functions import get_pseudo_id_code_number, zfill_int, to_list, get_pd_row_index, \
+from gms_uploader.modules.dialogs.dialogs import MsgError, MsgAlert, ValidationDialog
+from gms_uploader.modules.models.sortfilterproxymodel import MultiSortFilterProxyModel
+from gms_uploader.modules.extra.auxiliary_functions import get_pseudo_id_code_number, zfill_int, to_list, get_pd_row_index, \
     date_validate, age_validate, add_gridlayout_row
-from modules.validate import validate
-from modules.dialogs import Uploader
+from gms_uploader.modules.validate.validate import validate
+from gms_uploader.modules.dialogs.dialogs import Uploader
 import pandas as pd
 from datetime import datetime
 from pathlib import Path
@@ -20,6 +21,7 @@ import yaml
 import csv
 from gms_uploader.ui.mw import Ui_MainWindow
 import qdarktheme
+import resources
 #from qt_material import apply_stylesheet
 
 __version__ = '0.1.1-beta.5'

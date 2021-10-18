@@ -4,6 +4,9 @@
     <content url="file://$MODULE_DIR$">
       <excludeFolder url="file://$MODULE_DIR$/opt/AdoptOpenJDK/jdk-16.0.1.9-hotspot/lib" />
       <excludeFolder url="file://$MODULE_DIR$/venv" />
+      <excludeFolder url="file://$MODULE_DIR$/demo/data_umu" />
+      <excludeFolder url="file://$MODULE_DIR$/build" />
+      <excludeFolder url="file://$MODULE_DIR$/dist" />
     </content>
     <orderEntry type="jdk" jdkName="Python 3.9 (GMS-uploader)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
