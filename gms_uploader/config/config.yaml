@@ -217,23 +217,11 @@ settings_structure:
   - label: "Paths"
     target_layout: form
     items:
-      - entered_value:
+      - entered_value_button:
         - seq_base_path
         - csv_base_path
         - metadata_output_path
         - metadata_docs_path
-  - label: "PseudoID"
-    target_layout: form
-    items:
-      - entered_value:
-        - pseudo_id_filepath
-  - label: "Upload connection"
-    target_layout: form
-    items:
-      - entered_value:
-        - credentials_filepath
-      - select_single:
-        - hcp_bucket
   - label: "Import/paste fx"
     target_layout: form
     items:
@@ -264,6 +252,11 @@ settings_structure:
       - passage_details_history
       - type
       - patient_status
+  - label: "PseudoID"
+    target_layout: form
+    items:
+      - entered_value:
+        - pseudo_id_filepath
 
 settings_values:
   entered_value:
@@ -326,9 +319,6 @@ settings_values:
       'Artic': True
       'NEB': False
       'Midnight': False
-    import_paste_fx:
-      None: True
-      analytix: False
   select_multi:
     region:
       'Region Stockholm - 01': True
@@ -377,22 +367,21 @@ settings_values:
       'Live': True
       'Deceased': True
       'Unknown': True
-  hidden:
-    pseudo_id_start: None
-    pseudo_id_start_int: None
-    pseudo_id_start_prefix: None
+fx:
+  fx:
     fx_path: None
+
 
 add_empty_selection:
   - import_paste_fx
 
-add_buttons:
-    seq_base_path: True
-    csv_base_path: True
-    metadata_output_path: True
-    metadata_docs_path: True
-    pseudo_id_filepath: True
-    credentials_filepath: True
+filepick_button:
+  seq_base_path: True
+  csv_base_path: True
+  metadata_output_path: True
+  metadata_docs_path: True
+  pseudo_id_filepath: True
+  credentials_filepath: True
 
 tr:
   region_to_code:
@@ -462,7 +451,7 @@ seq_files:
 fx_functions:
   analytix:
     fun: analytix
-    conf: fx_analytix.yaml
+    conf: fx_plugin.yaml
 
 freetext_filter:
   model_fields:

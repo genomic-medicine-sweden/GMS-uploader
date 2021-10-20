@@ -11,27 +11,27 @@ class Settings:
         self._qsettings = QSettings("Genomic Medicine Sweden", "GMS-uploader")
         self.conf = conf
 
-        if not self._settings_validate():
+        if not self._validate_settings():
             msg = MsgAlert("Incompatible saved settings: (re-)initializing...")
             msg.exec()
 
-            self._qsettings.clear()
-            self._settings_init()
+            self._init_settings()
 
-    def update_setting(self, obj=None, index=None):
+    def update_setting(self, obj=None, item=None):
         if obj:
-            value = obj.text()
-            name = obj.objectName()
-
             if isinstance(obj, QLineEdit):
+                name = obj.objectName()
+                value = obj.text()
                 self._entered_update(name, value)
 
             if isinstance(obj, QComboBox):
+                value = obj.currentText()
+                name = obj.objectName()
                 self._single_update(name, value)
 
-        elif index:
-            if isinstance(index, QStandardItem):
-                self._multi_update(index)
+        elif item:
+            if isinstance(item, QStandardItem):
+                self._multi_update(item)
 
     def get_value(self, field_type, field):
         store_key = "/".join([field_type, field])
@@ -46,7 +46,8 @@ class Settings:
         self._qsettings.setValue(store_key, value)
 
     def _single_update(self, name, value):
-        store_key = "/".join(['entered_value', name])
+        store_key = "/".join(['select_single', name])
+        print(f"setting value for {store_key} : {value}")
         self._qsettings.setValue(store_key, value)
 
     def _multi_update(self, obj):
@@ -75,13 +76,7 @@ class Settings:
             for field in self.conf['settings_values'][field_type]:
                 store_key = "/".join([field_type, field])
 
-                if field_type == "entered_value":
-                    self._qsettings.setValue(store_key, self.conf['settings_values'][field_type][field])
-
-                elif field_type == "hidden":
-                    self._qsettings.setValue(store_key, self.conf['settings_values'][field_type][field])
-
-                elif field_type == "select_single":
+                if field_type == "select_single":
                     for i, key in enumerate(self.conf['settings_values'][field_type][field]):
                         if self.conf['settings_values'][field_type][field][key]:
                             self._qsettings.setValue(store_key, key)
@@ -94,23 +89,31 @@ class Settings:
 
                     self._qsettings.setValue(store_key, checked_items)
 
-    def _settings_validate(self):
+                else:
+                    print(store_key, self.conf['settings_values'][field_type][field])
+                    self._qsettings.setValue(store_key, self.conf['settings_values'][field_type][field])
+
+
+    def _validate_settings(self):
         """
         Compares qsetting keys with keys in config file to make sure there is no mismatch.
         :return: True if ok, False otherwise
         """
         all_keys = self._qsettings.allKeys()
         for key in all_keys:
-            wtype, field = key.split('/')
-            if wtype not in self.conf['settings_values']:
+            field_type, field = key.split('/')
+            if field_type not in self.conf['settings_values']:
+                print(field_type, "not in settings_values")
                 return False
-            if field not in self.conf['settings_values'][wtype]:
+            if field not in self.conf['settings_values'][field_type]:
+                print(field_type, field, "not in settings_values")
                 return False
 
         for wtype in self.conf['settings_values']:
             for field in self.conf['settings_values'][wtype]:
                 store_key = "/".join([wtype, field])
                 if store_key not in all_keys:
+                    print(store_key, "not in all_keys")
                     return False
 
         return True
