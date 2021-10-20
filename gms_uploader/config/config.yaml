@@ -11,7 +11,7 @@ model_fields:
     paste_validators: False
   internal_lab_id:
     to_meta: True
-    col_width: 100
+    col_width: 120
     edit: False
     view: ['patient', 'organism', 'lab']
     checkable: False
@@ -29,7 +29,7 @@ model_fields:
     paste_validators: False
   collection_date:
     to_meta: True
-    col_width: 100
+    col_width: 130
     edit: True
     view: ['patient']
     checkable: False
@@ -137,7 +137,7 @@ model_fields:
     paste_validators: False
   passage_details:
     to_meta: True
-    col_width: 100
+    col_width: 130
     edit: True
     view: [ 'organism' ]
     checkable: False
@@ -217,7 +217,7 @@ settings_structure:
   - label: "Paths"
     target_layout: form
     items:
-      - entered_value_button:
+      - entered_value:
         - seq_base_path
         - csv_base_path
         - metadata_output_path

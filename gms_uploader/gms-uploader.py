@@ -23,7 +23,7 @@ from gms_uploader.ui.mw import Ui_MainWindow
 import qdarktheme
 import resources
 
-__version__ = '0.1.1-beta.5'
+__version__ = '0.1.1-beta.6'
 __title__ = 'GMS-uploader'
 
 
@@ -244,6 +244,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                         if field_type == "entered_value":
                             for field in fields:
                                 func = self.get_button_func(field)
+                                print(field)
                                 if func is not None:
                                     button_name = field + "button"
                                     button = QPushButton("...", objectName=button_name)
@@ -307,7 +308,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                                 combo.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
                                 for name in self.fx_manager.get_fx_plugin_names():
-                                    print(name)
                                     combo.addItem(str(name))
 
                                 value = self.settings.get_value(field_type, field)
@@ -376,14 +376,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.set_dataview_setting_widget_values()
 
     def update_setting(self, item=None):
-        print("update called ..")
-        print("item: ", item)
         if self.setup_complete:
             if isinstance(item, QStandardItem):
                 self.settings.update_setting(item=item)
             else:
                 obj = self.sender()
-                print("changed object: ", obj)
                 self.settings.update_setting(obj=obj)
 
             self.set_dataview_setting_widget_values()
@@ -925,9 +922,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     # Import/export functions
 
     def upload(self):
-        self.df['lab'] = self.settings.get_value('select_single/lab')
-        self.df['host'] = self.settings.get_value('select_single/host')
-        self.df['seq_technology'] = self.settings.get_value('select_single/seq_technology')
+        self.df['lab'] = self.settings.get_value('select_single', 'lab')
+        self.df['host'] = self.settings.get_value('select_single', 'host')
+        self.df['seq_technology'] = self.settings.get_value('select_single', 'seq_technology')
 
         df2 = self.df.fillna('')
         errors = validate(df2)
@@ -1119,9 +1116,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         fx_name = self.settings.get_value('select_single', 'import_paste_fx')
 
-        print(fx_name)
-
-
         filetypes = None
         if fx_name == "analytix":
             filetypes = "metadata fx files (*.xls)"
@@ -1146,7 +1140,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         if filepath:
             data = pd.read_csv(filepath, delimiter=";")
-            print(data)
 
 
             # colnames = list(self.df.columns)
