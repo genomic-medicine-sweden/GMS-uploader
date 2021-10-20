@@ -177,19 +177,19 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.action_open_meta.setIcon(QIcon(':/icons/AppIcons/folder-open-outline_mdi.svg'))
         self.action_save_meta.setIcon(QIcon(':/icons/AppIcons/content-save-outline_mdi.svg'))
-        self.action_show_meta.setIcon(QIcon(':/icons/AppIcons/table_mdi.svg'))
-        self.action_show_prefs.setIcon(QIcon(':/icons/AppIcons/cog-outline_mdi.svg'))
+        self.action_show_meta.setIcon(QIcon(':/table'))  # ':/icons/AppIcons/table_mdi.svg'))
+        self.action_show_prefs.setIcon(QIcon(':/cog'))  #:/icons/AppIcons/cog-outline_mdi.svg'))
         self.action_upload_meta_seqs.setIcon(QIcon(':/icons/AppIcons/tray-arrow-up_mdi.svg'))
         self.action_select_seq_files.setIcon(QIcon(':/icons/AppIcons/folder-open-outline-dna_mdi.svg'))
-        self.action_import_csv.setIcon(QIcon(':/icons/AppIcons/import-csv_own.svg'))
-        self.action_import_fx.setIcon(QIcon(':/icons/AppIcons/content-import-fx_own.svg'))
-        self.action_paste_fx.setIcon(QIcon(':/icons/AppIcons/content-paste-fx_own.svg'))
-        self.pushButton_filldown.setIcon(QIcon(':/icons/AppIcons/arrow-down_mdi.svg'))
-        self.pushButton_drop.setIcon(QIcon(':/icons/AppIcons/close_mdi.svg'))
-        self.pushButton_clear.setIcon(QIcon(':/icons/AppIcons/delete-outline_mdi.svg'))
-        self.pushButton_resetfilters.setIcon(QIcon(':/icons/AppIcons/filter-remove-outline_mdi.svg'))
-        self.pushButton_filtermarked.setIcon(QIcon(':/icons/AppIcons/filter-outline_mdi.svg'))
-        self.pushButton_invert.setIcon(QIcon(':/icons/AppIcons/invert_own.svg'))
+        self.action_import_csv.setIcon(QIcon(':/import-csv'))  #':/icons/AppIcons/import-csv_own.svg'))
+        self.action_import_fx.setIcon(QIcon(':/import-fx'))  #':/icons/AppIcons/content-import-fx_own.svg'))
+        self.action_paste_fx.setIcon(QIcon(':/paste-fx')) #':/icons/AppIcons/content-paste-fx_own.svg'))
+        self.pushButton_filldown.setIcon(QIcon(':/arrow-down'))  #':/icons/AppIcons/arrow-down_mdi.svg'))
+        self.pushButton_drop.setIcon(QIcon(':/close'))  #':/icons/AppIcons/close_mdi.svg'))
+        self.pushButton_clear.setIcon(QIcon(':/clear'))  # ':/icons/AppIcons/delete-outline_mdi.svg'))
+        self.pushButton_resetfilters.setIcon(QIcon('/filter-remove'))  #QIcon(':/icons/AppIcons/filter-remove-outline_mdi.svg'))
+        self.pushButton_filtermarked.setIcon(QIcon(':/filter'))  # QIcon(':/icons/AppIcons/filter-outline_mdi.svg'))
+        self.pushButton_invert.setIcon(QIcon(':/invert'))  #':/icons/AppIcons/invert_own.svg'))
 
     def set_col_widths(self):
         for i, name in enumerate(self.conf['model_fields']):
@@ -929,6 +929,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         df2 = self.df.fillna('')
         errors = validate(df2)
 
+        df_len = self.df.shape[0] + 1
+
         if errors:
             vdialog = ValidationDialog(errors)
             vdialog.exec()
@@ -954,14 +956,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.df['lab_code'] = self.df['lab'].apply(lambda x: self.conf['tr']['lab_to_code'][x])
         self.df['region_code'] = self.df['region'].apply(lambda x: self.conf['tr']['region_to_code'][x])
-        self.df['pseudo_id'] = self.create_pseudo_ids()
+        self.df['pseudo_id'] = self.pseudo_id.create_pids(df_len)
 
         meta_fields = [field for field in self.conf['model_fields'] if self.conf['model_fields'][field]['to_meta']]
         df_submit = self.df[meta_fields]
 
         now = datetime.now()
         tag = now.strftime("%Y-%m-%dT%H.%M.%S")
-        json_file = Path(self.settings.get_value('entered_value/metadata_output_path'), tag + "_meta.json")
+        json_file = Path(self.settings.get_value('entered_value', 'metadata_output_path'), tag + "_meta.json")
 
         with open(json_file, 'w', encoding='utf-8') as file:
             df_submit.to_json(file, orient="records", force_ascii=False)
@@ -973,8 +975,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         #                  self.qsettings['select_single/hcp_bucket']
         #                  ]
 
-        c_path = self.settings.get_value('entered_value/credentials_filepath')
-        bucket = self.settings.get_value('select_single/hcp_bucket')
+        c_path = self.settings.get_value('entered_value', 'credentials_filepath')
+        bucket = self.settings.get_value('select_single', 'hcp_bucket')
 
         uploader = Uploader(c_path,
                             tag,

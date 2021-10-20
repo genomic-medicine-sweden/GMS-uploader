@@ -1,24 +1,24 @@
 <!DOCTYPE RCC><RCC version="1.0">
 <qresource>
-    <file>icons/AppIcons/arrow-down_mdi.svg</file>
-    <file>icons/AppIcons/close-box-outline_mdi.svg</file>
-    <file>icons/AppIcons/close_mdi.svg</file>
-    <file>icons/AppIcons/cog-outline_mdi.svg</file>
-    <file>icons/AppIcons/content-paste-fx_own.svg</file>
-    <file>icons/AppIcons/content-import-fx_own.svg</file>
+    <file alias="arrow-down">icons/AppIcons/arrow-down_mdi.svg</file>
+    <file alias="close-mdi">icons/AppIcons/close-box-outline_mdi.svg</file>
+    <file alias="close">icons/AppIcons/close_mdi.svg</file>
+    <file alias="cog">icons/AppIcons/cog-outline_mdi.svg</file>
+    <file alias="paste-fx">icons/AppIcons/content-paste-fx_own.svg</file>
+    <file alias="import-fx">icons/AppIcons/content-import-fx_own.svg</file>
     <file>icons/AppIcons/content-save-outline_mdi.svg</file>
-    <file>icons/AppIcons/delete-outline_mdi.svg</file>
+    <file alias="clear">icons/AppIcons/delete-outline_mdi.svg</file>
     <file>icons/AppIcons/dna_mdi.svg</file>
-    <file>icons/AppIcons/filter-outline_mdi.svg</file>
-    <file>icons/AppIcons/filter-remove-outline_mdi.svg</file>
+    <file alias="filter">icons/AppIcons/filter-outline_mdi.svg</file>
+    <file alias="filter-remove">icons/AppIcons/filter-remove-outline_mdi.svg</file>
     <file>icons/AppIcons/folder-open-outline_mdi.svg</file>
     <file>icons/AppIcons/folder-open-outline-dna_mdi.svg</file>
     <file>icons/AppIcons/GMS-logo.ico</file>
     <file>icons/AppIcons/google-spreadsheet.svg</file>
-    <file>icons/AppIcons/import-csv_own.svg</file>
-    <file>icons/AppIcons/invert_own.svg</file>
+    <file alias="import-csv">icons/AppIcons/import-csv_own.svg</file>
+    <file alias="invert">icons/AppIcons/invert_own.svg</file>
     <file>icons/AppIcons/settings.svg</file>
-    <file>icons/AppIcons/table_mdi.svg</file>
+    <file alias="table">icons/AppIcons/table_mdi.svg</file>
     <file>icons/AppIcons/tray-arrow-up_mdi.svg</file>
     <file>icons/AppIcons/check_box_24dp.png</file>
     <file>icons/AppIcons/check_box_outline_blank_24dp.png</file>
