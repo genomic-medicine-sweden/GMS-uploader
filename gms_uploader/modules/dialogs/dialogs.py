@@ -3,9 +3,19 @@ from PySide6.QtGui import QIcon, Qt
 from PySide6.QtCore import QThread
 from gms_uploader.ui.validation_dialog import Ui_Dialog as UI_Dialog_Validation
 from gms_uploader.ui.uploader_dialog import Ui_Dialog as UI_Dialog_Uploader
-from gms_uploader.modules.validate.upload import UploadWorker
+from gms_uploader.modules.upload.upload import ParamikoFileUploadWorker, NGPIrisFileUploadWorker
 from pathlib import Path
-import json
+
+
+class ValidationDialog(QDialog, UI_Dialog_Validation):
+    def __init__(self, test_list):
+        super(ValidationDialog, self).__init__()
+        self.setupUi(self)
+        self.setWindowTitle("Validation errors")
+        self.setWindowIcon(QIcon('icons/GMS-logo.png'))
+        self.textEdit.setReadOnly(True)
+        self.textEdit.setPlainText("\n".join(test_list))
+        self.pushButton.clicked.connect(self.close)
 
 
 class MsgError(QMessageBox):
@@ -24,28 +34,46 @@ class MsgAlert(QMessageBox):
         self.setMinimumWidth(700)
         self.setIcon(QMessageBox.Warning)
         self.setText(msg)
-        self.setWindowTitle("Error")
+        self.setWindowTitle("Alert")
+        self.setWindowIcon(QIcon('icons/arrow-up.png'))
+
+
+class MsgUploadComplete(QMessageBox):
+    def __init__(self, msg):
+        super().__init__()
+        self.setMinimumWidth(700)
+        self.setIcon(QMessageBox.Information)
+        self.setText(msg)
+        self.setWindowTitle("Upload Complete")
         self.setWindowIcon(QIcon('icons/arrow-up.png'))
 
 
 class Uploader(QDialog, UI_Dialog_Uploader):
-    def __init__(self, credentials_path, tag, bucket, meta_json, files_list):
+    def __init__(self, cred: dict, tag: str, files: dict):
         super(Uploader, self).__init__()
         self.setupUi(self)
         self.setWindowTitle("Upload")
-        self.setWindowIcon(QIcon('icons/GMS-logo.png'))
+        self.setWindowIcon(QIcon(':/gms_logo'))
 
-        self.pushButton_cancel.setDisabled(True)
+        self.files = files
+        self.cred = cred
+        self.tag = tag
+        self.files_list = []
+        self.progress_bars = {}
+        self.workers = {}
+        self.threads = {}
 
-        self.credentials = json.loads(Path(credentials_path).read_text())
+        self.is_paused = False
+
+        self.pushButton_stop.setDisabled(True)
+        self.pushButton_delete_upload.setDisabled(True)
 
         self.lineEdit_tag.setReadOnly(True)
-        self.lineEdit_endpoint.setReadOnly(True)
-        self.lineEdit_bucket.setReadOnly(True)
+        self.lineEdit_target.setReadOnly(True)
 
         self.lineEdit_tag.setText(tag)
-        self.lineEdit_endpoint.setText(self.credentials['endpoint'])
-        self.lineEdit_bucket.setText(bucket)
+        self.lineEdit_target.setText(cred['target_label'])
+        self.lineEdit_protocol.setText(cred['protocol'])
 
         self.tableWidget.setColumnCount(3)
         self.tableWidget.setHorizontalHeaderLabels(["file", "size", "progress"])
@@ -55,86 +83,97 @@ class Uploader(QDialog, UI_Dialog_Uploader):
         header.setSectionResizeMode(1, QHeaderView.ResizeToContents)
         header.setSectionResizeMode(2, QHeaderView.Stretch)
 
-        self.progress_bars = {}
+        row_no = 0
+        for sample in files:
+            _files_list = files[sample]
+            for file in _files_list:
+                file_obj = Path(file)
+                filename = str(file_obj.name)
+                filesize = str(round(self.bytes_to_megabytes(file_obj.stat().st_size), 2)) + " MB"
 
-        for i, file in enumerate(files_list):
+                self.progress_bars[filename] = QProgressBar()
+                self.progress_bars[filename].setValue(0)
+                self.progress_bars[filename].setAlignment(Qt.AlignRight)
 
-            file_obj = Path(file)
-            filename = file_obj.name
-            filesize = str(self.bytes_to_megabytes(file_obj.stat().st_size)) + " MB"
+                self.tableWidget.insertRow(row_no)
 
-            self.progress_bars[file] = QProgressBar()
-            self.progress_bars[file].setValue(50)
-            self.progress_bars[file].setAlignment(Qt.AlignRight)
+                name_item = QTableWidgetItem(filename)
+                name_item.setFlags(Qt.ItemIsEnabled)
+                size_item = QTableWidgetItem(filesize)
+                size_item.setFlags(Qt.ItemIsEnabled)
+                self.tableWidget.setItem(row_no, 0, name_item)
+                self.tableWidget.setItem(row_no, 1, size_item)
+                self.tableWidget.setCellWidget(row_no, 2, self.progress_bars[filename])
 
-            self.tableWidget.insertRow(i)
+                self.files_list.append(file)
 
-            name_item = QTableWidgetItem(filename)
-            name_item.setFlags(Qt.ItemIsEnabled)
-            size_item = QTableWidgetItem(filesize)
-            size_item.setFlags(Qt.ItemIsEnabled)
-            self.tableWidget.setItem(i, 0, name_item)
-            self.tableWidget.setItem(i, 1, size_item)
-            self.tableWidget.setCellWidget(i, 2, self.progress_bars[file])
+                row_no += 1
 
-        self.thread = QThread()
-
-        # meta_json, sample_seqs, tag, credentials_path, bucket
-
-        print(meta_json, files_list, tag, credentials_path, bucket)
-
-        self.worker = UploadWorker(meta_json, files_list, tag, credentials_path, bucket)
-        self.worker.moveToThread(self.thread)
-
-        # self.thread.started.connect(self.worker.run)
-        self.worker.finished.connect(self.thread.quit)
-        self.worker.finished.connect(self.worker.deleteLater)
-        # self.thread.finished.connect(self.thread.deleteLater)
-        # self.worker.progress.connect(self.upload_complete)
-
-        # self.pushButton_terminate.clicked.connect(self.terminate)
         self.pushButton_start.clicked.connect(self.start)
         self.pushButton_close.clicked.connect(self.close)
+        self.pushButton_stop.clicked.connect(self.stop)
 
-    def bytes_to_megabytes(self, b):
-        return b/(1024*2014)
+    def upload_file(self):
+        if len(self.files_list) > 0:
+            file = self.files_list.pop(0)
+            filename = file.name
+
+            self.workers[filename] = self.get_worker(self.cred, self.tag, file)
+            if self.workers[filename] is not None:
+                self.threads[filename] = QThread()
+                self.workers[filename].moveToThread(self.threads[filename])
+                self.threads[filename].started.connect(self.workers[filename].run)
+                self.workers[filename].progress.connect(self.report_progress)
+                self.workers[filename].finished.connect(self.on_finished)
+                self.threads[filename].start()
+
+    def pause(self):
+        self.is_paused = True
+
+    def resume(self):
+        self.is_paused = False
+
+    def on_finished(self, filename):
+        self.threads[filename].quit()
+        self.workers[filename].deleteLater()
+        self.threads[filename].deleteLater()
+
+        print(f"file list len {len(self.files_list)}")
+
+        if not self.is_paused and len(self.files_list) > 0:
+            self.upload_file()
+
+        elif len(self.files_list) == 0:
+            self.pushButton_stop.setDisabled(True)
+            self.pushButton_close.setDisabled(False)
+            msg = MsgUploadComplete(f"Upload of data with tag {self.tag} is complete! ")
+            msg.exec()
 
     def stop(self):
-        self.thread.terminate()
+        self.pushButton_start.setDisabled(False)
+        self.pushButton_stop.setDisabled(True)
+        self.pushButton_close.setDisabled(False)
+        self.pause()
 
     def start(self):
-        self.thread.start()
+        self.pushButton_stop.setDisabled(False)
+        self.pushButton_start.setDisabled(True)
+        self.pushButton_delete_upload.setDisabled(True)
+        self.pushButton_close.setDisabled(True)
+        self.resume()
+        self.upload_file()
 
+    def report_progress(self, filename, pct):
+        print(f"progress filename {filename}")
+        self.progress_bars[filename].setValue(pct)
 
-class ValidationDialog(QDialog, UI_Dialog_Validation):
-    def __init__(self, test_list):
-        super(ValidationDialog, self).__init__()
-        self.setupUi(self)
-        self.setWindowTitle("Validation errors")
-        self.setWindowIcon(QIcon('icons/GMS-logo.png'))
-        self.textEdit.setReadOnly(True)
-        self.textEdit.setPlainText("\n".join(test_list))
-        self.pushButton.clicked.connect(self.close)
+    def bytes_to_megabytes(self, bytes):
+        return bytes/(1024*1024)
 
-
-    #     btns = self.findChildren(QPushButton)
-    #     self.openBtn = [x for x in btns if 'open' in str(x.text()).lower()][0]
-    #     self.openBtn.clicked.disconnect()
-    #     self.openBtn.clicked.connect(self.openClicked)
-    #     self.tree = self.findChild(QTreeView)
-    #
-    # def openClicked(self):
-    #     inds = self.tree.selectionModel().selectedIndexes()
-    #     files = []
-    #     for i in inds:
-    #         if i.column() == 0:
-    #             print(i)
-    #             files.append(os.path.join(str(self.directory().absolutePath()), str(i.data().toString())))
-    #
-    #     self.selectedFiles = files
-    #     self.hide()
-    #
-    # def filesSelected(self):
-    #     return self.selectedFiles
-
-
+    def get_worker(self, cred, tag, file):
+        if cred['protocol'] == "SFTP":
+            return ParamikoFileUploadWorker(cred, tag, file)
+        elif cred['protocol'] == "S3":
+            return NGPIrisFileUploadWorker(cred, tag, file)
+        else:
+            return None

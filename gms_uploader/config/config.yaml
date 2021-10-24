@@ -438,6 +438,9 @@ tr:
     'ABC lab - SEABC': 'SEABC'
     'Dynamic Code - SEDNC': 'SEDNC'
 
+upload_complete_file:
+  filepath: 'rc/UploadComplete.txt'
+
 seq_files:
   fastq_gz:
     ext: '*.fastq.gz'

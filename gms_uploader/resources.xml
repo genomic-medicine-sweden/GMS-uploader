@@ -82,7 +82,7 @@
     <file>icons/StyleLightIcons/vertical_line_disabled_24dp.svg</file>
     <file>icons/StyleLightIcons/vertical_rule_24dp.svg</file>
     <file>icons/StyleLightIcons/vertical_rule_disabled_24dp.svg</file>
-    <file>img/GMS-logo.png</file>
+    <file alias="gms_logo">img/GMS-logo.png</file>
     <file>img/gms-splash.png</file>
 </qresource>
 </RCC>

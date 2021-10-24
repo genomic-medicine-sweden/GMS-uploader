@@ -1,9 +1,8 @@
-PySide6
-pyqtdarktheme
-NGPIris
-pandas
-pandas-schema
-python-dateutil
-setuptools
-PyYAML
+PySide6~=6.2.0
+NGPIris~=3.2.0
+pandas~=1.3.3
+python-dateutil~=2.8.2
+setuptools~=57.0.0
+PyYAML~=6.0
 #pyinstaller~=4.5.1
+paramiko~=2.8.0

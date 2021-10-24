@@ -1,5 +1,6 @@
 import sys
 from io import StringIO
+
 from pyside6_core import *
 from modules.settings.settings import Settings
 from modules.pseudo_id.pseudo_id import PseudoID
@@ -18,6 +19,7 @@ import pandas as pd
 from datetime import datetime
 from pathlib import Path
 import yaml
+import json
 import csv
 from gms_uploader.ui.mw import Ui_MainWindow
 import qdarktheme
@@ -922,6 +924,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     # Import/export functions
 
     def upload(self):
+        cred = None
+
+        # credfile = 'D:/Dokument/accounts/gms-uploader/local.json'
+        credfile = 'D:/Dokument/accounts/gms-uploader/ngp.json'
+
+        with open(credfile, 'r', encoding='utf-8') as infile:
+            cred = json.load(infile)
+
         self.df['lab'] = self.settings.get_value('select_single', 'lab')
         self.df['host'] = self.settings.get_value('select_single', 'host')
         self.df['seq_technology'] = self.settings.get_value('select_single', 'seq_technology')
@@ -936,23 +946,21 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             vdialog.exec()
             return False
 
-        sample_seqs = {}
-        files_list = []
+        files = {}
         for _, row in self.df.iterrows():
-            _seqs = []
+            _tmp = []
             if row['fastq']:
                 _list = row["fastq"]
                 for filename in _list:
-                    files_list.append(Path(row["seq_path"], filename))
-                    _seqs.append(Path(row["seq_path"], filename))
+                    _tmp.append(Path(row["seq_path"], filename))
 
             if row['fast5']:
                 _list = row["fast5"]
                 for filename in _list:
-                    files_list.append(Path(row["seq_path"], filename))
-                    _seqs.append(Path(row["seq_path"], filename))
+                    _tmp.append(Path(row["seq_path"], filename))
 
-            sample_seqs[row['internal_lab_id']] = _seqs
+            files[row['internal_lab_id']] = _tmp
+
 
         self.df['lab_code'] = self.df['lab'].apply(lambda x: self.conf['tr']['lab_to_code'][x])
         self.df['region_code'] = self.df['region'].apply(lambda x: self.conf['tr']['region_to_code'][x])
@@ -965,39 +973,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         tag = now.strftime("%Y-%m-%dT%H.%M.%S")
         json_file = Path(self.settings.get_value('entered_value', 'metadata_output_path'), tag + "_meta.json")
 
-        with open(json_file, 'w', encoding='utf-8') as file:
-            df_submit.to_json(file, orient="records", force_ascii=False)
+        with open(json_file, 'w', encoding='utf-8') as outfile:
+            df_submit.to_json(outfile, orient="records", force_ascii=False)
 
-        # upload_params = [json_file,
-        #                  sample_seqs,
-        #                  tag,
-        #                  self.qsettings['entered_value/credentials_path'],
-        #                  self.qsettings['select_single/hcp_bucket']
-        #                  ]
+        files['metadata'] = [json_file]
+        files['upload_complete'] = [Path(self.conf['upload_complete_file']['filepath'])]
 
-        c_path = self.settings.get_value('entered_value', 'credentials_filepath')
-        bucket = self.settings.get_value('select_single', 'hcp_bucket')
-
-        uploader = Uploader(c_path,
-                            tag,
-                            bucket,
-                            json_file,
-                            files_list)
-
+        uploader = Uploader(cred, tag, files)
         uploader.exec()
-
-        #
-        # if all(upload_params):
-        #     thread = QThread()
-        #     worker = UploadWorker(*upload_params)
-        #     worker.moveToThread(thread)
-        #
-        #     thread.started.connect(self.worker.run)
-        #     worker.finished.connect(self.thread.quit)
-        #     worker.finished.connect(self.worker.deleteLater)
-        #     thread.finished.connect(self.thread.deleteLater)
-        #     worker.progress.connect(self.reportProgress)
-        #
 
     def save_metadata_file(self):
         now = datetime.now()
@@ -1252,7 +1235,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         else:
             super().keyPressEvent(event)
-
 
 
 def main():
