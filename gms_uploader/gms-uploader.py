@@ -214,14 +214,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         :return: None
         """
         self.lineEdit_submitter.setText(self.settings.get_value("entered_value", "submitter"))
-        self.lineEdit_credentials_path.setText(self.settings.get_value("entered_value", "credentials_filepath"))
         self.lineEdit_lab.setText(self.settings.get_value("select_single", "lab"))
         self.lineEdit_seq_technology.setText(self.settings.get_value("select_single", "seq_technology"))
         self.lineEdit_host.setText(self.settings.get_value("select_single", "host"))
         self.lineEdit_lib_method.setText(self.settings.get_value("select_single", "library_method"))
-        self.lineEdit_bucket.setText(self.settings.get_value("select_single", "hcp_bucket"))
         self.lineEdit_import_fx.setText(self.settings.get_value("select_single", "import_fx"))
         self.lineEdit_pseudo_id.setText(str(self.pseudo_id.get_pid()))
+        self.lineEdit_ul_target_label.setText(self.settings.get_current_cred_target_label())
+        self.lineEdit_ul_protocol.setText(self.settings.get_current_cred_protocol())
 
     def setup_settingview_widgets(self):
         """
@@ -246,7 +246,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                         if field_type == "entered_value":
                             for field in fields:
                                 func = self.get_button_func(field)
-                                print(field)
                                 if func is not None:
                                     button_name = field + "button"
                                     button = QPushButton("...", objectName=button_name)
@@ -267,7 +266,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                                     edit.setText(value)
 
                                     add_gridlayout_row(grid_layout, label, hbox)
-
 
                                 else:
                                     edit = QLineEdit(objectName=field, editingFinished=self.update_setting)
@@ -290,7 +288,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                                 if field in self.conf['add_empty_selection']:
                                     items = ['None']
 
-                                items.extend(list(self.conf['settings_values']['select_single'][field].keys()))
+                                if self.conf['settings_values']['select_single'][field] != "None":
+                                    items.extend(list(self.conf['settings_values']['select_single'][field].keys()))
+
                                 combo.addItems(items)
 
                                 value = self.settings.get_value(field_type, field)
@@ -374,6 +374,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
                                 tabwidget_settings.addTab(tableview, field)
 
+        self.load_credentials()
+        self.set_endpoint_values()
         self.set_pid_start()
         self.set_dataview_setting_widget_values()
 
@@ -568,6 +570,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 msg_box.exec()
 
     # set path functions
+
     def get_button_func(self, name):
         """
         gets correct slot function for button
@@ -585,8 +588,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             func = self.set_metadata_output_path
         elif name == "metadata_docs_path":
             func = self.set_metadata_docs_path
-        elif name == "credentials_filepath":
-            func = self.set_credentials_filepath
+        elif name == "credentials_path":
+            func = self.set_credentials_path
 
         return func
 
@@ -604,7 +607,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         default_path = str(Path.home())
 
         dirpath = dialog.getExistingDirectory(self,
-                                              'Set an awesome seq root path',
+                                              'Set an awesome seq root dir path',
                                               default_path,
                                               options=QFileDialog.ShowDirsOnly | QFileDialog.DontUseNativeDialog)
 
@@ -626,7 +629,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         default_fn = str(Path.home())
 
         dirpath = dialog.getExistingDirectory(self,
-                                              'Set an awesome csv root path',
+                                              'Set an awesome csv root dir path',
                                               default_fn,
                                               options=QFileDialog.ShowDirsOnly | QFileDialog.DontUseNativeDialog)
 
@@ -648,7 +651,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         default_fn = str(Path.home())
 
         dirpath = dialog.getExistingDirectory(self,
-                                              'Set an awesome metadata output path',
+                                              'Set an awesome metadata output dir path',
                                               default_fn,
                                               options=QFileDialog.ShowDirsOnly | QFileDialog.DontUseNativeDialog)
 
@@ -669,7 +672,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         default_fn = str(Path.home())
 
         dirpath = dialog.getExistingDirectory(self,
-                                              'Set an awesome metadata docs path',
+                                              'Set an awesome metadata docs dir path',
                                               default_fn,
                                               options=QFileDialog.ShowDirsOnly | QFileDialog.DontUseNativeDialog)
 
@@ -701,7 +704,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             edit.setText(pseudo_id_fp)
             pif_obj.touch(exist_ok=True)
 
-    def set_credentials_filepath(self):
+    def set_credentials_path(self):
         """
         Sets filepath to credentials json file, used for S3 upload to the HCP/NGP
         :return: None
@@ -711,18 +714,42 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         name = button_name.strip("button")
 
         dialog = QFileDialog()
+        default_fn = str(Path.home())
 
-        credentials_path, _ = dialog.getOpenFileName(self,
-                                                     'Select an awesome credentials json file',
-                                                     "",
-                                                     "json files (*.json)",
-                                                     options=QFileDialog.DontUseNativeDialog |
-                                                             QFileDialog.DontConfirmOverwrite)
+        credentials_path = dialog.getExistingDirectory(self,
+                                                       'Set an awesome credentials dir path',
+                                                       default_fn,
+                                                       options=QFileDialog.ShowDirsOnly | QFileDialog.DontUseNativeDialog)
 
         f_obj = Path(credentials_path)
-        if f_obj.parent.exists():
+        if f_obj.is_dir():
             edit = self.stackedWidgetPage2.findChild(QLineEdit, name, Qt.FindChildrenRecursively)
             edit.setText(credentials_path)
+
+            self.settings.set_value('entered_value', 'credentials_path', credentials_path)
+            self.load_credentials()
+            self.set_endpoint_values()
+
+    def set_endpoint_values(self):
+        keys = self.settings.get_cred_keys()
+        combobox = self.stackedWidgetPage2.findChild(QComboBox, 'target_label', Qt.FindChildrenRecursively)
+        combobox.clear()
+        items = ['None']
+
+        for key in keys:
+            items.append(key)
+
+        combobox.addItems(items)
+
+    def load_credentials(self):
+        path_obj = Path(self.settings.get_value('entered_value', 'credentials_path'))
+        files = path_obj.glob('*.json')
+
+        for file in files:
+            with open(file) as fh:
+                curr_cred = json.load(fh)
+                self.settings.set_cred(curr_cred['target_label'], curr_cred)
+
 
     # delegates
 

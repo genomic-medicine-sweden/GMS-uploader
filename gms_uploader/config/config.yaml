@@ -227,13 +227,6 @@ settings_structure:
     items:
       - select_single_fx:
         - import_paste_fx
-  - label: "Upload connection"
-    target_layout: form
-    items:
-      - entered_value:
-        - credentials_filepath
-      - select_single:
-        - hcp_bucket
   - label: "Metadata preset"
     target_layout: form
     items:
@@ -252,6 +245,13 @@ settings_structure:
       - passage_details_history
       - type
       - patient_status
+  - label: "Upload connection"
+    target_layout: form
+    items:
+      - entered_value:
+        - credentials_path
+      - select_single:
+        - target_label
   - label: "PseudoID"
     target_layout: form
     items:
@@ -265,9 +265,10 @@ settings_values:
     metadata_output_path: None
     metadata_docs_path: None
     pseudo_id_filepath: None
-    credentials_filepath: None
+    credentials_path: None
     submitter: None
   select_single:
+    target_label: None
     hcp_bucket:
       'goteborg': True
       'linkoping': False

@@ -33,7 +33,7 @@
     <item>
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="stackedWidgetPage1">
        <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -150,12 +150,12 @@
             <item row="0" column="0">
              <widget class="QLabel" name="label">
               <property name="text">
-               <string>credentials path:</string>
+               <string>upload protocol:</string>
               </property>
              </widget>
             </item>
             <item row="0" column="1">
-             <widget class="QLineEdit" name="lineEdit_credentials_path">
+             <widget class="QLineEdit" name="lineEdit_ul_protocol">
               <property name="readOnly">
                <bool>true</bool>
               </property>
@@ -164,12 +164,12 @@
             <item row="1" column="0">
              <widget class="QLabel" name="label_10">
               <property name="text">
-               <string>bucket:</string>
+               <string>upload target:</string>
               </property>
              </widget>
             </item>
             <item row="1" column="1">
-             <widget class="QLineEdit" name="lineEdit_bucket">
+             <widget class="QLineEdit" name="lineEdit_ul_target_label">
               <property name="readOnly">
                <bool>true</bool>
               </property>
@@ -409,8 +409,8 @@ shortcut: ctrl+d</string>
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>671</width>
-             <height>582</height>
+             <width>100</width>
+             <height>30</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_5">

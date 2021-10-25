@@ -3,15 +3,24 @@
 ################################################################################
 ## Form generated from reading UI file 'mw.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.1.3
+## Created by: Qt User Interface Compiler version 6.2.0
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
 
-from PySide6.QtCore import *  # type: ignore
-from PySide6.QtGui import *  # type: ignore
-from PySide6.QtWidgets import *  # type: ignore
-
+from PySide6.QtCore import (QCoreApplication, QDate, QDateTime, QLocale,
+    QMetaObject, QObject, QPoint, QRect,
+    QSize, QTime, QUrl, Qt)
+from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
+    QCursor, QFont, QFontDatabase, QGradient,
+    QIcon, QImage, QKeySequence, QLinearGradient,
+    QPainter, QPalette, QPixmap, QRadialGradient,
+    QTransform)
+from PySide6.QtWidgets import (QApplication, QFormLayout, QFrame, QGridLayout,
+    QHBoxLayout, QHeaderView, QLabel, QLineEdit,
+    QMainWindow, QPushButton, QScrollArea, QSizePolicy,
+    QSpacerItem, QStackedWidget, QTabWidget, QTableView,
+    QToolBar, QVBoxLayout, QWidget)
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -147,22 +156,22 @@ class Ui_MainWindow(object):
 
         self.formLayout__info_3.setWidget(0, QFormLayout.LabelRole, self.label)
 
-        self.lineEdit_credentials_path = QLineEdit(self.stackedWidgetPage1)
-        self.lineEdit_credentials_path.setObjectName(u"lineEdit_credentials_path")
-        self.lineEdit_credentials_path.setReadOnly(True)
+        self.lineEdit_ul_protocol = QLineEdit(self.stackedWidgetPage1)
+        self.lineEdit_ul_protocol.setObjectName(u"lineEdit_ul_protocol")
+        self.lineEdit_ul_protocol.setReadOnly(True)
 
-        self.formLayout__info_3.setWidget(0, QFormLayout.FieldRole, self.lineEdit_credentials_path)
+        self.formLayout__info_3.setWidget(0, QFormLayout.FieldRole, self.lineEdit_ul_protocol)
 
         self.label_10 = QLabel(self.stackedWidgetPage1)
         self.label_10.setObjectName(u"label_10")
 
         self.formLayout__info_3.setWidget(1, QFormLayout.LabelRole, self.label_10)
 
-        self.lineEdit_bucket = QLineEdit(self.stackedWidgetPage1)
-        self.lineEdit_bucket.setObjectName(u"lineEdit_bucket")
-        self.lineEdit_bucket.setReadOnly(True)
+        self.lineEdit_ul_target_label = QLineEdit(self.stackedWidgetPage1)
+        self.lineEdit_ul_target_label.setObjectName(u"lineEdit_ul_target_label")
+        self.lineEdit_ul_target_label.setReadOnly(True)
 
-        self.formLayout__info_3.setWidget(1, QFormLayout.FieldRole, self.lineEdit_bucket)
+        self.formLayout__info_3.setWidget(1, QFormLayout.FieldRole, self.lineEdit_ul_target_label)
 
         self.label_3 = QLabel(self.stackedWidgetPage1)
         self.label_3.setObjectName(u"label_3")
@@ -295,7 +304,7 @@ class Ui_MainWindow(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollAreaWidgetContents_settings = QWidget()
         self.scrollAreaWidgetContents_settings.setObjectName(u"scrollAreaWidgetContents_settings")
-        self.scrollAreaWidgetContents_settings.setGeometry(QRect(0, 0, 671, 582))
+        self.scrollAreaWidgetContents_settings.setGeometry(QRect(0, 0, 100, 30))
         self.verticalLayout_5 = QVBoxLayout(self.scrollAreaWidgetContents_settings)
         self.verticalLayout_5.setObjectName(u"verticalLayout_5")
         self.verticalLayout_forms = QVBoxLayout()
@@ -337,7 +346,7 @@ class Ui_MainWindow(object):
 
         self.retranslateUi(MainWindow)
 
-        self.stackedWidget.setCurrentIndex(1)
+        self.stackedWidget.setCurrentIndex(0)
         self.tabWidget_metadata.setCurrentIndex(0)
 
 
@@ -392,8 +401,8 @@ class Ui_MainWindow(object):
         self.label_6.setText(QCoreApplication.translate("MainWindow", u"seq technology:", None))
         self.label_9.setText(QCoreApplication.translate("MainWindow", u"library method:", None))
         self.label_8.setText(QCoreApplication.translate("MainWindow", u"pseudo id start:", None))
-        self.label.setText(QCoreApplication.translate("MainWindow", u"credentials path:", None))
-        self.label_10.setText(QCoreApplication.translate("MainWindow", u"bucket:", None))
+        self.label.setText(QCoreApplication.translate("MainWindow", u"upload protocol:", None))
+        self.label_10.setText(QCoreApplication.translate("MainWindow", u"upload target:", None))
         self.label_3.setText(QCoreApplication.translate("MainWindow", u"import/paste fx:", None))
 #if QT_CONFIG(tooltip)
         self.pushButton_clear.setToolTip(QCoreApplication.translate("MainWindow", u"clear table", None))

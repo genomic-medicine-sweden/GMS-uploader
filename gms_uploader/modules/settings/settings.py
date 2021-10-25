@@ -11,11 +11,39 @@ class Settings:
         self._qsettings = QSettings("Genomic Medicine Sweden", "GMS-uploader")
         self.conf = conf
 
+        self.credentials_dict = {}
+
         if not self._validate_settings():
             msg = MsgAlert("Incompatible saved settings: (re-)initializing...")
             msg.exec()
 
             self._init_settings()
+
+    def get_cred_keys(self):
+        return self.credentials_dict.keys()
+
+    # def set_current_cred_target_label(self, tl):
+    #     self.set_value('select_single', 'target_label', tl)
+
+    def get_current_cred_target_label(self):
+        key = self.get_value('select_single', 'target_label')
+        if key in self.credentials_dict:
+            return key
+
+        return "None"
+
+    def get_current_cred_protocol(self):
+        key = self.get_value('select_single', 'target_label')
+        if key in self.credentials_dict:
+            return self.credentials_dict[key]['protocol']
+
+        return "None"
+
+    def set_cred(self, key: str, value_dict: dict):
+        self.credentials_dict[key] = value_dict
+
+    def get_cred(self, key: str) -> dict:
+        return self.credentials_dict[key]
 
     def update_setting(self, obj=None, item=None):
         if obj:
@@ -77,9 +105,12 @@ class Settings:
                 store_key = "/".join([field_type, field])
 
                 if field_type == "select_single":
-                    for i, key in enumerate(self.conf['settings_values'][field_type][field]):
-                        if self.conf['settings_values'][field_type][field][key]:
-                            self._qsettings.setValue(store_key, key)
+                    if self.conf['settings_values'][field_type][field] != "None":
+                        for i, key in enumerate(self.conf['settings_values'][field_type][field]):
+                            if self.conf['settings_values'][field_type][field][key]:
+                                self._qsettings.setValue(store_key, key)
+                    else:
+                        self._qsettings.setValue(store_key, 'None')
 
                 elif field_type == "select_multi":
                     checked_items = []

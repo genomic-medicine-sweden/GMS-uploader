@@ -37,16 +37,20 @@ class PseudoID:
 
         return self._mk_pid(lab, new_pid_num)
 
-    def _mk_pid(self, lab: str, pid_num: int):
+    def _mk_pid(self, lab: str, pid_num: int) -> str:
         return self.l2c[lab] + "-" + self._zfill_int(pid_num)
 
     def _get_last_pid_num(self) -> int:
-        fp = Path(self.get_filepath())
+        fp = self.get_filepath()
+        if fp is not None:
+            fp_obj = Path(self.get_filepath())
+        else:
+            fp_obj = Path()
 
-        if not fp.is_file():
+        if not fp_obj.is_file():
             return False
 
-        lines = fp.read_text(enconding='utf-8').splitlines()
+        lines = fp_obj.read_text(enconding='utf-8').splitlines()
 
         if not lines:
             return False

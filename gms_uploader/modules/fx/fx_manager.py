@@ -1,19 +1,23 @@
 import importlib
+from importlib.util import spec_from_loader, module_from_spec
+from importlib.machinery import SourceFileLoader
 from pathlib import Path
 
 
 class FxManager:
-    def __init__(self, path: Path):
-        self.fx_plugins = {'None': {'module': None, 'config': None}}
+    def __init__(self, plugin_path: Path):
 
-        for folder in path.glob('*'):
-            print(folder)
-            folder_name = folder.name
-            print(folder_name)
-            module = Path(folder, 'fx_plugin.py')
-            config = Path(folder, 'fx_plugin.yaml')
+        self.plugin_path = plugin_path
 
-            self.fx_plugins[folder_name] = {'module': module, 'config': config}
+    def get_plugin_names(self):
+        plugin_names = []
+        for item in self.plugin_path.glob('*'):
+            if item.is_dir():
+                plugin_names.append(item.name)
+
+        return plugin_names
+
+
 
     def get_fx_plugin_names(self):
         return self.fx_plugins.keys()
@@ -23,7 +27,12 @@ class FxManager:
             return importlib.import_module('fx_plugin', "fx." + name)
 
         return None
-        
+
+    def load_fx(self, plugin_name, plugin_path):
+        loader = SourceFileLoader(plugin_name, plugin_path)
+        spec = spec_from_loader(plugin_name, loader)
+        plugin_module = module_from_spec(spec)
+        spec.loader.exec_module(plugin_module)
 
 
 
