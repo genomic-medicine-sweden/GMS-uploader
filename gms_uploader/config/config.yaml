@@ -225,8 +225,8 @@ settings_structure:
   - label: "Import/paste fx"
     target_layout: form
     items:
-      - select_single_fx:
-        - import_paste_fx
+      - select_single:
+        - fx
   - label: "Metadata preset"
     target_layout: form
     items:
@@ -269,6 +269,7 @@ settings_values:
     submitter: None
   select_single:
     target_label: None
+    fx: None
     hcp_bucket:
       'goteborg': True
       'linkoping': False
@@ -374,7 +375,7 @@ fx:
 
 
 add_empty_selection:
-  - import_paste_fx
+  - fx
 
 filepick_button:
   seq_base_path: True
@@ -455,7 +456,7 @@ seq_files:
 fx_functions:
   analytix:
     fun: analytix
-    conf: fx_plugin.yaml
+    conf: conf.yaml
 
 freetext_filter:
   model_fields:

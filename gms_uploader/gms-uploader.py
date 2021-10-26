@@ -24,8 +24,10 @@ import csv
 from gms_uploader.ui.mw import Ui_MainWindow
 import qdarktheme
 import resources
+#from fx.analytix.plugin import FX
 
-__version__ = '0.1.1-beta.6'
+
+__version__ = '0.1.1-beta.7'
 __title__ = 'GMS-uploader'
 
 
@@ -41,6 +43,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.setWindowTitle(__title__ + " " + __version__)
 
         self.set_tb_bkg()
+        self.fx_manager = FxManager(Path('fx'))
+        self.fx = None
 
         # add icons
         self.set_icons()
@@ -51,7 +55,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.settings = Settings(self.conf)
         self.pseudo_id = PseudoID(self.conf)
-        self.fx_manager = FxManager(Path('fx'))
 
         self.fx_config = None
 
@@ -72,7 +75,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.set_signals()
         self.setup_tableviews()
-        self.set_dataview_setting_widget_values()
+        # self.set_dataview_setting_widget_values()
 
         self.stackedWidget.setCurrentIndex(0)
         self.tabWidget_metadata.setCurrentIndex(0)
@@ -218,7 +221,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.lineEdit_seq_technology.setText(self.settings.get_value("select_single", "seq_technology"))
         self.lineEdit_host.setText(self.settings.get_value("select_single", "host"))
         self.lineEdit_lib_method.setText(self.settings.get_value("select_single", "library_method"))
-        self.lineEdit_import_fx.setText(self.settings.get_value("select_single", "import_fx"))
+        self.lineEdit_import_fx.setText(self.settings.get_value("select_single", "fx"))
         self.lineEdit_pseudo_id.setText(str(self.pseudo_id.get_pid()))
         self.lineEdit_ul_target_label.setText(self.settings.get_current_cred_target_label())
         self.lineEdit_ul_protocol.setText(self.settings.get_current_cred_protocol())
@@ -288,8 +291,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                                 if field in self.conf['add_empty_selection']:
                                     items = ['None']
 
-                                if self.conf['settings_values']['select_single'][field] != "None":
-                                    items.extend(list(self.conf['settings_values']['select_single'][field].keys()))
+                                if field == "fx":
+                                    for name in self.fx_manager.get_fx_names():
+                                        items.append(name)
+                                else:
+                                    if self.conf['settings_values']['select_single'][field] != "None":
+                                        items.extend(list(self.conf['settings_values']['select_single'][field].keys()))
 
                                 combo.addItems(items)
 
@@ -309,18 +316,18 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                                 combo = QComboBox(objectName=field)
                                 combo.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
-                                for name in self.fx_manager.get_fx_plugin_names():
+                                combo.addItem(str('None'))
+                                for name in self.fx_manager.get_fx_names():
                                     combo.addItem(str(name))
-
-                                value = self.settings.get_value(field_type, field)
-
-                                idx = combo.findText(value)
-                                if idx >= 0:
-                                    combo.setCurrentText(value)
 
                                 label = QLabel(field)
                                 label.setProperty("class", "padding-left")
                                 label.setMinimumWidth(40)
+
+                                value = self.settings.get_value('select_single', field)
+                                if value is not None:
+                                    if combo.findText(value) >= 0:
+                                        combo.setCurrentText(value)
 
                                 combo.currentTextChanged.connect(self.update_setting)
 
@@ -378,6 +385,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.set_endpoint_values()
         self.set_pid_start()
         self.set_dataview_setting_widget_values()
+        self.set_fx()
+
+    def set_fx(self):
+        value = self.settings.get_value('select_single', 'fx')
+        if value is not None and value != 'None':
+            self.fx = self.fx_manager.load_fx(value)
+            self.fx.say_hey()
 
     def update_setting(self, item=None):
         if self.setup_complete:
@@ -389,6 +403,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
             self.set_dataview_setting_widget_values()
             self.update_delegates()
+            self.set_fx()
 
     def setup_tableviews(self):
         """

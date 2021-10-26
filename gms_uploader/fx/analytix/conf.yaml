@@ -42,14 +42,14 @@ import_fields:
 
 translate_fields:
   'Beställarkod': 'Beställarkod'
-  'Kön': 'Sex'
+  'Kön': 'patient_sex'
   'Prov ID': 'internal_lab_id'
   'Provdatum': 'collection_date'
   'Analys': 'Analys'
   'Ålder (vid provtagning)': 'patient_age'
   'ProvNr': 'ProvNr'
-  'Godkännandedatum': 'Godkännandedatum'
-  'Resultat': 'Resultat'
+  'Godkännandedatum': 'date'
+  'Resultat': 'ct'
 
 ordercode_to_regionletter:
   'ACBACK': 'AB'

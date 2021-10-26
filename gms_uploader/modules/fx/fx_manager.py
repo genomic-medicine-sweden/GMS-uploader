@@ -2,14 +2,14 @@ import importlib
 from importlib.util import spec_from_loader, module_from_spec
 from importlib.machinery import SourceFileLoader
 from pathlib import Path
+import sys
 
 
 class FxManager:
-    def __init__(self, plugin_path: Path):
+    def __init__(self, path: Path):
+        self.plugin_path = path
 
-        self.plugin_path = plugin_path
-
-    def get_plugin_names(self):
+    def get_fx_names(self):
         plugin_names = []
         for item in self.plugin_path.glob('*'):
             if item.is_dir():
@@ -17,22 +17,24 @@ class FxManager:
 
         return plugin_names
 
+    def load_fx(self, name):
+        try:
+            mod = importlib.import_module(f'fx.{name}.plugin')
+            return mod.FX()
+        except:
+            return None
 
 
-    def get_fx_plugin_names(self):
-        return self.fx_plugins.keys()
+        # mod.FX.say_hey()
+        # plugin = importlib.import_module('fx.analytix.plugin')
 
-    def get_fx_plugin(self, name):
-        if name != 'None':
-            return importlib.import_module('fx_plugin', "fx." + name)
 
-        return None
-
-    def load_fx(self, plugin_name, plugin_path):
-        loader = SourceFileLoader(plugin_name, plugin_path)
-        spec = spec_from_loader(plugin_name, loader)
-        plugin_module = module_from_spec(spec)
-        spec.loader.exec_module(plugin_module)
+        # package = Path(self.plugin_path, name)
+        # print(package, 'plugin.py')
+        # spec = importlib.util.spec_from_file_location(name, self.plugin_path)
+        # print(spec)
+        # module = importlib.util.module_from_spec(spec)
+        # spec.loader.exec_module(module)
 
 
 
