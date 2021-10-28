@@ -6,7 +6,7 @@ functions:
   - import
   - paste
 
-regionletter_to_region:
+region_letter_to_region:
   'K': 'Region Blekinge - 10'
   'W': 'Region Dalarna - 20'
   'I': 'Region Gotland - 09'
@@ -29,29 +29,38 @@ regionletter_to_region:
   'E': 'Region Östergötland - 05'
   'O': 'Västra Götalandsregionen - 14'
 
-import_fields:
-  - 'Beställarkod'
-  - 'Kön'
-  - 'Prov ID'
-  - 'Provdatum'
-  - 'Analys'
-  - 'Ålder (vid provtagning)'
-  - 'ProvNr'
-  - 'Godkännandedatum'
-  - 'Resultat'
 
-translate_fields:
-  'Beställarkod': 'Beställarkod'
+dtypes:
+  'order_code': 'object'
+  'patient_sex': 'object'
+  'internal_lab_id': 'object'
+  'collection_date': 'object'
+  'analysis': 'object'
+  'patient_age': 'object'
+  'ProvNr': 'object'
+  'approval_date': 'object'
+  'ct': 'object'
+  'region_letter': 'object'
+  'region': 'object'
+
+
+translate_fieldnames:
+  'Beställarkod': 'order_code'
   'Kön': 'patient_sex'
   'Prov ID': 'internal_lab_id'
   'Provdatum': 'collection_date'
-  'Analys': 'Analys'
+  'Analys': 'analysis'
   'Ålder (vid provtagning)': 'patient_age'
   'ProvNr': 'ProvNr'
-  'Godkännandedatum': 'date'
+  'Godkännandedatum': 'approval_date'
   'Resultat': 'ct'
 
-ordercode_to_regionletter:
+translate_values:
+  patient_sex:
+    M: 'Male'
+    F: 'Female'
+
+order_code_to_region_letter:
   'ACBACK': 'AB'
   'ACEREL': 'AC'
   'ACKOLB': 'AC'

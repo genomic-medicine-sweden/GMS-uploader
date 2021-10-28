@@ -177,6 +177,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.pushButton_invert.clicked.connect(self.invert_marks)
         self.action_import_csv.triggered.connect(self.get_csv_file_combine)
         self.action_import_fx.triggered.connect(self.import_fx_file)
+        self.action_paste_fx.triggered.connect(self.import_fx_clipboard)
 
     def set_icons(self):
 
@@ -389,9 +390,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def set_fx(self):
         value = self.settings.get_value('select_single', 'fx')
+        print(value)
         if value is not None and value != 'None':
             self.fx = self.fx_manager.load_fx(value)
-            self.fx.say_hey()
+            print(self.fx)
 
     def update_setting(self, item=None):
         if self.setup_complete:
@@ -1140,46 +1142,29 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         #
 
     def import_fx_file(self):
+        df_fx = self.fx.get_from_file()
+        print("df_fx")
+        print(df_fx.dtypes)
+        print("df")
+        print(self.df.dtypes)
 
-        fx_name = self.settings.get_value('select_single', 'import_paste_fx')
+        if isinstance(df_fx, pd.DataFrame):
+            self.df = self.df.merge(df_fx, on='internal_lab_id', how='left')
 
-        filetypes = None
-        if fx_name == "analytix":
-            filetypes = "metadata fx files (*.xls)"
-
-        if not filetypes:
-            return False
-
-        p_str = self.settings.get_value('entered_value/csv_base_path')
-
-        if p_str and Path(p_str).exists():
-            default_path = p_str
-        else:
-            default_path = str(Path.home())
-
-        dialog = QFileDialog()
-        filepath, _ = dialog.getOpenFileName(self,
-                                             'Open an awesome fx metadata file',
-                                              default_path,
-                                              filetypes,
-                                              options=QFileDialog.DontUseNativeDialog)
+            print(self.df.to_string())
 
 
-        if filepath:
-            data = pd.read_csv(filepath, delimiter=";")
-
-
-            # colnames = list(self.df.columns)
-            #
-            # with open(filepath, encoding='utf-8-sig') as csvfile:
-            #     reader = csv.DictReader(csvfile)
-            #     for row in reader:
-            #         r = get_pd_row_index(self.df, row['internal_lab_id'], 'internal_lab_id')
-            #         for key, value in row.items():
-            #             if key in colnames:
-            #                 self.df.at[r, key] = value
-            #
             # self.update_model()
+
+    def import_fx_clipboard(self):
+        pass
+
+        # df_fx = self.fx.get_from_file()
+        #
+        # if isinstance(df_fx, pd.DataFrame):
+        #     self.df = pd.merge(self.df, df_fx, on='internal_lab_id', how='left')
+        #
+        #     self.update_model()
 
     # Reimplemented functions
 

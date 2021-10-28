@@ -21,7 +21,8 @@ class FxManager:
         try:
             mod = importlib.import_module(f'fx.{name}.plugin')
             return mod.FX()
-        except:
+        except Exception as e:
+            print(e)
             return None
 
 
