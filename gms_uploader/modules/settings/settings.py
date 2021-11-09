@@ -19,11 +19,11 @@ class Settings:
 
             self._init_settings()
 
+    def get_ordered_fieldnames(self):
+        return list(self.conf['model_fields'].keys())
+
     def get_cred_keys(self):
         return self.credentials_dict.keys()
-
-    # def set_current_cred_target_label(self, tl):
-    #     self.set_value('select_single', 'target_label', tl)
 
     def get_current_cred_target_label(self):
         key = self.get_value('select_single', 'target_label')
@@ -123,7 +123,6 @@ class Settings:
                 else:
                     print(store_key, self.conf['settings_values'][field_type][field])
                     self._qsettings.setValue(store_key, self.conf['settings_values'][field_type][field])
-
 
     def _validate_settings(self):
         """

@@ -128,3 +128,29 @@ def to_list(obj):
         return obj
     else:
         return []
+
+
+def update_df(df_old, df_new, key='internal_lab_id'):
+
+    df_old.set_index(key, inplace=True)
+    df_new.set_index(key, inplace=True)
+
+    i_old = df_old.index
+    i_new = df_new.index
+
+    c_old = df_old.columns
+    c_new = df_new.columns
+
+    i_overlap = i_old.intersection(i_new)
+    c_overlap = c_old.intersection(c_new)
+
+    for i in i_overlap:
+        for c in c_overlap:
+            df_old.loc[i, c] = df_new.loc[i, c]
+
+    df_old.reset_index(inplace=True)
+
+    return df_old
+
+
+

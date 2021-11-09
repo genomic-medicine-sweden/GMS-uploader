@@ -3,6 +3,7 @@ import pkgutil
 import pandas as pd
 from pathlib import Path
 from PySide6.QtWidgets import QFileDialog
+from PySide6.QtGui import QGuiApplication
 import qdarktheme
 
 
@@ -17,15 +18,22 @@ class FX:
         style = qdarktheme.load_stylesheet("light")
         self.dialog.setStyleSheet(style)
 
-        self.from_file = True
+        self.from_file = False
+        self.from_clipboard = False
 
-    def _load_file(self, path: Path):
+        self._set_importers()
+
+    def _set_importers(self):
+        self.from_file = self.conf['importers']['import_from_file']
+        self.from_clipboard = self.conf['importers']['import_from_clipboard']
+
+    def _load_file(self, path: Path) -> pd.DataFrame:
         print("load file")
-        df = pd.read_csv(path, sep=';')
-        return df.dropna(subset=['Prov ID'])
+        return pd.read_csv(path, sep=';', dtype=self.conf['import_dtypes'])
 
-    def _translate_fieldnames_values(self, df):
-        df_mod = df.rename(columns=self.conf['translate_fieldnames'])
+    def _translate_fieldnames_values(self, df) -> pd.DataFrame:
+        df_mod = df.dropna(subset=['Prov ID'])
+        df_mod = df_mod.rename(columns=self.conf['translate_fieldnames'])
         df_mod['region_letter'] = df_mod['order_code'].map(self.conf['order_code_to_region_letter'])
         df_mod['region'] = df_mod['region_letter'].map(self.conf['region_letter_to_region'])
         df_mod['patient_sex'] = df_mod['patient_sex'].map(self.conf['translate_values']['patient_sex'])
@@ -35,14 +43,12 @@ class FX:
         file_obj = self._get_file()
         df = self._load_file(file_obj)
         df_mod = self._translate_fieldnames_values(df)
-        print(self.conf['dtypes'])
-        df_mod2 = df_mod.astype(dtype=self.conf['dtypes'])
-        return df_mod2
+        return df_mod
 
-    def _get_file(self):
+    def _get_file(self) -> Path:
         """
         Set filepath to textfile where pseudo_ids should be stored
-        :return: None
+        :return: pathlib object
         """
 
         options = QFileDialog.Options()
@@ -54,6 +60,19 @@ class FX:
 
         if file:
             return Path(file)
+
+    def get_from_clipboard(self) -> pd.DataFrame:
+        print("get_from_clipboard")
+        clipboard = QGuiApplication.clipboard()
+        mime_data = clipboard.mimeData()
+
+        matrix = list()
+        rows = mime_data.text().split("\n")
+        for i, r in enumerate(rows):
+            matrix.append(r.split("\t"))
+
+        return matrix
+
 
 
 def main():

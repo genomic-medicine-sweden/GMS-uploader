@@ -12,7 +12,7 @@ from gms_uploader.modules.fx.fx_manager import FxManager
 from gms_uploader.modules.dialogs.dialogs import MsgError, MsgAlert, ValidationDialog
 from gms_uploader.modules.models.sortfilterproxymodel import MultiSortFilterProxyModel
 from gms_uploader.modules.extra.auxiliary_functions import to_list, get_pd_row_index, \
-    date_validate, age_validate, add_gridlayout_row
+    date_validate, age_validate, add_gridlayout_row, update_df
 from gms_uploader.modules.validate.validate import validate
 from gms_uploader.modules.dialogs.dialogs import Uploader
 import pandas as pd
@@ -118,6 +118,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.tabWidget_metadata.setTabText(1, "organism metadata")
         self.tabWidget_metadata.setTabText(2, "lab metadata")
         self.lineEdit_filter.setPlaceholderText("freetext filter")
+        self.action_import_fx.setDisabled(True)
+        self.action_paste_fx.setDisabled(True)
 
     def get_filter_cols(self):
         cols = list(self.df.columns)
@@ -176,8 +178,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.action_open_meta.triggered.connect(self.open_metadata_file)
         self.pushButton_invert.clicked.connect(self.invert_marks)
         self.action_import_csv.triggered.connect(self.get_csv_file_combine)
-        self.action_import_fx.triggered.connect(self.import_fx_file)
-        self.action_paste_fx.triggered.connect(self.import_fx_clipboard)
+        # self.action_import_fx.triggered.connect(self.import_fx_file)
+        # self.action_paste_fx.triggered.connect(self.import_fx_clipboard)
 
     def set_icons(self):
 
@@ -275,7 +277,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                                     edit = QLineEdit(objectName=field, editingFinished=self.update_setting)
                                     value = self.settings.get_value(field_type, field)
                                     edit.setText(value)
-
 
                                     label = QLabel(field)
                                     label.setProperty("class", "padding-left")
@@ -393,7 +394,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         print(value)
         if value is not None and value != 'None':
             self.fx = self.fx_manager.load_fx(value)
-            print(self.fx)
+
+            if self.fx.from_clipboard:
+                self.action_paste_fx.triggered.connect(self.fx.get_from_clipboard)
+
+            if self.fx.from_file:
+                self.action_import_fx.triggered.connect(self.fx.get_from_file)
 
     def update_setting(self, item=None):
         if self.setup_complete:
@@ -607,6 +613,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             func = self.set_metadata_docs_path
         elif name == "credentials_path":
             func = self.set_credentials_path
+        elif name == "fx_import_path":
+            func = self.set_fx_import_path
 
         return func
 
@@ -647,6 +655,24 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         dirpath = dialog.getExistingDirectory(self,
                                               'Set an awesome csv root dir path',
+                                              default_fn,
+                                              options=QFileDialog.ShowDirsOnly | QFileDialog.DontUseNativeDialog)
+
+        if dirpath:
+            edit = self.stackedWidgetPage2.findChild(QLineEdit, name, Qt.FindChildrenRecursively)
+            edit.setText(dirpath)
+
+    def set_fx_import_path(self):
+        obj = self.sender()
+        button_name = obj.objectName()
+        name = button_name.strip("button")
+
+        dialog = QFileDialog()
+
+        default_fn = str(Path.home())
+
+        dirpath = dialog.getExistingDirectory(self,
+                                              'Set an awesome fx import root dir path',
                                               default_fn,
                                               options=QFileDialog.ShowDirsOnly | QFileDialog.DontUseNativeDialog)
 
@@ -955,7 +981,18 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def set_datastatus_empty(self, value):
         for w in self.status_widgets:
-            w.setDisabled(value)
+            if w is self.action_paste_fx:
+                if self.fx is not None and self.fx.from_clipboard:
+                    print(w)
+                    print(value)
+                    w.setDisabled(value)
+
+            elif w is self.action_import_fx:
+                if self.fx is not None and self.fx.from_file:
+                    w.setDisabled(value)
+
+            else:
+                w.setDisabled(value)
 
     # pseudo_id-related functions
 
@@ -1142,29 +1179,36 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         #
 
     def import_fx_file(self):
-        df_fx = self.fx.get_from_file()
-        print("df_fx")
-        print(df_fx.dtypes)
-        print("df")
-        print(self.df.dtypes)
+        if self.fx is not None and self.fx.from_file:
+            df_fx = self.fx.get_from_file()
+            print(df_fx.to_string())
 
-        if isinstance(df_fx, pd.DataFrame):
-            self.df = self.df.merge(df_fx, on='internal_lab_id', how='left')
-
-            print(self.df.to_string())
-
-
-            # self.update_model()
+            if isinstance(df_fx, pd.DataFrame):
+                self.df = update_df(self.df, df_fx, key="internal_lab_id")
+                cols = self.settings.get_ordered_fieldnames()
+                self.df = self.df[cols]
+                print(self.df.to_string())
+                self.update_model()
 
     def import_fx_clipboard(self):
-        pass
+        if self.fx is not None and self.fx.from_clipboard:
+            matrix = self.fx.get_from_clipboard()
+            self.paste(matrix)
 
-        # df_fx = self.fx.get_from_file()
-        #
-        # if isinstance(df_fx, pd.DataFrame):
-        #     self.df = pd.merge(self.df, df_fx, on='internal_lab_id', how='left')
-        #
-        #     self.update_model()
+    def paste(self, matrix):
+        curr_view = self.get_current_tableview()
+        model = curr_view.model()
+        index = curr_view.selectionModel().currentIndex()
+        i_row = index.row()
+        i_col = index.column()
+
+        for i, r in enumerate(matrix):
+            columns = r.split("\t")
+            for j, value in enumerate(columns):
+                colname = self.df.columns[i_col + j]
+                valid_value = self.accept_paste(value, colname)
+                if valid_value:
+                    model.setData(model.index(i_row + i, i_col + j), valid_value)
 
     # Reimplemented functions
 
@@ -1240,25 +1284,42 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.clipboard.setText(copy_data)
 
         elif event.matches(QKeySequence.Paste):
-
+            matrix = list()
             clipboard = QGuiApplication.clipboard()
             mime_data = clipboard.mimeData()
-
-            curr_view = self.get_current_tableview()
-
-            model = curr_view.model()
-            index = curr_view.selectionModel().currentIndex()
-            i_row = index.row()
-            i_col = index.column()
-
             rows = mime_data.text().split("\n")
             for i, r in enumerate(rows):
                 columns = r.split("\t")
-                for j, value in enumerate(columns):
-                    colname = self.df.columns[i_col + j]
-                    valid_value = self.accept_paste(value, colname)
-                    if valid_value:
-                        model.setData(model.index(i_row + i, i_col + j), valid_value)
+                matrix.append(columns)
+
+            self.paste(matrix)
+
+        elif event.matches(QKeySequence(Qt.CTRL | Qt.ALT | Qt.Key_V)):
+            if self.fx is not None and self.fx.from_cb:
+                matrix = self.fx.get_from_clipboard()
+
+                self.paste(matrix)
+
+        # elif event.matches(QKeySequence.Paste):
+        #
+        #     clipboard = QGuiApplication.clipboard()
+        #     mime_data = clipboard.mimeData()
+        #
+        #     curr_view = self.get_current_tableview()
+        #
+        #     model = curr_view.model()
+        #     index = curr_view.selectionModel().currentIndex()
+        #     i_row = index.row()
+        #     i_col = index.column()
+        #
+        #     rows = mime_data.text().split("\n")
+        #     for i, r in enumerate(rows):
+        #         columns = r.split("\t")
+        #         for j, value in enumerate(columns):
+        #             colname = self.df.columns[i_col + j]
+        #             valid_value = self.accept_paste(value, colname)
+        #             if valid_value:
+        #                 model.setData(model.index(i_row + i, i_col + j), valid_value)
 
         else:
             super().keyPressEvent(event)

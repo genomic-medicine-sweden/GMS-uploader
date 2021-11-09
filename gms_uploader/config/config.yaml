@@ -225,6 +225,8 @@ settings_structure:
   - label: "Import/paste fx"
     target_layout: form
     items:
+      - entered_value:
+        - fx_import_path
       - select_single:
         - fx
   - label: "Metadata preset"
@@ -267,6 +269,7 @@ settings_values:
     pseudo_id_filepath: None
     credentials_path: None
     submitter: None
+    fx_import_path: None
   select_single:
     target_label: None
     fx: None
@@ -384,6 +387,7 @@ filepick_button:
   metadata_docs_path: True
   pseudo_id_filepath: True
   credentials_filepath: True
+  fx_import_path: True
 
 tr:
   region_to_code:

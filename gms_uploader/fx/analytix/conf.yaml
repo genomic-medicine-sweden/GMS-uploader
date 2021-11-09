@@ -2,9 +2,9 @@
 
 name: analytix
 
-functions:
-  - import
-  - paste
+importers:
+  import_from_file: True
+  import_from_clipboard: True
 
 region_letter_to_region:
   'K': 'Region Blekinge - 10'
@@ -29,6 +29,19 @@ region_letter_to_region:
   'E': 'Region Östergötland - 05'
   'O': 'Västra Götalandsregionen - 14'
 
+
+import_dtypes:
+  'Beställarkod': 'object'
+  'Kön': 'object'
+  'Prov ID': 'object'
+  'Provdatum': 'object'
+  'Analys': 'object'
+  'Ålder (vid provtagning)': 'object'
+  'ProvNr': 'object'
+  'Godkännandedatum': 'object'
+  'Resultat': 'object'
+  'region_letter': 'object'
+  'region': 'object'
 
 dtypes:
   'order_code': 'object'

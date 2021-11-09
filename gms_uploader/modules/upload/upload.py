@@ -91,5 +91,3 @@ class ParamikoFileUploadWorker(QObject):
             return True
         except FileNotFoundError:
             return False
-
-
