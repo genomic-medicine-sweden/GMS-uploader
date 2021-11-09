@@ -394,12 +394,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         print(value)
         if value is not None and value != 'None':
             self.fx = self.fx_manager.load_fx(value)
+            self.fx.set_path(self.settings.get_value('entered_value', 'fx_import_path'))
 
             if self.fx.from_clipboard:
-                self.action_paste_fx.triggered.connect(self.fx.get_from_clipboard)
+                self.action_paste_fx.triggered.connect(self.import_fx_clipboard)
 
             if self.fx.from_file:
-                self.action_import_fx.triggered.connect(self.fx.get_from_file)
+                self.action_import_fx.triggered.connect(self.import_fx_file)
 
     def update_setting(self, item=None):
         if self.setup_complete:
@@ -679,6 +680,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if dirpath:
             edit = self.stackedWidgetPage2.findChild(QLineEdit, name, Qt.FindChildrenRecursively)
             edit.setText(dirpath)
+            if self.fx is not None:
+                self.fx.set_path(Path(dirpath))
 
     def set_metadata_output_path(self):
         """
@@ -887,13 +890,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         if isinstance(self.conf['paste_validators']['model_fields'][colname], bool):
             if self.conf['paste_validators']['model_fields'][colname] is True:
-                return value
+                return True
             else:
                 return False
 
         if 'qsettings' in self.conf['paste_validators']['model_fields'][colname]:
-            key = self.conf['paste_validators']['model_fields'][colname]['qsettings']
-            accepted = self.settings.get_value(key)
+            field_type, field = self.conf['paste_validators']['model_fields'][colname]['qsettings']
+            accepted = self.settings.get_value(field_type, field)
             if isinstance(accepted, list):
                 if value not in accepted:
                     return False
@@ -1181,13 +1184,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def import_fx_file(self):
         if self.fx is not None and self.fx.from_file:
             df_fx = self.fx.get_from_file()
-            print(df_fx.to_string())
 
             if isinstance(df_fx, pd.DataFrame):
                 self.df = update_df(self.df, df_fx, key="internal_lab_id")
                 cols = self.settings.get_ordered_fieldnames()
                 self.df = self.df[cols]
-                print(self.df.to_string())
                 self.update_model()
 
     def import_fx_clipboard(self):
@@ -1202,10 +1203,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         i_row = index.row()
         i_col = index.column()
 
+        print(matrix)
+
         for i, r in enumerate(matrix):
-            columns = r.split("\t")
-            for j, value in enumerate(columns):
+            for j, value in enumerate(r):
                 colname = self.df.columns[i_col + j]
+                print(r, colname, value)
                 valid_value = self.accept_paste(value, colname)
                 if valid_value:
                     model.setData(model.index(i_row + i, i_col + j), valid_value)
@@ -1294,8 +1297,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
             self.paste(matrix)
 
-        elif event.matches(QKeySequence(Qt.CTRL | Qt.ALT | Qt.Key_V)):
-            if self.fx is not None and self.fx.from_cb:
+        elif event.key() == (Qt.Key_Control and Qt.Key_Alt and Qt.Key_V ):
+            if self.fx is not None and self.fx.from_clipboard:
                 matrix = self.fx.get_from_clipboard()
 
                 self.paste(matrix)

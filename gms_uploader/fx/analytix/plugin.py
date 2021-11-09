@@ -14,14 +14,19 @@ class FX:
         # with path.open('r', encoding='utf-8') as handle:
         #     self.conf = yaml.safe_load(handle)
         self.conf = yaml.safe_load(pkgutil.get_data(__name__, "conf.yaml"))
+        self.path = None
         self.dialog = QFileDialog()
         style = qdarktheme.load_stylesheet("light")
         self.dialog.setStyleSheet(style)
+
 
         self.from_file = False
         self.from_clipboard = False
 
         self._set_importers()
+
+    def set_path(self, path: Path):
+        self.path = path
 
     def _set_importers(self):
         self.from_file = self.conf['importers']['import_from_file']
@@ -54,11 +59,10 @@ class FX:
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
 
-        file, _ = self.dialog.getOpenFileName(self.dialog, "Open", "",
+        file, _ = self.dialog.getOpenFileName(self.dialog, "Open", str(self.path),
                                               "Semicolon-separated CSV (*.csv *.xls)",
                                               options=options)
-
-        if file:
+        if file and file is not None:
             return Path(file)
 
     def get_from_clipboard(self) -> pd.DataFrame:
