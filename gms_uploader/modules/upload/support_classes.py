@@ -68,7 +68,7 @@ class Boto3FileUploadWorker(QObject):
     def upload_file(self):
         self.bucket.upload_file(self.file,
                                 self.target,
-                                ExtraArgs={'Metadata': {"test": "test"}},
+                                ExtraArgs={'Metadata': {"tag": self.tag}},
                                 Config=self.transfer_config,
                                 Callback=Boto3CallbackPercentage(Path(self.file), self.progress))
 
