@@ -1,7 +1,9 @@
 import sys
 from io import StringIO
 
-from pyside6_core import *
+from PySide6.QtCore import *
+from PySide6.QtGui import *
+from PySide6.QtWidgets import *
 from modules.settings.settings import Settings
 from modules.pseudo_id.pseudo_id import PseudoID
 
@@ -14,7 +16,7 @@ from gms_uploader.modules.models.sortfilterproxymodel import MultiSortFilterProx
 from gms_uploader.modules.extra.auxiliary_functions import to_list, get_pd_row_index, \
     date_validate, age_validate, add_gridlayout_row, update_df
 from gms_uploader.modules.validate.validate import validate
-from gms_uploader.modules.dialogs.dialogs import Uploader
+from gms_uploader.modules.upload.uploader import Uploader
 import pandas as pd
 from datetime import datetime
 from pathlib import Path
@@ -1335,7 +1337,9 @@ def main():
         pass
 
     app = QApplication(sys.argv)
+    print("app created")
     window = MainWindow()
+    print("window created")
 
     style_add = """
     QTableView { 
@@ -1354,8 +1358,13 @@ def main():
 
     """
 
+
+
     style = qdarktheme.load_stylesheet("light") + style_add
+    print("style added")
+
     app.setStyleSheet(style)
+    print("stylesheet set")
 
     try:
         pyi_splash.close()

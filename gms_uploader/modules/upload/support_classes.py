@@ -1,9 +1,15 @@
 import os
 import threading
 import paramiko
-from PySide6.QtCore import QObject, Signal, Slot, QThread, QRunnable
-from NGPIris.hcp import HCPManager
+from PySide6.QtCore import QObject, Signal
+from PySide6.QtWidgets import QMessageBox
+from PySide6.QtGui import QIcon
+#from NGPIris.hcp import HCPManager
 from pathlib import Path
+import boto3
+from botocore.exceptions import ClientError
+from botocore.client import Config
+from boto3.s3.transfer import TransferConfig
 
 
 class NGPIrisCallbackPercentage(object):
@@ -32,10 +38,23 @@ class NGPIrisFileUploadWorker(QObject):
         self.tag = tag
         self.file = str(file)
         self.filename = file.name
-        self.hcpm = HCPManager(cred['endpoint'],
-                               cred['aws_access_key_id'],
-                               cred['aws_secret_access_key'],
-                               bucket=cred['bucket'])
+
+        session = boto3.session.Session(aws_access_key_id=cred['aws_access_key_id'],
+                                        aws_secret_access_key=cred['aws_secret_access_key'])
+
+        s3_config = Config(s3={'addressing_style': 'path', 'payload_signing_enabled': True},
+                           signature_version='s3v4')
+
+        self.s3 = session.resource('s3',
+                                   endpoint_url=cred['endpoint'],
+                                   verify=False,  # Checks for SLL certificate. Disables because of already "secure" solution.
+                                   config=s3_config)
+
+        self.bucket = self.s3.Bucket(bucket=cred['bucket'])
+
+        self.transfer_config = TransferConfig(multipart_threshold=10000000,
+                                              max_concurrency=15,
+                                              multipart_chunksize=10000000)
 
         self.target = tag + "/" + self.filename
 
@@ -44,10 +63,17 @@ class NGPIrisFileUploadWorker(QObject):
         self.finished.emit(self.filename)
 
     def upload_file(self):
-        self.hcpm.upload_file(self.file,
-                              self.target,
-                              metadata={'tag': self.tag},
-                              callback=NGPIrisCallbackPercentage(Path(self.file), self.progress))
+        self.bucket.upload_file(self.file,
+                                self.target,
+                                ExtraArgs={'Metadata': "test"},
+                                Config=self.transfer_config,
+                                Callback=NGPIrisCallbackPercentage(Path(self.file), self.progress))
+
+
+        # self.hcpm.upload_file(self.file,
+        #                       self.target,
+        #                       metadata={'tag': self.tag},
+        #                       callback=NGPIrisCallbackPercentage(Path(self.file), self.progress))
 
 
 class ParamikoFileUploadWorker(QObject):
@@ -91,3 +117,13 @@ class ParamikoFileUploadWorker(QObject):
             return True
         except FileNotFoundError:
             return False
+
+
+class MsgUploadComplete(QMessageBox):
+    def __init__(self, msg):
+        super().__init__()
+        self.setMinimumWidth(700)
+        self.setIcon(QMessageBox.Information)
+        self.setText(msg)
+        self.setWindowTitle("Upload Complete")
+        self.setWindowIcon(QIcon('icons/arrow-up.png'))

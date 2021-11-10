@@ -4,11 +4,12 @@
 block_cipher = None
 
 
-a = Analysis(['gms-uploader.py'],
-             pathex=['D:\\PycharmProjects\\GMS-uploader'],
-             datas=[('venv\\Lib\\site-packages\\qdarktheme', 'qdarktheme'),
-                    ('config', 'config'),
-                    ('icons', 'icons')
+a = Analysis(['gms_uploader/gms-uploader.py'],
+             pathex=['D:/PycharmProjects/GMS-uploader'],
+             datas=[('venv/Lib/site-packages/qdarktheme', 'qdarktheme'),
+                    ('gms_uploader/config', 'config'),
+                    ('gms_uploader/icons', 'icons'),
+                    ('gms_uploader/fx', 'fx')
              ],
              hiddenimports=[],
              hookspath=[],
@@ -20,7 +21,7 @@ a = Analysis(['gms-uploader.py'],
              cipher=block_cipher,
              noarchive=False)
 
-splash = Splash('img/gms-splash.png',
+splash = Splash('gms_uploader/img/gms-splash.png',
                 binaries=a.binaries,
                 datas=a.datas,
                 text_pos=(10, 50),
@@ -40,12 +41,12 @@ exe = EXE(pyz,
           bootloader_ignore_signals=False,
           strip=False,
           upx=True,
-          console=False,
+          console=True,
           disable_windowed_traceback=False,
           target_arch=None,
           codesign_identity=None,
           entitlements_file=None,
-          icon='icons\\GMS-logo.ico'
+          icon='gms_uploader/icons/AppIcons/GMS-logo.ico'
           )
 coll = COLLECT(exe,
                splash.binaries,
@@ -55,4 +56,4 @@ coll = COLLECT(exe,
                strip=False,
                upx=True,
                upx_exclude=[],
-               name='gms-uploader')
+               name='gms-uploader_v0.1.1-console-beta.9')
