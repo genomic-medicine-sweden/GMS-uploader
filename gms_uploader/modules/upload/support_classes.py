@@ -12,7 +12,7 @@ from botocore.client import Config
 from boto3.s3.transfer import TransferConfig
 
 
-class NGPIrisCallbackPercentage(object):
+class Boto3CallbackPercentage(object):
     def __init__(self, file, progress):
         self.file = str(file)
         self.filename = file.name
@@ -28,16 +28,19 @@ class NGPIrisCallbackPercentage(object):
             self.progress.emit(self.filename, percentage)
 
 
-class NGPIrisFileUploadWorker(QObject):
+class Boto3FileUploadWorker(QObject):
     finished = Signal(str)
     progress = Signal(str, int)
 
     def __init__(self, cred, tag, file):
-        super(NGPIrisFileUploadWorker, self).__init__()
+        super(Boto3FileUploadWorker, self).__init__()
 
         self.tag = tag
         self.file = str(file)
         self.filename = file.name
+        self.filesize = float(os.path.getsize(self.file))
+
+        print(cred)
 
         session = boto3.session.Session(aws_access_key_id=cred['aws_access_key_id'],
                                         aws_secret_access_key=cred['aws_secret_access_key'])
@@ -50,7 +53,7 @@ class NGPIrisFileUploadWorker(QObject):
                                    verify=False,  # Checks for SLL certificate. Disables because of already "secure" solution.
                                    config=s3_config)
 
-        self.bucket = self.s3.Bucket(bucket=cred['bucket'])
+        self.bucket = self.s3.Bucket(cred['bucket'])
 
         self.transfer_config = TransferConfig(multipart_threshold=10000000,
                                               max_concurrency=15,
@@ -65,10 +68,12 @@ class NGPIrisFileUploadWorker(QObject):
     def upload_file(self):
         self.bucket.upload_file(self.file,
                                 self.target,
-                                ExtraArgs={'Metadata': "test"},
+                                ExtraArgs={'Metadata': {"test": "test"}},
                                 Config=self.transfer_config,
-                                Callback=NGPIrisCallbackPercentage(Path(self.file), self.progress))
+                                Callback=Boto3CallbackPercentage(Path(self.file), self.progress))
 
+        if self.filesize == 0:
+            self.progress.emit(self.filename, 100)
 
         # self.hcpm.upload_file(self.file,
         #                       self.target,

@@ -2,7 +2,7 @@ from PySide6.QtGui import QIcon, Qt
 from PySide6.QtCore import QThread
 from PySide6.QtWidgets import QProgressBar, QDialog, QHeaderView, QTableWidgetItem
 from gms_uploader.ui.uploader_dialog import Ui_Dialog as UI_Dialog_Uploader
-from gms_uploader.modules.upload.support_classes import ParamikoFileUploadWorker, NGPIrisFileUploadWorker, MsgUploadComplete
+from gms_uploader.modules.upload.support_classes import ParamikoFileUploadWorker, Boto3FileUploadWorker, MsgUploadComplete
 from pathlib import Path
 
 
@@ -50,6 +50,7 @@ class Uploader(QDialog, UI_Dialog_Uploader):
                 filesize = str(round(self.bytes_to_megabytes(file_obj.stat().st_size), 2)) + " MB"
 
                 self.progress_bars[filename] = QProgressBar()
+                self.progress_bars[filename].setRange(0, 100)
                 self.progress_bars[filename].setValue(0)
                 self.progress_bars[filename].setAlignment(Qt.AlignRight)
 
@@ -122,7 +123,8 @@ class Uploader(QDialog, UI_Dialog_Uploader):
         self.upload_file()
 
     def report_progress(self, filename, pct):
-        print(f"progress filename {filename}")
+        # print(f"progress filename {filename} {pct}")
+        # print(self.progress_bars[filename])
         self.progress_bars[filename].setValue(pct)
 
     def bytes_to_megabytes(self, bytes):
@@ -132,6 +134,6 @@ class Uploader(QDialog, UI_Dialog_Uploader):
         if cred['protocol'] == "SFTP":
             return ParamikoFileUploadWorker(cred, tag, file)
         elif cred['protocol'] == "S3":
-            return NGPIrisFileUploadWorker(cred, tag, file)
+            return Boto3FileUploadWorker(cred, tag, file)
         else:
             return None

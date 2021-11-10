@@ -58,6 +58,7 @@ class PseudoID:
         return int(lines[-1].split('-')[-1])
 
     def create_pids(self, rowcount: int):
+        print(rowcount)
         pseudo_id_filepath = self._settings.get_value('entered_value', 'pseudo_id_filepath')
         if not Path(pseudo_id_filepath).is_file():
             return None

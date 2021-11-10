@@ -1025,7 +1025,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         df2 = self.df.fillna('')
         errors = validate(df2)
 
-        df_len = self.df.shape[0] + 1
+        df_len = self.df.shape[0]
+
+        print(df_len)
+        print(self.df.to_string())
 
         if errors:
             vdialog = ValidationDialog(errors)
@@ -1051,6 +1054,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.df['lab_code'] = self.df['lab'].apply(lambda x: self.conf['tr']['lab_to_code'][x])
         self.df['region_code'] = self.df['region'].apply(lambda x: self.conf['tr']['region_to_code'][x])
         self.df['pseudo_id'] = self.pseudo_id.create_pids(df_len)
+
+        print(self.df.to_string())
 
         meta_fields = [field for field in self.conf['model_fields'] if self.conf['model_fields'][field]['to_meta']]
         df_submit = self.df[meta_fields]
