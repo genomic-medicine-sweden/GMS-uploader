@@ -11,7 +11,7 @@ from gms_uploader.modules.models.pandasmodel import PandasModel
 from gms_uploader.modules.delegates.delegates import ComboBoxDelegate, \
     DateAutoCorrectDelegate, AgeDelegate, IconCheckBoxDelegate
 from gms_uploader.modules.fx.fx_manager import FxManager
-from gms_uploader.modules.dialogs.dialogs import MsgError, MsgAlert, ValidationDialog
+from gms_uploader.modules.dialogs.dialogs import ValidationDialog
 from gms_uploader.modules.models.sortfilterproxymodel import MultiSortFilterProxyModel
 from gms_uploader.modules.extra.auxiliary_functions import to_list, get_pd_row_index, \
     date_validate, age_validate, add_gridlayout_row, update_df
