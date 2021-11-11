@@ -29,7 +29,7 @@ import resources
 #from fx.analytix.plugin import FX
 
 
-__version__ = '0.1.1-beta.7'
+__version__ = '0.1.1-beta.10'
 __title__ = 'GMS-uploader'
 
 
