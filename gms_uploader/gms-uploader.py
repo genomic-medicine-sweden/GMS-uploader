@@ -4,17 +4,18 @@ from io import StringIO
 from PySide6.QtCore import *
 from PySide6.QtGui import *
 from PySide6.QtWidgets import *
-from modules.settings.settings import Settings
-from modules.pseudo_id.pseudo_id import PseudoID
+from modules.settings.settings import SettingsManager
+from modules.pseudo_id.pseudo_id import PseudoIDManager
 
 from gms_uploader.modules.models.pandasmodel import PandasModel
 from gms_uploader.modules.delegates.delegates import ComboBoxDelegate, \
     DateAutoCorrectDelegate, AgeDelegate, IconCheckBoxDelegate
 from gms_uploader.modules.fx.fx_manager import FxManager
-from gms_uploader.modules.dialogs.dialogs import ValidationDialog
+from gms_uploader.modules.dialogs.dialogs import ValidationDialog, MsgAlert
 from gms_uploader.modules.models.sortfilterproxymodel import MultiSortFilterProxyModel
 from gms_uploader.modules.extra.auxiliary_functions import to_list, get_pd_row_index, \
     date_validate, age_validate, add_gridlayout_row, update_df
+from gms_uploader.modules.credentials.credentials import CredManager
 from gms_uploader.modules.validate.validate import validate
 from gms_uploader.modules.upload.uploader import Uploader
 import pandas as pd
@@ -26,7 +27,6 @@ import csv
 from gms_uploader.ui.mw import Ui_MainWindow
 import qdarktheme
 import resources
-#from fx.analytix.plugin import FX
 
 
 __version__ = '0.1.1-beta.10'
@@ -55,8 +55,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         with default_config_path.open(encoding='utf8') as fp:
             self.conf = yaml.safe_load(fp)
 
-        self.settings = Settings(self.conf)
-        self.pseudo_id = PseudoID(self.conf)
+        self.settm = SettingsManager(self.conf)
+        self.credm = CredManager(self.settm)
+        self.pidm = PseudoIDManager(self.conf)
 
         self.fx_config = None
 
@@ -221,15 +222,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         Sets values in static lineedits on the dataview pane.
         :return: None
         """
-        self.lineEdit_submitter.setText(self.settings.get_value("entered_value", "submitter"))
-        self.lineEdit_lab.setText(self.settings.get_value("select_single", "lab"))
-        self.lineEdit_seq_technology.setText(self.settings.get_value("select_single", "seq_technology"))
-        self.lineEdit_host.setText(self.settings.get_value("select_single", "host"))
-        self.lineEdit_lib_method.setText(self.settings.get_value("select_single", "library_method"))
-        self.lineEdit_import_fx.setText(self.settings.get_value("select_single", "fx"))
-        self.lineEdit_pseudo_id.setText(str(self.pseudo_id.get_pid()))
-        self.lineEdit_ul_target_label.setText(self.settings.get_current_cred_target_label())
-        self.lineEdit_ul_protocol.setText(self.settings.get_current_cred_protocol())
+        self.lineEdit_submitter.setText(str(self.settm.get_value("entered_value", "submitter")))
+        self.lineEdit_lab.setText(str(self.settm.get_value("select_single", "lab")))
+        self.lineEdit_seq_technology.setText(str(self.settm.get_value("select_single", "seq_technology")))
+        self.lineEdit_host.setText(str(self.settm.get_value("select_single", "host")))
+        self.lineEdit_lib_method.setText(str(self.settm.get_value("select_single", "library_method")))
+        self.lineEdit_import_fx.setText(str(self.settm.get_value("select_single", "fx")))
+        self.lineEdit_pseudo_id.setText(str(self.pidm.get_pid()))
+        self.lineEdit_ul_target_label.setText(str(self.credm.get_current_target_label()))
+        self.lineEdit_ul_protocol.setText(str(self.credm.get_current_protocol()))
 
     def setup_settingview_widgets(self):
         """
@@ -270,14 +271,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                                     label.setProperty("class", "padding-left")
                                     label.setMinimumWidth(40)
 
-                                    value = self.settings.get_value(field_type, field)
-                                    edit.setText(value)
+                                    value = self.settm.get_value(field_type, field)
+                                    edit.setText(str(value))
 
                                     add_gridlayout_row(grid_layout, label, hbox)
 
                                 else:
                                     edit = QLineEdit(objectName=field, editingFinished=self.update_setting)
-                                    value = self.settings.get_value(field_type, field)
+                                    value = self.settm.get_value(field_type, field)
                                     edit.setText(value)
 
                                     label = QLabel(field)
@@ -304,7 +305,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
                                 combo.addItems(items)
 
-                                value = self.settings.get_value(field_type, field)
+                                value = self.settm.get_value(field_type, field)
                                 combo.setCurrentText(value)
 
                                 label = QLabel(field)
@@ -328,7 +329,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                                 label.setProperty("class", "padding-left")
                                 label.setMinimumWidth(40)
 
-                                value = self.settings.get_value('select_single', field)
+                                value = self.settm.get_value('select_single', field)
                                 if value is not None:
                                     if combo.findText(value) >= 0:
                                         combo.setCurrentText(value)
@@ -354,7 +355,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     for field_type, fields in item.items():
                         if field_type == "select_multi":
                             for field in fields:
-                                value = self.settings.get_value(field_type, field)
+                                value = self.settm.get_value(field_type, field)
                                 store_checked = to_list(value)
 
                                 model = QStandardItemModel()
@@ -385,18 +386,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
                                 tabwidget_settings.addTab(tableview, field)
 
-        self.load_credentials()
-        self.set_endpoint_values()
+        self.set_target_label_items()
         self.set_pid_start()
         self.set_dataview_setting_widget_values()
         self.set_fx()
 
     def set_fx(self):
-        value = self.settings.get_value('select_single', 'fx')
-        print(value)
+        value = self.settm.get_value('select_single', 'fx')
         if value is not None and value != 'None':
             self.fx = self.fx_manager.load_fx(value)
-            self.fx.set_path(self.settings.get_value('entered_value', 'fx_import_path'))
+            self.fx.set_path(self.settm.get_value('entered_value', 'fx_import_path'))
 
             if self.fx.from_clipboard:
                 self.action_paste_fx.triggered.connect(self.import_fx_clipboard)
@@ -407,10 +406,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def update_setting(self, item=None):
         if self.setup_complete:
             if isinstance(item, QStandardItem):
-                self.settings.update_setting(item=item)
+                self.settm.update_setting(item=item)
             else:
                 obj = self.sender()
-                self.settings.update_setting(obj=obj)
+                self.settm.update_setting(obj=obj)
 
             self.set_dataview_setting_widget_values()
             self.update_delegates()
@@ -452,6 +451,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.tableView_lab.verticalHeader().hide()
         self.tableView_organism.verticalHeader().hide()
         self.update_model()
+
+    def setup_credentials(self):
+        self.credm = CredManager(self.settm)
 
     # def load_fx_settings(self):
     #     store_key = "/".join(['select_single', 'import_fx'])
@@ -774,12 +776,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             edit = self.stackedWidgetPage2.findChild(QLineEdit, name, Qt.FindChildrenRecursively)
             edit.setText(credentials_path)
 
-            self.settings.set_value('entered_value', 'credentials_path', credentials_path)
-            self.load_credentials()
-            self.set_endpoint_values()
+            self.settm.set_value('entered_value', 'credentials_path', credentials_path)
+            self.credm = CredManager(self.settm)
+            self.set_target_label_items()
 
-    def set_endpoint_values(self):
-        keys = self.settings.get_cred_keys()
+    def set_target_label_items(self):
+        print(self.settm.get_value('entered_value', 'credentials_path'))
+        keys = self.credm.get_cred_keys()
         combobox = self.stackedWidgetPage2.findChild(QComboBox, 'target_label', Qt.FindChildrenRecursively)
         combobox.clear()
         items = ['None']
@@ -789,15 +792,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         combobox.addItems(items)
 
-    def load_credentials(self):
-        path_obj = Path(self.settings.get_value('entered_value', 'credentials_path'))
-        files = path_obj.glob('*.json')
+        selected = self.settm.get_value('select_single', 'target_label')
 
-        for file in files:
-            with open(file) as fh:
-                curr_cred = json.load(fh)
-                self.settings.set_cred(curr_cred['target_label'], curr_cred)
-
+        if selected is not None:
+            index = combobox.findText(selected)
+            if index >= 0:
+                combobox.setCurrentIndex(index)
 
     # delegates
 
@@ -822,7 +822,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def set_combobox_delegate(self, field):
 
         items = ['']
-        items.extend(to_list(self.settings.get_value("select_multi", field)))
+        items.extend(to_list(self.settm.get_value("select_multi", field)))
 
         for view in self.conf['model_fields'][field]['view']:
             self.delegates[view][field] = ComboBoxDelegate(items)
@@ -898,7 +898,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         if 'qsettings' in self.conf['paste_validators']['model_fields'][colname]:
             field_type, field = self.conf['paste_validators']['model_fields'][colname]['qsettings']
-            accepted = self.settings.get_value(field_type, field)
+            accepted = self.settm.get_value(field_type, field)
             if isinstance(accepted, list):
                 if value not in accepted:
                     return False
@@ -988,8 +988,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         for w in self.status_widgets:
             if w is self.action_paste_fx:
                 if self.fx is not None and self.fx.from_clipboard:
-                    print(w)
-                    print(value)
                     w.setDisabled(value)
 
             elif w is self.action_import_fx:
@@ -1010,29 +1008,44 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     # Import/export functions
 
     def upload(self):
-        cred = None
+        cred = self.credm.get_current_cred()
+        if not isinstance(cred, dict):
+            return False
 
-        # credfile = 'D:/Dokument/accounts/gms-uploader/local.json'
-        credfile = 'D:/Dokument/accounts/gms-uploader/ngp.json'
+        metadata_path = self.settm.get_value('entered_value', 'metadata_output_path')
+        if metadata_path is None or metadata_path == "None":
+            msg = MsgAlert("Path for metadata output is not set.")
+            msg.exec()
+            return False
 
-        with open(credfile, 'r', encoding='utf-8') as infile:
-            cred = json.load(infile)
+        if not Path(metadata_path).is_dir():
+            msg = MsgAlert("Path for metadata output is not correct.")
+            msg.exec()
+            return False
 
-        self.df['lab'] = self.settings.get_value('select_single', 'lab')
-        self.df['host'] = self.settings.get_value('select_single', 'host')
-        self.df['seq_technology'] = self.settings.get_value('select_single', 'seq_technology')
+        pseudoid_path = self.pidm.get_filepath()
+        if pseudoid_path is None or pseudoid_path == "None":
+            msg = MsgAlert("Path for pseudo_id file is not set.")
+            msg.exec()
+            return False
+
+        if not Path(pseudoid_path).is_file():
+            msg = MsgAlert("Path for pseudo_id file is not correct.")
+            msg.exec()
+            return False
+
+        self.df['lab'] = self.settm.get_value('select_single', 'lab')
+        self.df['host'] = self.settm.get_value('select_single', 'host')
+        self.df['seq_technology'] = self.settm.get_value('select_single', 'seq_technology')
 
         df2 = self.df.fillna('')
         errors = validate(df2)
 
         df_len = self.df.shape[0]
 
-        print(df_len)
-        print(self.df.to_string())
-
         if errors:
-            vdialog = ValidationDialog(errors)
-            vdialog.exec()
+            v_dialog = ValidationDialog(errors)
+            v_dialog.exec()
             return False
 
         files = {}
@@ -1050,19 +1063,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
             files[row['internal_lab_id']] = _tmp
 
-
         self.df['lab_code'] = self.df['lab'].apply(lambda x: self.conf['tr']['lab_to_code'][x])
         self.df['region_code'] = self.df['region'].apply(lambda x: self.conf['tr']['region_to_code'][x])
-        self.df['pseudo_id'] = self.pseudo_id.create_pids(df_len)
-
-        print(self.df.to_string())
+        self.df['pseudo_id'] = self.pidm.create_pids(df_len)
 
         meta_fields = [field for field in self.conf['model_fields'] if self.conf['model_fields'][field]['to_meta']]
         df_submit = self.df[meta_fields]
 
         now = datetime.now()
         tag = now.strftime("%Y-%m-%dT%H.%M.%S")
-        json_file = Path(self.settings.get_value('entered_value', 'metadata_output_path'), tag + "_meta.json")
+
+        json_file = Path(metadata_path, tag + "_meta.json")
 
         with open(json_file, 'w', encoding='utf-8') as outfile:
             df_submit.to_json(outfile, orient="records", force_ascii=False)
@@ -1070,7 +1081,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         files['metadata'] = [json_file]
         files['upload_complete'] = [Path(self.conf['upload_complete_file']['filepath'])]
 
-        uploader = Uploader(cred, tag, files)
+        upload_complete = False
+
+        uploader = Uploader(cred, tag, files, df_submit, self.pidm)
         uploader.exec()
 
     def save_metadata_file(self):
@@ -1078,7 +1091,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         dt_str = now.strftime("%Y-%m-%dT%H.%M.%S")
         dialog = QFileDialog()
 
-        p_str = self.settings.get_value('entered_value', 'metadata_docs_path')
+        p_str = self.settm.get_value('entered_value', 'metadata_docs_path')
 
         if p_str and Path(p_str).exists():
             default_path = p_str
@@ -1097,7 +1110,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def open_metadata_file(self):
 
-        p_str = self.settings.get_value('entered_value', 'metadata_docs_path')
+        p_str = self.settm.get_value('entered_value', 'metadata_docs_path')
 
         if p_str and Path(p_str).exists():
             default_path = p_str
@@ -1121,7 +1134,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def get_seq_files(self):
 
-        p_str = self.settings.get_value('entered_value', 'seq_base_path')
+        p_str = self.settm.get_value('entered_value', 'seq_base_path')
 
         if p_str and Path(p_str).exists():
             default_path = p_str
@@ -1141,7 +1154,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def get_csv_file_combine(self):
 
-        p_str = self.settings.get_value('entered_value', 'csv_base_path')
+        p_str = self.settm.get_value('entered_value', 'csv_base_path')
 
         if p_str and Path(p_str).exists():
             default_path = p_str
@@ -1194,7 +1207,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
             if isinstance(df_fx, pd.DataFrame):
                 self.df = update_df(self.df, df_fx, key="internal_lab_id")
-                cols = self.settings.get_ordered_fieldnames()
+                cols = self.settm.get_ordered_fieldnames()
                 self.df = self.df[cols]
                 self.update_model()
 
@@ -1210,12 +1223,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         i_row = index.row()
         i_col = index.column()
 
-        print(matrix)
-
         for i, r in enumerate(matrix):
             for j, value in enumerate(r):
                 colname = self.df.columns[i_col + j]
-                print(r, colname, value)
                 valid_value = self.accept_paste(value, colname)
                 if valid_value:
                     model.setData(model.index(i_row + i, i_col + j), valid_value)
@@ -1342,9 +1352,7 @@ def main():
         pass
 
     app = QApplication(sys.argv)
-    print("app created")
     window = MainWindow()
-    print("window created")
 
     style_add = """
     QTableView { 
@@ -1363,13 +1371,9 @@ def main():
 
     """
 
-
-
     style = qdarktheme.load_stylesheet("light") + style_add
-    print("style added")
 
     app.setStyleSheet(style)
-    print("stylesheet set")
 
     try:
         pyi_splash.close()

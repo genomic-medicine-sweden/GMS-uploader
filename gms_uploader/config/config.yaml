@@ -271,16 +271,9 @@ settings_values:
     submitter: None
     fx_import_path: None
   select_single:
+    protocol: None
     target_label: None
     fx: None
-    hcp_bucket:
-      'goteborg': True
-      'linkoping': False
-      'umea': False
-      'uppsala': False
-      'orebro': False
-      'stockholm': False
-      'lund': False
     lab:
       'Växjö - SE110': True
       'Malmö - SE120': False

@@ -1,22 +1,83 @@
+import pandas as pd
 from PySide6.QtGui import QIcon, Qt
 from PySide6.QtCore import QThread
 from PySide6.QtWidgets import QProgressBar, QDialog, QHeaderView, QTableWidgetItem
 from gms_uploader.ui.uploader_dialog import Ui_Dialog as UI_Dialog_Uploader
 from gms_uploader.modules.upload.support_classes import ParamikoFileUploadWorker, Boto3FileUploadWorker, MsgUploadComplete
+from gms_uploader.modules.pseudo_id.pseudo_id import PseudoIDManager
 from pathlib import Path
 
 
+class Item:
+    def __init__(self, lid: str, pseudo_id: str, fpaths: list):
+        self.lid = lid
+        self.pseudo_id = pseudo_id
+        self.fpaths = fpaths
+        self.fnames =  self._get_filenames()
+        self.uploaded = self._get_uploaded_defaults()
+
+    def contains_filename(self, fname: str) -> bool:
+        if fname in self.fnames:
+            return True
+
+        return False
+
+    def _get_filenames(self):
+        return [f.name for f in self.fpaths]
+
+    def _get_uploaded_defaults(self) -> dict:
+        uploaded = {}
+        for fp in self.fpaths:
+            fname = Path(fp).name
+            uploaded[fname] = False
+
+        return uploaded
+
+    def set_file_uploaded(self, fname: str):
+        self.uploaded[fname] = True
+
+    def upload_complete(self) -> bool:
+        res = list(self.uploaded.values())
+        if all(res):
+            return True
+
+        return False
+
+    def get_filenames(self) -> list:
+        names = []
+        for sfp in self.fpaths:
+            names.append(Path(sfp).name)
+
+        return names
+
+    def get_filepaths(self) -> list:
+        return self.fpaths
+
+
 class Uploader(QDialog, UI_Dialog_Uploader):
-    def __init__(self, cred: dict, tag: str, files: dict):
+    def __init__(self, cred: dict,
+                 tag: str,
+                 df: pd.DataFrame,
+                 metafile: Path,
+                 completefile: Path,
+                 pidm: PseudoIDManager):
+
         super(Uploader, self).__init__()
         self.setupUi(self)
         self.setWindowTitle("Upload")
         self.setWindowIcon(QIcon(':/gms_logo'))
 
-        self.files = files
         self.cred = cred
         self.tag = tag
-        self.files_list = []
+        self.df = df.copy(deep=True)
+        self.metafile = metafile
+        self.completefile = completefile
+        self.pidm = pidm
+
+        self.items = self._create_items()
+        self.fname2lid = {}
+        self.fpathlist = []
+
         self.progress_bars = {}
         self.workers = {}
         self.threads = {}
@@ -42,29 +103,30 @@ class Uploader(QDialog, UI_Dialog_Uploader):
         header.setSectionResizeMode(2, QHeaderView.Stretch)
 
         row_no = 0
-        for sample in files:
-            _files_list = files[sample]
-            for file in _files_list:
-                file_obj = Path(file)
-                filename = str(file_obj.name)
-                filesize = str(round(self.bytes_to_megabytes(file_obj.stat().st_size), 2)) + " MB"
+        for item in self.items:
+            fpaths = item.get_filepaths()
+            for fp in fpaths:
+                fobj = Path(fp)
+                fname = str(fobj.name)
+                fsize = str(round(self.bytes_to_megabytes(fobj.stat().st_size), 2)) + " MB"
 
-                self.progress_bars[filename] = QProgressBar()
-                self.progress_bars[filename].setRange(0, 100)
-                self.progress_bars[filename].setValue(0)
-                self.progress_bars[filename].setAlignment(Qt.AlignRight)
+                self.fname2lid[fname] = item.lid
+                self.fpathlist.append(fobj)
+
+                self.progress_bars[fname] = QProgressBar()
+                self.progress_bars[fname].setRange(0, 100)
+                self.progress_bars[fname].setValue(0)
+                self.progress_bars[fname].setAlignment(Qt.AlignRight)
 
                 self.tableWidget.insertRow(row_no)
 
-                name_item = QTableWidgetItem(filename)
+                name_item = QTableWidgetItem(fname)
                 name_item.setFlags(Qt.ItemIsEnabled)
-                size_item = QTableWidgetItem(filesize)
+                size_item = QTableWidgetItem(fsize)
                 size_item.setFlags(Qt.ItemIsEnabled)
                 self.tableWidget.setItem(row_no, 0, name_item)
                 self.tableWidget.setItem(row_no, 1, size_item)
-                self.tableWidget.setCellWidget(row_no, 2, self.progress_bars[filename])
-
-                self.files_list.append(file)
+                self.tableWidget.setCellWidget(row_no, 2, self.progress_bars[fname])
 
                 row_no += 1
 
@@ -72,9 +134,33 @@ class Uploader(QDialog, UI_Dialog_Uploader):
         self.pushButton_close.clicked.connect(self.close)
         self.pushButton_stop.clicked.connect(self.stop)
 
+    def _create_items(self) -> dict:
+        items = {}
+        for _, row in self.df.iterrows():
+            _files_list = []
+            _lid = row['internal_lab_id']
+            _pseudo_id = row['pseudo_id']
+
+            if row['fastq']:
+                _list = row["fastq"]
+                for filename in _list:
+                    _files_list.append(Path(row["seq_path"], filename))
+
+            if row['fast5']:
+                _list = row["fast5"]
+                for filename in _list:
+                    _files_list.append(Path(row["seq_path"], filename))
+
+            items[row['internal_lab_id']] = Item(_lid, _pseudo_id, _files_list)
+
+        items['metafile'] = Item('metafile', None, [self.metafile])
+        items['completefile'] = Item('completefile', None, [self.completefile])
+
+        return items
+
     def upload_file(self):
-        if len(self.files_list) > 0:
-            file = self.files_list.pop(0)
+        if len(self.fpathlist) > 0:
+            file = self.fpathlist.pop(0)
             filename = file.name
 
             self.workers[filename] = self.get_worker(self.cred, self.tag, file)
@@ -97,16 +183,28 @@ class Uploader(QDialog, UI_Dialog_Uploader):
         self.workers[filename].deleteLater()
         self.threads[filename].deleteLater()
 
-        print(f"file list len {len(self.files_list)}")
-
-        if not self.is_paused and len(self.files_list) > 0:
+        if not self.is_paused and len(self.fpathlist) > 0:
+            lid = self.fname2lid[filename]
+            self.items[lid].set_file_uploaded(filename)
             self.upload_file()
 
-        elif len(self.files_list) == 0:
+        elif len(self.fpathlist) == 0:
+            lid = self.fname2lid[filename]
+            self.items[lid].set_file_uploaded(filename)
+
             self.pushButton_stop.setDisabled(True)
             self.pushButton_close.setDisabled(False)
-            msg = MsgUploadComplete(f"Upload of data with tag {self.tag} is complete! ")
+
+
+
+            msg = MsgUploadComplete(f"Upload of data with tag {self.tag} is complete!")
             msg.exec()
+
+
+
+    def store_pseudo_ids(self):
+        if all(list(self.files_uploaded.values())):
+            pass
 
     def stop(self):
         self.pushButton_start.setDisabled(False)
@@ -123,8 +221,6 @@ class Uploader(QDialog, UI_Dialog_Uploader):
         self.upload_file()
 
     def report_progress(self, filename, pct):
-        # print(f"progress filename {filename} {pct}")
-        # print(self.progress_bars[filename])
         self.progress_bars[filename].setValue(pct)
 
     def bytes_to_megabytes(self, bytes):

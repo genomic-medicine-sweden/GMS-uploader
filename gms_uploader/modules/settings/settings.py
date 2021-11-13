@@ -5,7 +5,7 @@ from PySide6.QtGui import QStandardItem
 from gms_uploader.modules.dialogs.dialogs import MsgAlert
 
 
-class Settings:
+class SettingsManager:
     """ Class for managing settings"""
     def __init__(self, conf):
         self._qsettings = QSettings("Genomic Medicine Sweden", "GMS-uploader")
@@ -66,6 +66,7 @@ class Settings:
         return self._qsettings.value(store_key)
 
     def set_value(self, field_type, field, value):
+        print("insettings", field_type, field, value)
         key = "/".join([field_type, field])
         self._qsettings.setValue(key, value)
 
@@ -75,13 +76,11 @@ class Settings:
 
     def _single_update(self, name, value):
         store_key = "/".join(['select_single', name])
-        print(f"setting value for {store_key} : {value}")
         self._qsettings.setValue(store_key, value)
 
     def _multi_update(self, obj):
 
         model = obj.model()
-        print(model)
         name = model.objectName()
 
         checked_items = []
@@ -121,7 +120,6 @@ class Settings:
                     self._qsettings.setValue(store_key, checked_items)
 
                 else:
-                    print(store_key, self.conf['settings_values'][field_type][field])
                     self._qsettings.setValue(store_key, self.conf['settings_values'][field_type][field])
 
     def _validate_settings(self):
@@ -133,17 +131,14 @@ class Settings:
         for key in all_keys:
             field_type, field = key.split('/')
             if field_type not in self.conf['settings_values']:
-                print(field_type, "not in settings_values")
-                return False
+                 return False
             if field not in self.conf['settings_values'][field_type]:
-                print(field_type, field, "not in settings_values")
                 return False
 
         for wtype in self.conf['settings_values']:
             for field in self.conf['settings_values'][wtype]:
                 store_key = "/".join([wtype, field])
                 if store_key not in all_keys:
-                    print(store_key, "not in all_keys")
                     return False
 
         return True
