@@ -10,7 +10,7 @@ Windows
 
 **Installation**
 
-For Windows, GMS-uploader releases are provided as a zipped folder (portable) and soon also as a Windows installer.
+For Windows, GMS-uploader releases are provided as a Windows installer (setup.exe), created using the `Inno Setup Compiler <https://jrsoftware.org/>`_.
 
 
 * Grab the lastest release:
