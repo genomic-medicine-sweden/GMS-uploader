@@ -56,4 +56,4 @@ coll = COLLECT(exe,
                strip=False,
                upx=True,
                upx_exclude=[],
-               name='gms-uploader_v0.1.1-beta.10')
+               name='gms-uploader_v0.2.0')

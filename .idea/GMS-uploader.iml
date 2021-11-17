@@ -8,6 +8,10 @@
       <excludeFolder url="file://$MODULE_DIR$/demo/data_umu" />
       <excludeFolder url="file://$MODULE_DIR$/build" />
       <excludeFolder url="file://$MODULE_DIR$/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/demo/metadata_docs" />
+      <excludeFolder url="file://$MODULE_DIR$/demo/metadata_output" />
+      <excludeFolder url="file://$MODULE_DIR$/demo/pseudo_id" />
+      <excludeFolder url="file://$MODULE_DIR$/demo/saved_pickles" />
     </content>
     <orderEntry type="jdk" jdkName="Python 3.9 (GMS-uploader)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />

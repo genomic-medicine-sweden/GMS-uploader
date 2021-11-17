@@ -1,6 +1,7 @@
 from PySide6.QtCore import QSettings
 from PySide6.QtWidgets import QComboBox, QLineEdit
 from PySide6.QtGui import QStandardItem
+from pathlib import Path
 
 from gms_uploader.modules.dialogs.dialogs import MsgAlert
 
@@ -13,11 +14,29 @@ class SettingsManager:
 
         self.credentials_dict = {}
 
+        # self._qsettings.clear()
+
         if not self._validate_settings():
             msg = MsgAlert("Incompatible saved settings: (re-)initializing...")
             msg.exec()
 
             self._init_settings()
+
+    def get_valid_metadata_dir(self):
+        metadata_dir = self.get_value('entered_value', 'metadata_output_path')
+
+        if metadata_dir is None or metadata_dir == "None":
+            self.metadata_dir = None
+
+        try:
+            md_obj = Path(metadata_dir)
+        except:
+            return None
+
+        if md_obj.is_dir():
+            return md_obj
+
+        return None
 
     def get_ordered_fieldnames(self):
         return list(self.conf['model_fields'].keys())

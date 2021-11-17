@@ -4,7 +4,6 @@ import paramiko
 from PySide6.QtCore import QObject, Signal
 from PySide6.QtWidgets import QMessageBox
 from PySide6.QtGui import QIcon
-#from NGPIris.hcp import HCPManager
 from pathlib import Path
 import boto3
 from botocore.exceptions import ClientError
@@ -90,6 +89,7 @@ class ParamikoFileUploadWorker(QObject):
 
         self.file = str(file)
         self.filename = file.name
+        self.filesize = float(os.path.getsize(self.file))
 
         self.t = paramiko.Transport((cred['target_host'], 22))
         self.t.banner_timeout = 10
@@ -110,6 +110,9 @@ class ParamikoFileUploadWorker(QObject):
     def upload_file(self):
 
         self.sftp.put(self.file, self.target, callback=self.percentage_transferred)
+
+        if self.filesize == 0:
+            self.progress.emit(self.filename, 100)
 
     def percentage_transferred(self, bytes_transferred, bytes_total):
 

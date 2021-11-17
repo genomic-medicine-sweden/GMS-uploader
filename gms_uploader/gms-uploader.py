@@ -11,7 +11,7 @@ from gms_uploader.modules.models.pandasmodel import PandasModel
 from gms_uploader.modules.delegates.delegates import ComboBoxDelegate, \
     DateAutoCorrectDelegate, AgeDelegate, IconCheckBoxDelegate
 from gms_uploader.modules.fx.fx_manager import FxManager
-from gms_uploader.modules.dialogs.dialogs import ValidationDialog, MsgAlert
+from gms_uploader.modules.dialogs.dialogs import ValidationDialog, MsgAlert, MsgOKCancel
 from gms_uploader.modules.models.sortfilterproxymodel import MultiSortFilterProxyModel
 from gms_uploader.modules.extra.auxiliary_functions import to_list, get_pd_row_index, \
     date_validate, age_validate, add_gridlayout_row, update_df
@@ -29,7 +29,7 @@ import qdarktheme
 import resources
 
 
-__version__ = '0.1.1-beta.10'
+__version__ = '0.2.0'
 __title__ = 'GMS-uploader'
 
 
@@ -57,7 +57,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.settm = SettingsManager(self.conf)
         self.credm = CredManager(self.settm)
-        self.pidm = PseudoIDManager(self.conf)
+        self.pidm = PseudoIDManager(self.conf['tr']['lab_to_code'], self.settm)
 
         self.fx_config = None
 
@@ -181,8 +181,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.action_open_meta.triggered.connect(self.open_metadata_file)
         self.pushButton_invert.clicked.connect(self.invert_marks)
         self.action_import_csv.triggered.connect(self.get_csv_file_combine)
-        # self.action_import_fx.triggered.connect(self.import_fx_file)
-        # self.action_paste_fx.triggered.connect(self.import_fx_clipboard)
 
     def set_icons(self):
 
@@ -222,13 +220,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         Sets values in static lineedits on the dataview pane.
         :return: None
         """
+        print("reset dataviews")
         self.lineEdit_submitter.setText(str(self.settm.get_value("entered_value", "submitter")))
         self.lineEdit_lab.setText(str(self.settm.get_value("select_single", "lab")))
         self.lineEdit_seq_technology.setText(str(self.settm.get_value("select_single", "seq_technology")))
         self.lineEdit_host.setText(str(self.settm.get_value("select_single", "host")))
         self.lineEdit_lib_method.setText(str(self.settm.get_value("select_single", "library_method")))
         self.lineEdit_import_fx.setText(str(self.settm.get_value("select_single", "fx")))
-        self.lineEdit_pseudo_id.setText(str(self.pidm.get_pid()))
+        self.lineEdit_pseudo_id.setText(str(self.pidm.get_first_pid()))
         self.lineEdit_ul_target_label.setText(str(self.credm.get_current_target_label()))
         self.lineEdit_ul_protocol.setText(str(self.credm.get_current_protocol()))
 
@@ -387,7 +386,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                                 tabwidget_settings.addTab(tableview, field)
 
         self.set_target_label_items()
-        self.set_pid_start()
         self.set_dataview_setting_widget_values()
         self.set_fx()
 
@@ -410,6 +408,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             else:
                 obj = self.sender()
                 self.settm.update_setting(obj=obj)
+                self.pidm.init_settings()
 
             self.set_dataview_setting_widget_values()
             self.update_delegates()
@@ -668,6 +667,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             edit.setText(dirpath)
 
     def set_fx_import_path(self):
+        """
+
+        :return:
+        """
         obj = self.sender()
         button_name = obj.objectName()
         name = button_name.strip("button")
@@ -752,7 +755,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if pif_obj.parent.exists():
             edit = self.stackedWidgetPage2.findChild(QLineEdit, name, Qt.FindChildrenRecursively)
             edit.setText(pseudo_id_fp)
-            pif_obj.touch(exist_ok=True)
 
     def set_credentials_path(self):
         """
@@ -997,14 +999,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             else:
                 w.setDisabled(value)
 
-    # pseudo_id-related functions
-
-    def set_pid_start(self):
-        pass
-        # print(self.pseudo_id.get_pid())
-        # print(str(self.pseudo_id.get_pid()))
-        # self.lineEdit_pseudo_id.setText(str(self.pseudo_id.get_pseudo_id()))
-
     # Import/export functions
 
     def upload(self):
@@ -1012,27 +1006,25 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if not isinstance(cred, dict):
             return False
 
-        metadata_path = self.settm.get_value('entered_value', 'metadata_output_path')
-        if metadata_path is None or metadata_path == "None":
-            msg = MsgAlert("Path for metadata output is not set.")
+        metadata_dir = self.settm.get_valid_metadata_dir()
+        if metadata_dir is None:
+            msg = MsgAlert("Metadata output path is not valid.")
             msg.exec()
             return False
 
-        if not Path(metadata_path).is_dir():
-            msg = MsgAlert("Path for metadata output is not correct.")
+        pseudo_id_file = self.pidm.get_file()
+        if pseudo_id_file is None:
+            msg = MsgAlert("Path for pseudo_id file is not valid.")
             msg.exec()
             return False
 
-        pseudoid_path = self.pidm.get_filepath()
-        if pseudoid_path is None or pseudoid_path == "None":
-            msg = MsgAlert("Path for pseudo_id file is not set.")
+        if not self.pidm.validate_lab_code():
+            msg = MsgAlert("pseudo_id file is not empty and lab_code does not "
+                           "exist in pseudo_id file. lab_code has been changed. "
+                           "Exiting.")
             msg.exec()
             return False
 
-        if not Path(pseudoid_path).is_file():
-            msg = MsgAlert("Path for pseudo_id file is not correct.")
-            msg.exec()
-            return False
 
         self.df['lab'] = self.settm.get_value('select_single', 'lab')
         self.df['host'] = self.settm.get_value('select_single', 'host')
@@ -1041,31 +1033,34 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         df2 = self.df.fillna('')
         errors = validate(df2)
 
-        df_len = self.df.shape[0]
-
         if errors:
             v_dialog = ValidationDialog(errors)
             v_dialog.exec()
             return False
 
-        files = {}
-        for _, row in self.df.iterrows():
-            _tmp = []
-            if row['fastq']:
-                _list = row["fastq"]
-                for filename in _list:
-                    _tmp.append(Path(row["seq_path"], filename))
-
-            if row['fast5']:
-                _list = row["fast5"]
-                for filename in _list:
-                    _tmp.append(Path(row["seq_path"], filename))
-
-            files[row['internal_lab_id']] = _tmp
-
         self.df['lab_code'] = self.df['lab'].apply(lambda x: self.conf['tr']['lab_to_code'][x])
         self.df['region_code'] = self.df['region'].apply(lambda x: self.conf['tr']['region_to_code'][x])
-        self.df['pseudo_id'] = self.pidm.create_pids(df_len)
+
+        lids = list(self.df['internal_lab_id'])
+
+        print(f"validate lids: {self.pidm.validate_lids(lids)}")
+
+        if not self.pidm.validate_lids(lids):
+            msg = MsgOKCancel("internal_lab_id(s) already stored in pseudo_id file.\n"
+                              "Continue to upload anyway?")
+            ret = msg.exec()
+
+            if ret != QMessageBox.Ok:
+                return False
+
+        pseudo_ids = self.pidm.generate_pids_from_lids(self.df['internal_lab_id'].tolist())
+
+        print(pseudo_ids)
+
+        if pseudo_ids is None:
+            return False
+
+        self.df['pseudo_id'] = pseudo_ids
 
         meta_fields = [field for field in self.conf['model_fields'] if self.conf['model_fields'][field]['to_meta']]
         df_submit = self.df[meta_fields]
@@ -1073,17 +1068,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         now = datetime.now()
         tag = now.strftime("%Y-%m-%dT%H.%M.%S")
 
-        json_file = Path(metadata_path, tag + "_meta.json")
+        json_file = Path(metadata_dir, tag + "_meta.json")
 
         with open(json_file, 'w', encoding='utf-8') as outfile:
             df_submit.to_json(outfile, orient="records", force_ascii=False)
 
-        files['metadata'] = [json_file]
-        files['upload_complete'] = [Path(self.conf['upload_complete_file']['filepath'])]
+        complete_file = Path(self.conf['upload_complete_file']['filepath'])
 
-        upload_complete = False
-
-        uploader = Uploader(cred, tag, files, df_submit, self.pidm)
+        uploader = Uploader(cred, tag, self.df, json_file, complete_file, self.pidm)
         uploader.exec()
 
     def save_metadata_file(self):

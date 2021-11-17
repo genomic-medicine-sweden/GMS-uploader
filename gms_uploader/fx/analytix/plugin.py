@@ -33,8 +33,12 @@ class FX:
         self.from_clipboard = self.conf['importers']['import_from_clipboard']
 
     def _load_file(self, path: Path) -> pd.DataFrame:
-        print("load file")
-        return pd.read_csv(path, sep=';', dtype=self.conf['import_dtypes'])
+        try:
+            df =  pd.read_csv(path, sep=';', dtype=self.conf['import_dtypes'])
+        except:
+            df = None
+
+        return df
 
     def _translate_fieldnames_values(self, df) -> pd.DataFrame:
         df_mod = df.dropna(subset=['Prov ID'])
@@ -47,8 +51,11 @@ class FX:
     def get_from_file(self) -> pd.DataFrame:
         file_obj = self._get_file()
         df = self._load_file(file_obj)
-        df_mod = self._translate_fieldnames_values(df)
-        return df_mod
+        if df is not None:
+            df_mod = self._translate_fieldnames_values(df)
+            return df_mod
+        else:
+            return None
 
     def _get_file(self) -> Path:
         """

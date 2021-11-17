@@ -1,6 +1,7 @@
 from PySide6.QtWidgets import QMessageBox, QDialog
 from PySide6.QtGui import QIcon
 from gms_uploader.ui.validation_dialog import Ui_Dialog as UI_Dialog_Validation
+import resources
 
 
 class ValidationDialog(QDialog, UI_Dialog_Validation):
@@ -8,7 +9,7 @@ class ValidationDialog(QDialog, UI_Dialog_Validation):
         super(ValidationDialog, self).__init__()
         self.setupUi(self)
         self.setWindowTitle("Validation errors")
-        self.setWindowIcon(QIcon('icons/GMS-logo.png'))
+        self.setWindowIcon(QIcon(':/img/GMS-logo.png'))
         self.textEdit.setReadOnly(True)
         self.textEdit.setPlainText("\n".join(test_list))
         self.pushButton.clicked.connect(self.close)
@@ -21,7 +22,7 @@ class MsgError(QMessageBox):
         self.setIcon(QMessageBox.Critical)
         self.setText(msg)
         self.setWindowTitle("Error")
-        self.setWindowIcon(QIcon('icons/arrow-up.png'))
+        self.setWindowIcon(QIcon(':/img/GMS-logo.png'))
 
 
 class MsgAlert(QMessageBox):
@@ -31,8 +32,18 @@ class MsgAlert(QMessageBox):
         self.setIcon(QMessageBox.Warning)
         self.setText(msg)
         self.setWindowTitle("Alert")
-        self.setWindowIcon(QIcon('icons/arrow-up.png'))
+        self.setWindowIcon(QIcon(':/img/GMS-logo.png'))
 
+
+class MsgOKCancel(QMessageBox):
+    def __init__(self, msg):
+        super().__init__()
+        self.setMinimumWidth(700)
+        self.setIcon(QMessageBox.Warning)
+        self.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
+        self.setText(msg)
+        self.setWindowTitle("Alert")
+        self.setWindowIcon(QIcon(':/img/GMS-logo.png'))
 
 
 

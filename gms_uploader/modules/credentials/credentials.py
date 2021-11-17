@@ -4,13 +4,13 @@ import json
 
 class CredManager:
     """ Class for managing credentials"""
-    def __init__(self, settings):
-        self.settings = settings
+    def __init__(self, settm):
+        self.settm = settm
         self.credentials = {}
         self.load_credentials()
 
     def load_credentials(self):
-        path = self.settings.get_value('entered_value', 'credentials_path')
+        path = self.settm.get_value('entered_value', 'credentials_path')
         path_obj = None
         if path is not None:
             path_obj = Path(path)
@@ -26,17 +26,22 @@ class CredManager:
                         self.credentials[target_label] = curr_cred
 
     def get_current_target_label(self):
-        return self.settings.get_value("select_single", "target_label")
+        val = self.settm.get_value("select_single", "target_label")
+
+        if val:
+            return val
+        else:
+            return None
 
     def get_current_protocol(self):
-        target_label = self.settings.get_value("select_single", "target_label")
+        target_label = self.settm.get_value("select_single", "target_label")
         if target_label in self.credentials:
             return self.credentials[target_label]['protocol']
         else:
             return None
 
     def get_current_cred(self):
-        target_label = self.settings.get_value('select_single', 'target_label')
+        target_label = self.settm.get_value('select_single', 'target_label')
         if target_label in self.credentials:
             return self.credentials[target_label]
 
@@ -75,21 +80,24 @@ class CredManager:
         return False
 
     def get_current_cred_target_label(self):
-        key = self.settings.get_value('select_single', 'target_label')
+        key = self.settm.get_value('select_single', 'target_label')
         if key in self.credentials_dict:
             return key
 
-        return "None"
+        return None
 
     def get_current_cred_protocol(self):
-        key = self.settings.get_value('select_single', 'target_label')
+        key = self.settm.get_value('select_single', 'target_label')
         if key in self.credentials_dict:
             return self.credentials_dict[key]['protocol']
 
-        return "None"
+        return None
 
-    def get_cred(self, key: str) -> dict:
-        return self.credentials[key]
+    def get_value(self, key: str) -> dict:
+        if key in self.credentials:
+            return self.credentials[key]
+        else:
+            return None
 
     def get_cred_keys(self) -> list:
         return list(self.credentials.keys())
