@@ -19,7 +19,6 @@ class FX:
         style = qdarktheme.load_stylesheet("light")
         self.dialog.setStyleSheet(style)
 
-
         self.from_file = False
         self.from_clipboard = False
 
@@ -84,22 +83,11 @@ class FX:
 
         return matrix
 
+# def main():
+#     fx = FX()
+#     file_obj = Path("D:/data/10ec662cc9844675ac14608ed1c82837.csv")
+#     df = fx._load_file(file_obj)
+#     df_mod = fx._translate_fieldnames_values(df)
+#
+#     print(df_mod)
 
-
-def main():
-    fx = FX()
-    file_obj = Path("D:/data/10ec662cc9844675ac14608ed1c82837.csv")
-    df = fx._load_file(file_obj)
-    df_mod = fx._translate_fieldnames_values(df)
-
-    print(df_mod)
-
-
-if __name__ == '__main__':
-    main()
-
-    # file_obj = Path("D:/data/10ec662cc9844675ac14608ed1c82837.csv")
-    # df = fx._load_file(file_obj)
-    # df_mod = fx._translate_fieldnames_values(df)
-    #
-    # print(df_mod)

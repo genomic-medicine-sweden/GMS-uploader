@@ -5,8 +5,36 @@ from PySide6.QtWidgets import QProgressBar, QDialog, QHeaderView, QTableWidgetIt
 from gms_uploader.ui.uploader_dialog import Ui_Dialog as UI_Dialog_Uploader
 from gms_uploader.modules.upload.support_classes import ParamikoFileUploadWorker, Boto3FileUploadWorker, \
     MsgUploadComplete
+import paramiko
+import boto3
+from botocore.exceptions import ClientError
 from gms_uploader.modules.pseudo_id.pseudo_id import PseudoIDManager
 from pathlib import Path
+import json
+
+
+class ConnectionTester:
+    def __init__(self):
+        path = 'D:/Dokument/accounts/gms-uploader/ngp.json'
+        self.cred = None
+        with open(path, "r") as fh:
+            self.cred = json.load(fh)
+
+    def _get_sftp_connection(self):
+
+        t = paramiko.Transport((self.cred['target_host'], 22))
+        t.banner_timeout = 10
+        t.connect(username=self.cred['usr'], password=self.cred['psw'])
+        sftp = paramiko.SFTPClient.from_transport(t)
+
+        return sftp
+
+    def _get_s3_connection(self):
+        if self.cred is not None:
+            s3_client = boto3.client(
+                service_name='s3',
+                endpoint_url=self.cred['endpoint']
+            )
 
 
 class Item:
@@ -123,6 +151,9 @@ class Uploader(QDialog, UI_Dialog_Uploader):
         self.pushButton_close.clicked.connect(self.close)
         self.pushButton_stop.clicked.connect(self.stop)
 
+    def verify_connection(self):
+        pass
+
     def _get_pidlids(self):
         pidlids = []
         for lid in self.items:
@@ -176,7 +207,6 @@ class Uploader(QDialog, UI_Dialog_Uploader):
         self.is_paused = False
 
     def on_finished(self, filename):
-        print(f"{filename} uploaded")
         self.threads[filename].quit()
         self.workers[filename].deleteLater()
         self.threads[filename].deleteLater()
