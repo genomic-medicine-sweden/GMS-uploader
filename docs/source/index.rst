@@ -5,7 +5,7 @@
 
 Welcome to GMS-uploader's documentation!
 ========================================
-GUI utility for compiling metadata and uploading sequence and metadata to the Swedish National Genomics Platform.
+GUI utility for compiling metadata and uploading sequence and metadata. It can be used to upload data to the Swedish National Genomics Platform (NGP) but also other targets.
 
 Features
 -----------------------
@@ -32,11 +32,17 @@ Features
    * Upload to i.e. NGP using S3
    * Upload to other locations using SFTP
 
+Supported platforms
+-----------------------
+
+GMS-Uploader is developed using PySide6 which provides bindings to Qt widget system. Development is done in pure python. PySide6 (and Qt) is cross-platform and can run on Windows, Linux, maxOS. Principally, GMS-Uploader should therefore work on all platforms but has so far only been tested on Windows. It may require tweaks to get it to work on Linux and macOS.
+
 
 TODO
 -----------------------
 * Add a viewer or editor for stored pseudo_id data (csv)
-
+* Allow separate paths for fastq and fast5
+* Add wizard for initial setup, disable possibility do modify settings that are incompatible with previous used settings (i.e. lab)
 
 
 .. toctree::

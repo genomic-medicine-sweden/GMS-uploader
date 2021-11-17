@@ -5,10 +5,10 @@ Installation and setup
 Installation instructions for GMS-uploader on Windows, Linux and Mac
 
 
-Windows
+Installation
 ^^^^^^^
 
-**Installation**
+**Windows**
 
 For Windows, GMS-uploader releases are provided as a Windows installer (setup.exe), created using the `Inno Setup Compiler <https://jrsoftware.org/>`_.
 
@@ -23,7 +23,12 @@ For Windows, GMS-uploader releases are provided as a Windows installer (setup.ex
     * If the windows installer was downloaded, run it and follow instructions provided
 * Start by double-clicking the ``gms-uploader.exe`` in the GMS-uploader folder or (if properly installed) from the Windows start menu.
 
-**Setup**
+**Linux**
+
+Will be added.
+
+Setup
+^^^^^^^
 
 After GMS-uploader has been installed, the program settings need to be entered.
 
@@ -52,3 +57,6 @@ After GMS-uploader has been installed, the program settings need to be entered.
     * ``patient_details_history``
     * ``type``
     * ``patient_status``
+
+**target**
+
