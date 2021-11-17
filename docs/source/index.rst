@@ -15,7 +15,7 @@ Features
       * Many fields are restricted to predefined accepted values
       * Delegate functions provide allowed values in comboboxes (drop-downs)
       * Pasted data is validated before entered into the data model
-   * Tries to mimic MS Excel shortcuts
+   * Mimics MS Excel shortcuts
    * Supports filtering and sorting of metadata
    * Use arrow-keys for moving around
    * Auto-population of fields
