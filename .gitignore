@@ -40,6 +40,11 @@ metadata_docs
 pseudo_id
 saved_pickles
 gms-uploader_1_pseudoids.txt
+metadata
+inno_setup_files
+installforge_dist
+.idea
+
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
