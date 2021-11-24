@@ -16,8 +16,7 @@ GMS-uploader objectives:
   * Saves as json
 * Upload to the NGP
   * Upload of data using NGPiris (S3)
-
-test
+  
 
 ## Introduction
 
